@@ -1,0 +1,3371 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="บันทึกน้ำมัน">
+<meta name="theme-color" content="#215aa8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1826" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png" type="image/png">
+<title>บันทึกน้ำมัน — BYD Seal 5 DM-i</title>
+<style>
+/* ============ tokens ============ */
+:root{
+  color-scheme: light;
+  --surface-1:#fcfcfb;
+  --plane:#f4f4f1;
+  --text-primary:#0b0b0b;
+  --text-secondary:#52514e;
+  --muted:#898781;
+  --grid:#e1e0d9;
+  --axis:#c3c2b7;
+  --border:rgba(11,11,11,0.10);
+  --series-1:#2a78d6;
+  --series-2:#eb6834;
+  --series-3:#1baf7a;
+  --good:#0ca30c;
+  --good-text:#006300;
+  --warning:#fab219;
+  --critical:#d03b3b;
+  --accent-soft:#e8f0fc;
+  --band-strong:rgba(235,104,52,.17);
+  --band-soft:rgba(235,104,52,.075);
+  --band-line:rgba(235,104,52,.55);
+  --band-ink:#a8400f;
+  --elec:#1baf7a;
+  --elec-ink:#0f7d55;
+  --elec-soft:rgba(27,175,122,.10);
+  --elec-strong:rgba(27,175,122,.20);
+  --elec-line:rgba(15,125,85,.5);
+  --fuel-ink:#1c5cab;
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --surface-1:#1a1a19;
+  --plane:#0d0d0d;
+  --text-primary:#ffffff;
+  --text-secondary:#c3c2b7;
+  --muted:#898781;
+  --grid:#2c2c2a;
+  --axis:#383835;
+  --border:rgba(255,255,255,0.10);
+  --series-1:#3987e5;
+  --series-2:#d95926;
+  --series-3:#199e70;
+  --good:#0ca30c;
+  --good-text:#0ca30c;
+  --warning:#fab219;
+  --critical:#d03b3b;
+  --accent-soft:#17263a;
+  --band-strong:rgba(217,89,38,.30);
+  --band-soft:rgba(217,89,38,.14);
+  --band-line:rgba(233,124,74,.7);
+  --band-ink:#f0916a;
+  --elec:#199e70;
+  --elec-ink:#2fbf8c;
+  --elec-soft:rgba(25,158,112,.15);
+  --elec-strong:rgba(25,158,112,.28);
+  --elec-line:rgba(47,191,140,.6);
+  --fuel-ink:#6da7ec;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none !important}
+html,body{margin:0;padding:0;overflow-x:hidden;max-width:100%}
+body{
+  background:var(--plane);
+  color:var(--text-primary);
+  font-family:system-ui,-apple-system,"Segoe UI","Noto Sans Thai",sans-serif;
+  font-size:17px;
+  line-height:1.5;
+  padding-bottom:calc(78px + env(safe-area-inset-bottom));
+  -webkit-text-size-adjust:100%;
+}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+
+/* ============ layout ============ */
+.app{max-width:640px;margin:0 auto}
+header.top{
+  position:sticky;top:0;z-index:20;
+  background:var(--surface-1);
+  border-bottom:1px solid var(--border);
+  padding:calc(10px + env(safe-area-inset-top)) 16px 10px;
+  display:flex;align-items:center;gap:10px;
+}
+header.top h1{font-size:19px;margin:0;font-weight:700;letter-spacing:-.2px;flex:1}
+header.top .sub{display:block;font-size:12.5px;color:var(--muted);font-weight:500}
+.iconbtn{
+  background:transparent;border:1px solid var(--border);border-radius:10px;
+  width:40px;height:40px;display:grid;place-items:center;cursor:pointer;font-size:18px;
+}
+main{padding:16px 16px 24px}
+.view{display:none}
+.view.active{display:block;animation:fade .18s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* ============ cards ============ */
+.card{
+  background:var(--surface-1);border:1px solid var(--border);
+  border-radius:16px;padding:16px;margin-bottom:14px;
+}
+.card h2{font-size:15px;margin:0 0 2px;font-weight:700}
+.card .hint{font-size:13px;color:var(--muted);margin:0 0 12px}
+
+/* hero */
+.hero{text-align:center;padding:22px 16px 18px;overflow-wrap:anywhere}
+.hero .lbl{font-size:14px;color:var(--text-secondary);margin:0 0 4px;font-weight:600}
+.hero .val{font-size:clamp(34px,13vw,56px);font-weight:800;line-height:1.05;letter-spacing:-2px;color:var(--series-1)}
+.hero .unit{font-size:19px;font-weight:600;color:var(--text-secondary);margin-left:6px;letter-spacing:0}
+.hero .meta{font-size:13.5px;color:var(--muted);margin-top:8px}
+.delta{font-size:14px;font-weight:700;margin-top:6px}
+.delta.up{color:var(--good-text)}
+.delta.down{color:var(--critical)}
+.delta.flat{color:var(--muted)}
+
+.hero.elec .val{color:var(--elec-ink)}
+.tile .v.fuel{color:var(--fuel-ink)}
+.tile .v.elec{color:var(--elec-ink)}
+.btn.elecbtn{background:var(--elec-ink)}
+.dot{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:8px;vertical-align:-1px}
+.dot.fuel{background:var(--series-1)}
+.dot.elec{background:var(--elec)}
+.costcard .costrow{display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--grid);font-size:15px}
+.costcard .costrow .k{font-weight:650;color:var(--text-secondary)}
+.costcard .costrow b{font-weight:750;font-size:19px;font-variant-numeric:tabular-nums;
+  white-space:nowrap;text-align:right}
+.costcard .costrow.grand{border-bottom:0;padding-top:12px;border-top:2px solid var(--axis);margin-top:3px}
+.costcard .costrow.grand .k{color:var(--text-primary);font-weight:750}
+.costcard .costrow.grand b{font-size:26px;font-weight:800}
+.splitbar{display:flex;height:12px;border-radius:99px;overflow:hidden;margin-top:14px;background:var(--grid)}
+.splitbar i{display:block;height:100%}
+.splitbar i.fuel{background:var(--series-1)}
+.splitbar i.elec{background:var(--elec)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.tile{background:var(--surface-1);border:1px solid var(--border);border-radius:14px;padding:13px 14px}
+.tile .t{font-size:12.5px;color:var(--muted);font-weight:600;margin-bottom:3px}
+.tile .v{font-size:clamp(17px,5.6vw,23px);font-weight:750;letter-spacing:-.5px;
+  overflow-wrap:anywhere;line-height:1.25}
+.tile .v small{font-size:13px;font-weight:600;color:var(--text-secondary);margin-left:3px;letter-spacing:0}
+
+/* ============ buttons ============ */
+.btn{
+  display:block;width:100%;border:0;border-radius:14px;padding:16px;
+  font-size:18px;font-weight:700;cursor:pointer;background:var(--series-1);color:#fff;
+}
+.btn:active{opacity:.85}
+.btn.ghost{background:transparent;color:var(--text-primary);border:1px solid var(--border);font-size:16px;padding:13px}
+.btn.danger{background:transparent;color:var(--critical);border:1px solid var(--critical);font-size:16px;padding:13px}
+.btn.small{padding:11px;font-size:15px;border-radius:11px}
+.btnrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* ============ form ============ */
+.field{margin-bottom:16px}
+.field label{display:block;font-size:14.5px;font-weight:650;margin-bottom:6px}
+.field .help{font-size:12.5px;color:var(--muted);font-weight:500;margin-top:5px}
+.field input,.field select,.field textarea{
+  width:100%;padding:14px;border-radius:12px;border:1.5px solid var(--border);
+  background:var(--plane);font-size:18px;font-weight:600;
+}
+.field input:focus,.field select:focus,.field textarea:focus{
+  outline:none;border-color:var(--series-1);background:var(--surface-1);
+}
+.field input.calc{background:var(--accent-soft);border-style:dashed;border-color:var(--series-1)}
+.field textarea{font-size:16px;font-weight:500;min-height:70px;resize:vertical}
+.inline2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.suffix{position:relative}
+.suffix input{padding-right:56px}
+.suffix .u{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--muted);font-weight:600;pointer-events:none}
+.check{display:flex;align-items:flex-start;gap:11px;padding:13px;border:1.5px solid var(--border);border-radius:12px;background:var(--plane);cursor:pointer}
+.check input{width:22px;height:22px;margin:1px 0 0;flex:0 0 auto}
+.check span{font-size:15px;font-weight:600}
+.check span small{display:block;font-weight:500;font-size:12.5px;color:var(--muted);margin-top:2px}
+details.more{border:1px solid var(--border);border-radius:12px;padding:0;margin-bottom:16px;background:var(--plane)}
+details.more>summary{padding:14px;font-size:15px;font-weight:650;cursor:pointer;list-style:none;display:flex;justify-content:space-between}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary::after{content:"▾";color:var(--muted)}
+details.more[open]>summary::after{content:"▴"}
+details.more .inner{padding:0 14px 6px}
+
+/* live preview */
+.preview{border:1px solid var(--border);border-radius:14px;background:var(--accent-soft);padding:14px;margin-bottom:16px}
+.preview .row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;font-size:15px}
+.preview .row b{font-size:19px;font-weight:750;font-variant-numeric:tabular-nums}
+.preview .row.hl b{color:var(--series-1);font-size:24px}
+.preview.elecprev{background:var(--elec-soft)}
+.preview.elecprev .row.hl b{color:var(--elec-ink)}
+.gauge .bar{position:relative}
+.preview .lbl{color:var(--text-secondary);font-weight:600}
+
+/* gauge */
+.gauge{margin-top:10px}
+.gauge .bar{height:12px;border-radius:99px;background:var(--grid);overflow:hidden}
+.gauge .fill{height:100%;background:var(--series-1);border-radius:99px;transition:width .25s ease}
+.gauge .lbl{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-top:5px;font-weight:600}
+
+.alert{border-radius:12px;padding:12px 14px;font-size:14.5px;font-weight:600;margin-bottom:14px;display:flex;gap:9px;align-items:flex-start}
+.alert.warn{background:rgba(250,178,25,.16);color:var(--text-primary);border:1px solid var(--warning)}
+.alert.bad{background:rgba(208,59,59,.14);color:var(--text-primary);border:1px solid var(--critical)}
+.alert.info{background:var(--accent-soft);border:1px solid var(--border)}
+
+/* ============ history ============ */
+.entry{
+  background:var(--surface-1);border:1px solid var(--border);border-radius:14px;
+  padding:14px;margin-bottom:10px;
+}
+.entry .hd{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:9px}
+.entry .date{font-size:15.5px;font-weight:750}
+.entry .station{font-size:12.5px;color:var(--muted);font-weight:600;margin-top:1px}
+.entry .kml{font-size:22px;font-weight:800;color:var(--series-1);white-space:nowrap;font-variant-numeric:tabular-nums}
+.entry .kml small{font-size:11.5px;color:var(--muted);font-weight:600;display:block;text-align:right;margin-top:-3px}
+.entry .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;border-top:1px solid var(--border);padding-top:9px}
+.entry .grid div{font-size:12.5px;color:var(--muted);font-weight:600}
+.entry .grid div b{display:block;font-size:16px;color:var(--text-primary);font-weight:700;font-variant-numeric:tabular-nums}
+.entry .note{font-size:13.5px;color:var(--text-secondary);margin-top:9px;padding-top:9px;border-top:1px solid var(--border);white-space:pre-wrap}
+.entry .acts{display:flex;gap:8px;margin-top:10px}
+.entry .acts button{flex:1;background:transparent;border:1px solid var(--border);border-radius:10px;padding:9px;font-size:14px;font-weight:650;cursor:pointer}
+.entry .acts button.del{color:var(--critical);border-color:var(--border)}
+
+.empty{text-align:center;padding:44px 20px;color:var(--muted)}
+.empty .big{font-size:46px;margin-bottom:10px}
+.empty p{font-size:15px;margin:0 0 6px;font-weight:600;color:var(--text-secondary)}
+.empty small{font-size:13.5px}
+
+/* ============ charts ============ */
+.chartwrap{position:relative;margin-top:4px}
+.chartwrap svg{display:block;width:100%;height:auto;overflow:visible}
+.tt{
+  position:absolute;pointer-events:none;opacity:0;transition:opacity .12s;
+  background:var(--surface-1);border:1px solid var(--border);border-radius:10px;
+  padding:8px 11px;font-size:13px;font-weight:600;box-shadow:0 6px 20px rgba(0,0,0,.14);
+  white-space:nowrap;z-index:5;transform:translate(-50%,-115%);
+}
+.tt .t{color:var(--muted);font-size:11.5px;font-weight:600;display:block}
+.tt .v{font-size:16px;font-weight:750}
+.seg{display:flex;gap:6px;background:var(--plane);border:1px solid var(--border);border-radius:11px;padding:4px;margin-bottom:14px}
+.seg button{flex:1;border:0;background:transparent;border-radius:8px;padding:9px 4px;font-size:14px;font-weight:650;cursor:pointer;color:var(--text-secondary)}
+.seg button[aria-pressed="true"]{background:var(--surface-1);color:var(--text-primary);box-shadow:0 1px 3px rgba(0,0,0,.09)}
+
+table.tbl{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+table.tbl th{text-align:right;font-size:12px;color:var(--muted);font-weight:650;padding:7px 5px;border-bottom:1px solid var(--axis)}
+table.tbl th:first-child,table.tbl td:first-child{text-align:left}
+table.tbl td{text-align:right;padding:8px 5px;border-bottom:1px solid var(--grid);font-weight:600}
+
+/* ============ tabbar ============ */
+nav.tabbar{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;
+  background:var(--surface-1);border-top:1px solid var(--border);
+  display:flex;padding-bottom:env(safe-area-inset-bottom);
+}
+nav.tabbar button{
+  flex:1;border:0;background:transparent;padding:9px 2px 8px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-size:11.5px;font-weight:650;color:var(--muted);
+}
+nav.tabbar button .ic{font-size:21px;line-height:1}
+nav.tabbar button[aria-current="page"]{color:var(--series-1)}
+.fabspace{height:6px}
+
+.toast{
+  position:fixed;left:50%;transform:translateX(-50%);bottom:calc(90px + env(safe-area-inset-bottom));
+  background:var(--text-primary);color:var(--surface-1);padding:12px 20px;border-radius:99px;
+  font-size:15px;font-weight:650;z-index:60;opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-6px)}
+
+.kv{display:flex;justify-content:space-between;padding:9px 0;font-size:14.5px;border-bottom:1px solid var(--grid)}
+.kv:last-child{border-bottom:0}
+
+/* ============ modal ============ */
+.modal[hidden]{display:none !important}
+.modal{
+  position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.55);
+  display:flex;align-items:flex-end;justify-content:center;padding:0;
+  animation:fadein .16s ease;
+}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+.modal .sheet{
+  background:var(--surface-1);width:100%;max-width:640px;
+  border-radius:20px 20px 0 0;padding:22px 18px calc(22px + env(safe-area-inset-bottom));
+  max-height:92vh;overflow-y:auto;animation:slideup .22s cubic-bezier(.2,.8,.3,1);
+}
+@keyframes slideup{from{transform:translateY(24px)}to{transform:none}}
+.modal .sheeticon{font-size:38px;text-align:center;line-height:1}
+.modal h3{font-size:20px;font-weight:750;margin:8px 0 6px;text-align:center}
+.modal p{font-size:15px;color:var(--text-secondary);margin:0 0 14px;text-align:center;font-weight:600}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ============ history tables ============ */
+.htable{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.htable table{min-width:430px}
+.scrollhint{font-size:12px;color:var(--muted);font-weight:600;margin:9px 0 0;line-height:1.45}
+table.tbl tfoot td{border-top:2px solid var(--axis);border-bottom:0;padding-top:10px}
+/* month grouping inside the stats detail table — sized to fit a phone unscrolled */
+table.tbl.grouped{font-size:12.5px;width:100%}
+table.tbl.grouped th{font-size:10.5px;padding:5px 3px;line-height:1.25}
+table.tbl.grouped td{padding:8px 3px}
+table.tbl.grouped th:first-child,table.tbl.grouped td:first-child{padding-left:0;white-space:nowrap}
+/* a colspan note cell is also :first-child — it must wrap, or the page scrolls */
+table.tbl tr.noterow td,table.tbl tr.mhead td{white-space:normal !important;
+  overflow-wrap:anywhere;word-break:break-word}
+table.tbl.grouped th:last-child,table.tbl.grouped td:last-child{padding-right:0}
+table.tbl.grouped tr.mhead td{
+  text-align:left;font-weight:800;font-size:13px;padding:12px 6px 6px;
+  color:var(--text-primary);border-bottom:1.5px solid var(--axis);
+}
+table.tbl.grouped tr.mhead:first-child td{padding-top:4px}
+table.tbl.grouped tr.msum td{
+  font-weight:800;background:var(--accent-soft);border-bottom:0;
+  padding-top:9px;padding-bottom:9px;
+}
+table.tbl.grouped tr.msum td:first-child{border-radius:8px 0 0 8px;padding-left:8px;font-size:12px}
+table.tbl.grouped tr.msum td:last-child{border-radius:0 8px 8px 0;padding-right:8px}
+table.tbl.grouped tr.msum+tr.mhead td{padding-top:18px}
+/* the history table is both dense and grouped — keep its own column sizing */
+table.tbl.dense.grouped{font-size:12.5px;border-collapse:separate;border-spacing:0}
+table.tbl.dense.grouped tr.noterow td{padding-left:6px}
+
+/* ---- warm month bands (history table) — deliberately NOT the blue used in stats,
+       so the two tables never read as the same thing ---- */
+table.tbl.warm tr.mhead td{
+  background:var(--band-strong);color:var(--band-ink);
+  font-size:13px;font-weight:800;letter-spacing:.1px;
+  padding:9px 10px;border:0;border-radius:9px 9px 0 0;
+  border-left:4px solid var(--band-line);
+}
+table.tbl.warm tr.msum td{
+  background:var(--band-soft);border:0;border-top:1.5px solid var(--band-line);
+  font-weight:800;padding:10px 3px;border-radius:0;
+}
+table.tbl.warm tr.msum td:first-child{
+  border-left:4px solid var(--band-line);border-radius:0 0 0 9px;
+  padding-left:10px;font-size:12px;color:var(--band-ink);
+}
+table.tbl.warm tr.msum td:last-child{border-radius:0 0 9px 0;padding-right:8px}
+/* body rows sit inside the capsule, held by the same left rule */
+table.tbl.warm tbody tr:not(.mhead):not(.msum) td:first-child{
+  border-left:4px solid var(--band-line);padding-left:10px;
+}
+table.tbl.warm tbody tr:not(.mhead):not(.msum) td{border-bottom:1px solid var(--grid)}
+table.tbl.warm tr.msum+tr.mhead td{padding-top:9px}
+table.tbl.warm tr.msum td.spacer{background:transparent;border:0}
+tr.gap td{height:16px;background:transparent;border:0;padding:0}
+/* dense = fits a phone with no sideways scrolling */
+table.tbl.dense{font-size:12.5px;table-layout:fixed;width:100%}
+/* fixed layout clips rather than reflows, so cells must shrink their own text */
+table.tbl.dense td,table.tbl.dense th{overflow:hidden;text-overflow:ellipsis}
+table.tbl.dense td{white-space:nowrap}
+table.tbl.dense tr.noterow td{white-space:normal;overflow:visible;text-overflow:clip}
+
+table.tbl.dense th{font-size:10.5px;padding:5px 2px;line-height:1.25}
+table.tbl.dense td{padding:8px 2px}
+table.tbl.dense th:first-child,table.tbl.dense td:first-child{width:27%;padding-left:0}
+/* explicit widths so multi-year totals can never collide */
+table.tbl.dense th:nth-child(2),table.tbl.dense td:nth-child(2){width:15%}
+table.tbl.dense th:nth-child(3),table.tbl.dense td:nth-child(3){width:15%}
+table.tbl.dense th:nth-child(4),table.tbl.dense td:nth-child(4){width:13.5%}
+table.tbl.dense th:nth-child(5),table.tbl.dense td:nth-child(5){width:16%}
+table.tbl.dense th:nth-child(6),table.tbl.dense td:nth-child(6){width:13.5%}
+table.tbl.dense th:last-child,table.tbl.dense td:last-child{padding-right:0}
+table.tbl.dense td.st .d{display:block;font-weight:750;font-size:13px;white-space:nowrap}
+table.tbl.dense.elecband td.st .d{white-space:normal;line-height:1.15}
+table.tbl.dense td.st .s{display:block;font-weight:600;font-size:11px;color:var(--muted);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+table.tbl.dense tr.nomeasure td{color:var(--muted)}
+button.addtrip{
+  border:1px dashed var(--series-1);background:transparent;color:var(--series-1);
+  border-radius:8px;padding:5px 3px;font-size:10.5px;font-weight:700;cursor:pointer;
+  white-space:nowrap;width:100%;max-width:100%;box-sizing:border-box;
+}
+button.addtrip:active{background:var(--accent-soft)}
+table.tbl.dense tr.noterow td{border-bottom:1px solid var(--grid);padding:0 0 8px;text-align:left;
+  font-size:11.5px;color:var(--text-secondary);font-weight:500}
+.kv .k{color:var(--text-secondary);font-weight:600}
+.kv .v{font-weight:700;font-variant-numeric:tabular-nums}
+@media print{nav.tabbar{display:none}}
+
+/* electricity month bands reuse the warm-band geometry with a green ink */
+table.tbl.elecband tr.mhead td{background:var(--elec-strong);color:var(--elec-ink);border-left-color:var(--elec-line)}
+table.tbl.elecband tr.msum td{background:var(--elec-soft);border-top-color:var(--elec-line)}
+table.tbl.elecband tr.msum td:first-child{border-left-color:var(--elec-line);color:var(--elec-ink)}
+table.tbl.elecband tbody tr:not(.mhead):not(.msum) td:first-child{border-left-color:var(--elec-line)}
+button.addtrip.elec{border-color:var(--elec-ink);color:var(--elec-ink)}
+/* the charge table carries an extra SOC column — give it its own widths */
+table.tbl.dense.elecband th:first-child,table.tbl.dense.elecband td:first-child{width:28%}
+table.tbl.dense.elecband th:nth-child(2),table.tbl.dense.elecband td:nth-child(2){width:12%}
+table.tbl.dense.elecband th:nth-child(3),table.tbl.dense.elecband td:nth-child(3){width:15%}
+table.tbl.dense.elecband th:nth-child(4),table.tbl.dense.elecband td:nth-child(4){width:17%}
+table.tbl.dense.elecband th:nth-child(5),table.tbl.dense.elecband td:nth-child(5){width:15%}
+table.tbl.dense.elecband th:nth-child(6),table.tbl.dense.elecband td:nth-child(6){width:13%}
+table.tbl.dense.elecband .estmark{display:block;font-size:9.5px;font-weight:600;color:var(--muted);line-height:1.1;margin-top:1px}
+table.tbl.dense.elecband td.soc{font-size:10.5px;font-weight:700;white-space:nowrap}
+table.tbl.dense.elecband td.soc .gain{display:none}
+@media (max-width:359px){
+  table.tbl.dense.elecband td.soc .full{display:none}
+  table.tbl.dense.elecband td.soc .gain{display:inline}
+}
+table.tbl.dense.elecband td.st .d{font-size:12.5px}
+table.tbl.dense.elecband td.st .s{font-size:10.5px}
+/* step-by-step arithmetic, shown rather than hidden */
+.calcbox{background:var(--plane);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:16px}
+.calcbox .cl{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:4px 0;font-size:13.5px}
+.calcbox .cl .op{color:var(--muted);font-weight:700;width:14px;flex:0 0 14px;text-align:center}
+.calcbox .cl .lb{flex:1;color:var(--text-secondary);font-weight:600}
+.calcbox .cl .vl{font-weight:750;font-variant-numeric:tabular-nums;white-space:nowrap}
+.calcbox .cl.res{border-top:1.5px solid var(--axis);margin-top:6px;padding-top:9px}
+.calcbox .cl.res .lb{color:var(--text-primary);font-weight:750}
+.calcbox .cl.res .vl{font-size:18px;font-weight:800;color:var(--elec-ink)}
+.calcbox .note{font-size:12px;color:var(--muted);font-weight:600;margin:8px 0 0;line-height:1.5}
+.calcbox table{width:100%;font-size:12.5px;font-variant-numeric:tabular-nums;border-collapse:collapse;margin:4px 0 8px}
+.calcbox table td{padding:4px 2px;border-bottom:1px solid var(--grid)}
+.calcbox table td:last-child{text-align:right;font-weight:700}
+.calcbox table tr:last-child td{border-bottom:0}
+details.howto{margin-bottom:10px;background:var(--plane)}
+details.howto>summary{font-size:14.5px;padding:13px 14px}
+details.howto .inner{padding:0 14px 14px}
+ol.howsteps{counter-reset:hs;list-style:none;margin:6px 0 12px;padding:0}
+ol.howsteps li{counter-increment:hs;position:relative;padding:9px 0 9px 38px;
+  font-size:14.5px;line-height:1.55;border-bottom:1px solid var(--grid)}
+ol.howsteps li:last-child{border-bottom:0}
+ol.howsteps li::before{content:counter(hs);position:absolute;left:0;top:9px;
+  width:26px;height:26px;line-height:26px;text-align:center;border-radius:50%;
+  background:var(--series-1);color:#fff;font-weight:800;font-size:13px}
+ol.howsteps.green li::before{background:var(--elec-ink)}
+#howtoCard h2{font-size:17px}
+.updatebar{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));
+  z-index:90;background:var(--series-1);color:#fff;border-radius:14px;padding:12px 14px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  font-size:14px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.22)}
+.updatebar button{background:#fff;color:var(--series-1);border:0;border-radius:9px;
+  padding:8px 14px;font-size:14px;font-weight:800;cursor:pointer}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
+.chip{border:1px solid var(--border);background:var(--surface-1);border-radius:99px;
+  padding:7px 11px;font-size:12.5px;font-weight:650;cursor:pointer;color:var(--text-secondary)}
+.chip.on{border-color:var(--elec-ink);color:var(--elec-ink);background:var(--elec-soft)}
+.legend{display:flex;gap:16px;justify-content:center;margin-top:12px;font-size:13px;font-weight:650;color:var(--text-secondary)}
+.legend span{display:inline-flex;align-items:center}
+#addSeg button[aria-pressed="true"][data-kind="elec"],
+#histKind button[aria-pressed="true"][data-kind="elec"],
+#statKind button[aria-pressed="true"][data-kind="elec"],
+#placeSeg button[aria-pressed="true"]{color:var(--elec-ink)}
+
+/* ============================================================
+   Responsive table sizing — LAST in the sheet on purpose, so it
+   outranks the per-table font rules above. Bold summary rows are
+   wider than body rows at the same size, so they get their own step.
+   ============================================================ */
+table.tbl.grouped tr.msum td,
+table.tbl td[style*="font-weight:800"],
+table.tbl tfoot td{font-size:.92em;letter-spacing:-.2px}
+table.tbl.dense td,table.tbl.dense th{padding-left:1px;padding-right:1px}
+/* the summary label may wrap; it is a label, not a figure */
+table.tbl.grouped tr.msum td:first-child{white-space:normal;line-height:1.2}
+/* five-digit monthly kWh/baht totals need a wider pair in the charge table */
+table.tbl.dense.elecband th:first-child,table.tbl.dense.elecband td:first-child{width:26%}
+table.tbl.dense.elecband th:nth-child(2),table.tbl.dense.elecband td:nth-child(2){width:13%}
+table.tbl.dense.elecband th:nth-child(3),table.tbl.dense.elecband td:nth-child(3){width:13%}
+table.tbl.dense.elecband th:nth-child(4),table.tbl.dense.elecband td:nth-child(4){width:18%}
+table.tbl.dense.elecband th:nth-child(5),table.tbl.dense.elecband td:nth-child(5){width:17%}
+table.tbl.dense.elecband th:nth-child(6),table.tbl.dense.elecband td:nth-child(6){width:14%}
+/* the summary row carries the widest figures — give it a size of its own */
+table.tbl.dense.elecband tr.msum td,table.tbl.dense.elecband tfoot td{font-size:.86em}
+table.tbl.dense.warm tr.msum td,table.tbl.dense.warm tfoot td{font-size:.88em}
+
+@media (max-width:409px){
+  table.tbl.dense,table.tbl.dense.grouped,table.tbl.dense.elecband{font-size:11.5px}
+  table.tbl.dense th{font-size:9.5px;padding:5px 1px;line-height:1.2}
+  table.tbl.dense td{padding:8px 1px}
+  table.tbl.dense td.st .d{font-size:11.5px}
+  table.tbl.dense td.st .s{font-size:9.5px}
+  table.tbl.dense.elecband td.soc{font-size:9.5px}
+  table.tbl.grouped{font-size:11.5px}
+}
+@media (max-width:359px){
+  table.tbl.dense,table.tbl.dense.grouped,table.tbl.dense.elecband{font-size:9.8px}
+  table.tbl.dense th{font-size:8.2px;padding:4px 0;line-height:1.18}
+  table.tbl.dense td{padding:7px 0}
+  table.tbl.dense th:first-child,table.tbl.dense td:first-child{width:25%;padding-left:6px}
+  table.tbl.dense.elecband th:first-child,table.tbl.dense.elecband td:first-child{width:26%;padding-left:6px}
+  table.tbl.dense td.st .d{font-size:9.8px;white-space:normal;line-height:1.15}
+  table.tbl.dense td.st .s{font-size:8.4px}
+  table.tbl.dense.elecband td.soc{font-size:8.2px}
+  table.tbl.grouped{font-size:9.8px}
+  table.tbl.grouped th{font-size:8.4px;padding:4px 1px}
+  table.tbl.grouped td{padding:6px 1px}
+  button.addtrip{font-size:8.4px;padding:4px 1px}
+  .card{padding:12px}
+  main{padding:12px 10px 24px}
+  .calcbox .cl{font-size:12px}
+}
+
+/* ============================================================
+   Car dashboard — home screen only. Deliberately cheap to paint:
+   plain SVG paths, two static linear gradients, no filters, no
+   backdrop-filter, and the only transition is on gauge width.
+   ============================================================ */
+:root{
+  --car-hi:#ffffff; --car-mid:#f4f6f9; --car-lo:#ccd3dd; --car-line:#7c8794;
+  --car-glass-a:#c3d3e6; --car-glass-b:#8ea3bb;
+  --car-tyre:#23272d; --car-rim:#c9d0d8; --car-shadow:rgba(11,11,11,.15);
+  --car-lamp-f:#ffdf8a; --car-lamp-r:#ef6a58;
+  --dash-a:#eef4fd; --dash-b:#e2ecfa; --dash-line:rgba(33,90,168,.16);
+}
+:root[data-theme="dark"]{
+  --car-hi:#fbfcfd; --car-mid:#e6eaef; --car-lo:#9aa4b1; --car-line:#5f6874;
+  --car-glass-a:#43536a; --car-glass-b:#2a3746;
+  --car-tyre:#0d1013; --car-rim:#8d97a3; --car-shadow:rgba(0,0,0,.55);
+  --car-lamp-f:#ffe08a; --car-lamp-r:#e2503c;
+  --dash-a:#12233a; --dash-b:#0d1826; --dash-line:rgba(127,176,232,.18);
+}
+.dash{
+  background:linear-gradient(160deg,var(--dash-a),var(--dash-b));
+  border:1px solid var(--dash-line);border-radius:20px;
+  padding:16px 16px 14px;margin-bottom:14px;
+}
+.dashtop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.dashcar{font-size:16px;font-weight:800;letter-spacing:-.2px}
+.dashsub{font-size:11.5px;font-weight:650;color:var(--muted);margin-top:1px}
+.dashbadge{
+  font-size:10.5px;font-weight:800;letter-spacing:.6px;padding:5px 9px;border-radius:8px;
+  background:var(--series-1);color:#fff;white-space:nowrap;
+}
+.carart{display:block;width:100%;height:auto;margin:6px 0 12px}
+.carart .wheel circle{transform-box:fill-box}
+.badgepill{font-size:11px;font-weight:800}
+
+.lvl{margin-bottom:10px}
+.lvlhd{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;margin-bottom:5px}
+.lvlhd .nm{font-weight:700;color:var(--text-secondary)}
+.lvlhd b{font-weight:800;font-size:15px;font-variant-numeric:tabular-nums}
+.lvlbar{height:10px;border-radius:99px;background:var(--grid);overflow:hidden}
+.lvlbar i{display:block;height:100%;border-radius:99px;background:var(--series-1);
+  width:0;transition:width .35s cubic-bezier(.3,.8,.4,1)}
+.lvlbar.elec i{background:var(--elec)}
+.lvlbar i.low{background:var(--critical)}
+.lvlnote{font-size:12px;font-weight:650;color:var(--muted);text-align:center;margin:10px 0 0;line-height:1.5}
+
+details.tripnow{margin-top:10px;border-top:1px solid var(--dash-line);padding-top:4px}
+details.tripnow>summary{list-style:none;cursor:pointer;font-size:12.5px;font-weight:700;
+  color:var(--series-1);padding:8px 0 4px;text-align:center}
+details.tripnow>summary::-webkit-details-marker{display:none}
+details.tripnow .inner{padding-top:6px}
+details.tripnow .field label{font-size:12.5px}
+details.tripnow .field input{padding:11px;font-size:16px}
+
+/* softer tab bar with a pill indicator */
+nav.tabbar button[aria-current="page"] .ic{
+  background:var(--accent-soft);border-radius:10px;padding:2px 10px;
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header class="top">
+  <div style="flex:1">
+    <h1 id="hdTitle">บันทึกน้ำมัน</h1>
+    <span class="sub" id="hdSub">BYD Seal 5 DM-i Premium</span>
+  </div>
+  <button class="iconbtn" id="themeBtn" title="สลับโหมดสว่าง/มืด" aria-label="สลับโหมดสว่าง/มืด">🌙</button>
+</header>
+
+<main>
+
+<!-- ============ HOME ============ -->
+<section class="view active" id="view-home">
+  <div class="dash">
+    <div class="dashtop">
+      <div>
+        <div class="dashcar" id="dashCar">BYD Seal 5 DM-i</div>
+        <div class="dashsub" id="dashSub">Super Hybrid · Premium · สีขาว</div>
+      </div>
+      <div class="dashbadge" id="dashBadge">PHEV</div>
+    </div>
+
+    <svg class="carart" viewBox="0 0 420 152" role="img" aria-label="ภาพรถซีดานด้านข้าง แสดงระดับน้ำมันและแบตเตอรี่">
+      <defs>
+        <linearGradient id="bodyGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="var(--car-hi)"/>
+          <stop offset=".52" stop-color="var(--car-mid)"/>
+          <stop offset="1" stop-color="var(--car-lo)"/>
+        </linearGradient>
+        <linearGradient id="glassGrad" x1="0" y1="0" x2=".8" y2="1">
+          <stop offset="0" stop-color="var(--car-glass-a)"/>
+          <stop offset="1" stop-color="var(--car-glass-b)"/>
+        </linearGradient>
+      </defs>
+
+      <ellipse cx="212" cy="140" rx="176" ry="6" fill="var(--car-shadow)"/>
+
+      <!-- fastback silhouette: long hood, raked screen, roof peak mid-car -->
+      <path d="M26 110 C22 90 31 79 56 75 L96 69
+               C118 47 150 33 192 31 L238 31
+               C282 33 320 47 348 66 L384 78
+               C400 84 404 96 400 112 L376 116 L50 116 Z"
+            fill="url(#bodyGrad)"/>
+      <path d="M26 110 C22 90 31 79 56 75 L96 69
+               C118 47 150 33 192 31 L238 31
+               C282 33 320 47 348 66 L384 78
+               C400 84 404 96 400 112"
+            fill="none" stroke="var(--car-line)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+
+      <path d="M116 68 C130 50 154 41 188 40 L206 40 L206 66 Z" fill="url(#glassGrad)"/>
+      <path d="M214 40 L236 40 C270 42 300 53 318 66 L214 67 Z" fill="url(#glassGrad)"/>
+      <path d="M210 39 L210 67" stroke="var(--car-line)" stroke-width="1.6"/>
+      <path d="M116 68 C130 50 154 41 188 40 L206 40 L206 66 Z M214 40 L236 40
+               C270 42 300 53 318 66 L214 67 Z"
+            fill="none" stroke="var(--car-line)" stroke-width="1.4" opacity=".8"/>
+
+      <!-- shoulder line and door cut -->
+      <path d="M64 93 L150 90 M262 90 L360 94" stroke="var(--car-line)" stroke-width="1.4"
+            stroke-linecap="round" opacity=".55"/>
+      <path d="M212 68 L212 112" stroke="var(--car-line)" stroke-width="1.3" opacity=".45"/>
+      <rect x="28" y="86" width="18" height="7" rx="3.5" fill="var(--car-lamp-f)"
+            stroke="var(--car-line)" stroke-width=".8"/>
+      <rect x="382" y="86" width="17" height="7" rx="3.5" fill="var(--car-lamp-r)"
+            stroke="var(--car-line)" stroke-width=".8"/>
+
+      <g><circle cx="122" cy="114" r="25" fill="var(--car-tyre)"/>
+        <circle cx="122" cy="114" r="13" fill="var(--car-rim)" stroke="var(--car-line)" stroke-width="1"/>
+        <circle cx="122" cy="114" r="4.5" fill="var(--car-tyre)"/></g>
+      <g><circle cx="312" cy="114" r="25" fill="var(--car-tyre)"/>
+        <circle cx="312" cy="114" r="13" fill="var(--car-rim)" stroke="var(--car-line)" stroke-width="1"/>
+        <circle cx="312" cy="114" r="4.5" fill="var(--car-tyre)"/></g>
+
+      <g id="carBadges"></g>
+    </svg>
+
+    <div class="lvl" id="lvlFuel">
+      <div class="lvlhd"><span class="nm"><i class="dot fuel"></i>น้ำมันคงเหลือ</span><b id="lvlFuelV">–</b></div>
+      <div class="lvlbar"><i id="lvlFuelBar" style="width:0%"></i></div>
+    </div>
+    <div class="lvl" id="lvlBatt">
+      <div class="lvlhd"><span class="nm"><i class="dot elec"></i>แบตเตอรี่คงเหลือ</span><b id="lvlBattV">–</b></div>
+      <div class="lvlbar elec"><i id="lvlBattBar" style="width:0%"></i></div>
+    </div>
+
+    <div class="lvlnote" id="lvlNote"></div>
+
+    <details class="tripnow" id="tripNow">
+      <summary>เช็กระดับตอนนี้ — กรอกเลข TRIP จากหน้าจอรถ</summary>
+      <div class="inner">
+        <div class="inline2">
+          <div class="field" style="margin-bottom:8px">
+            <label for="nowA">TRIP A ตอนนี้</label>
+            <div class="suffix"><input type="number" id="nowA" inputmode="decimal" step="1" min="0" placeholder="กม."><span class="u">กม.</span></div>
+          </div>
+          <div class="field" style="margin-bottom:8px">
+            <label for="nowB">TRIP B ตอนนี้</label>
+            <div class="suffix"><input type="number" id="nowB" inputmode="decimal" step="1" min="0" placeholder="กม."><span class="u">กม.</span></div>
+          </div>
+        </div>
+        <p class="help" style="margin:2px 0 10px">เป็นค่า<b>ประมาณ</b>จากสถิติการใช้จริง ไม่ใช่ตัวเลขจากเซนเซอร์รถ</p>
+        <button class="btn small ghost" id="clearNow">ล้างค่า</button>
+      </div>
+    </details>
+  </div>
+  <div class="card hero">
+    <p class="lbl">อัตราสิ้นเปลืองครั้งล่าสุด</p>
+    <div><span class="val" id="hLast">–</span><span class="unit">กม./ลิตร</span></div>
+    <div class="delta" id="hDelta"></div>
+    <div class="meta" id="hMeta">ยังไม่มีข้อมูล</div>
+  </div>
+
+  <div class="card hero elec" id="heroElec">
+    <p class="lbl">ชาร์จไฟครั้งล่าสุด</p>
+    <div><span class="val" id="eLast">–</span><span class="unit">กม./kWh</span></div>
+    <div class="delta" id="eDelta"></div>
+    <div class="meta" id="eMeta">ยังไม่มีข้อมูล</div>
+  </div>
+  <!-- hero cards keep their large type: this is the number the owner reads first -->
+
+  <div class="card costcard" id="costCard">
+    <h2>ต้นทุนต่อกิโลเมตร</h2>
+    <p class="hint">เฉลี่ยสะสมจากข้อมูลทั้งหมด</p>
+    <div class="costrow"><span class="k"><i class="dot fuel"></i>ค่าน้ำมัน</span><b id="cFuel">–</b></div>
+    <div class="costrow"><span class="k"><i class="dot elec"></i>ค่าไฟฟ้า</span><b id="cElec">–</b></div>
+    <div class="costrow grand"><span class="k">รวมทั้งสองอย่าง</span><b id="cAll">–</b></div>
+    <div class="splitbar" id="cSplit"></div>
+    <p class="hint" id="cSplitLbl" style="margin:8px 0 0;text-align:center"></p>
+    <div id="coverWarn"></div>
+  </div>
+
+  <div class="tiles">
+    <div class="tile"><div class="t">เฉลี่ย กม./ลิตร</div><div class="v fuel" id="hAvg">–<small>กม./ล.</small></div></div>
+    <div class="tile"><div class="t">เฉลี่ย กม./kWh</div><div class="v elec" id="eAvg">–<small>กม./kWh</small></div></div>
+    <div class="tile"><div class="t">ค่าน้ำมันเดือนนี้</div><div class="v" id="hMonth">–<small>บาท</small></div></div>
+    <div class="tile"><div class="t">ค่าไฟเดือนนี้</div><div class="v" id="eMonth">–<small>บาท</small></div></div>
+  </div>
+
+  <div class="btnrow" style="margin-bottom:14px">
+    <button class="btn" id="goAdd" style="font-size:16px;padding:15px 8px">⛽<br>เติมน้ำมัน</button>
+    <button class="btn elecbtn" id="goAddElec" style="font-size:16px;padding:15px 8px">🔌<br>ชาร์จไฟ</button>
+  </div>
+
+  <div class="card" id="homeMiniWrap" style="margin-top:14px;display:none">
+    <h2>แนวโน้ม 8 ครั้งล่าสุด</h2>
+    <p class="hint">กม./ลิตร ต่อการเติม 1 ครั้ง</p>
+    <div class="chartwrap" id="homeMini"></div>
+  </div>
+
+  <div class="card" id="homeTip">
+    <h2>วิธีใช้ (สั้น ๆ)</h2>
+    <p class="hint" style="margin-bottom:14px;line-height:1.7">
+      1. เติมน้ำมัน<b>เต็มถัง</b>ทุกครั้ง<br>
+      2. ก่อนออกจากปั๊ม จดตัวเลข <b>TRIP A</b> ที่หน้าจอรถ แล้วกดรีเซ็ต TRIP A เป็น 0<br>
+      3. เปิดเว็บนี้ กรอก TRIP A + จำนวนลิตร + ราคา แล้วกดบันทึก<br>
+      4. ระบบคำนวณ กม./ลิตร และค่าน้ำมันต่อกิโลเมตรให้ทันที
+    </p>
+    <details class="more" style="margin-bottom:0">
+      <summary>ทำไมไม่ต้องรู้ว่าเหลือน้ำมันในถังเท่าไหร่?</summary>
+      <div class="inner" style="padding-bottom:14px">
+        <p class="hint" style="line-height:1.7;margin:0">
+          เพราะเราวัดที่จุด <b>“เต็มถัง”</b> ทั้งสองครั้ง — ตอนเริ่มก็เต็ม ตอนจบก็เต็ม ระดับน้ำมันจึงกลับมาที่เดิมพอดี<br><br>
+          แปลว่า <b>น้ำมันที่เติมเข้าไปวันนี้ = น้ำมันที่ใช้หมดไปพอดี</b> ตั้งแต่เติมเต็มครั้งที่แล้ว ไม่ต้องเดาว่าระหว่างทางเหลือเท่าไหร่เลย<br><br>
+          สิ่งเดียวที่ต้องคู่กันคือ <b>ระยะทางในช่วงเดียวกันนั้น</b> ซึ่งก็คือเลข TRIP A ที่ถูกรีเซ็ตไว้ตั้งแต่การเติมครั้งก่อน<br><br>
+          ถ้าครั้งไหนไม่มีเลข TRIP A ที่ใช้ได้ (เช่น เผลอกดรีเซ็ตกลางทาง) ให้<b>เว้นช่อง TRIP A ว่างไว้</b> ระบบจะถามยืนยันแล้วเก็บเฉพาะค่าใช้จ่าย ส่วนการเติมครั้งถัดไปจะคำนวณได้ตามปกติ และยัง<b>กลับมาเติมเลขย้อนหลังได้</b>จากตารางประวัติ
+        </p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ============ ADD ============ -->
+<section class="view" id="view-add">
+  <div class="seg" id="addSeg">
+    <button data-kind="fuel" aria-pressed="true">⛽ น้ำมัน</button>
+    <button data-kind="elec" aria-pressed="false">🔌 ไฟฟ้า</button>
+  </div>
+
+<div id="addFuel">
+  <div id="editBanner"></div>
+
+  <div class="card">
+    <h2>ข้อมูลการเติม</h2>
+    <p class="hint">กรอกหลังเติมเต็มถัง แล้วรีเซ็ต TRIP A</p>
+
+    <div class="field">
+      <label for="fDate">วันที่เติม</label>
+      <input type="date" id="fDate">
+      <div class="help" id="fDateTh"></div>
+    </div>
+
+    <div id="firstHint"></div>
+
+    <div class="field" id="tripField">
+      <label for="fTrip">ระยะทาง TRIP A (กม.)</label>
+      <div class="suffix"><input type="number" id="fTrip" inputmode="decimal" step="0.1" min="0" placeholder="เช่น 720.5"><span class="u">กม.</span></div>
+      <div class="help">อ่านจากหน้าจอรถ <b>ก่อน</b>กดรีเซ็ต TRIP A เป็น 0</div>
+    </div>
+    <input type="hidden" id="fFirst">
+
+    <div class="field">
+      <label for="fLiters">เติมไปกี่ลิตร</label>
+      <div class="suffix"><input type="number" id="fLiters" inputmode="decimal" step="0.01" min="0" placeholder="เช่น 32.45"><span class="u">ลิตร</span></div>
+      <div class="gauge" id="gaugeWrap" style="display:none">
+        <div class="bar"><div class="fill" id="gaugeFill" style="width:0%"></div></div>
+        <div class="lbl"><span id="gaugeTxt">0 ลิตร</span><span>ถัง 45 ลิตร</span></div>
+      </div>
+    </div>
+
+    <div class="inline2">
+      <div class="field">
+        <label for="fPrice">ราคาน้ำมัน/ลิตร</label>
+        <div class="suffix"><input type="number" id="fPrice" inputmode="decimal" step="0.01" min="0" placeholder="เช่น 35.94"><span class="u">฿/ล.</span></div>
+      </div>
+      <div class="field">
+        <label for="fTotal">ยอดเงินรวม</label>
+        <div class="suffix"><input type="number" id="fTotal" inputmode="decimal" step="0.01" min="0" placeholder="เช่น 1,166"><span class="u">บาท</span></div>
+      </div>
+    </div>
+    <div class="alert info" style="font-weight:600;font-size:13.5px">
+      <span>💡</span><span>กรอกแค่ <b>2 ช่อง</b> จาก 3 ช่อง (ลิตร / ราคาต่อลิตร / ยอดเงินรวม) ระบบจะเติมช่องที่เหลือให้เอง — ช่องที่ระบบคำนวณจะเป็นกรอบเส้นประสีฟ้า</span>
+    </div>
+
+    <div class="field">
+      <label for="fStation">ปั๊ม / สถานที่</label>
+      <input list="stationList" id="fStation" placeholder="เช่น ปตท. สาขาบางนา">
+      <datalist id="stationList"></datalist>
+    </div>
+
+    <details class="more">
+      <summary>เพิ่มเติม (ไม่บังคับ)</summary>
+      <div class="inner">
+        <input type="hidden" id="fCarAvg">
+        <input type="hidden" id="fOdo">
+        <div class="field">
+          <label for="fNote">โน้ต</label>
+          <textarea id="fNote" placeholder="เช่น ขับทางไกลต่างจังหวัด / ไม่ได้ชาร์จไฟเลย / รถติดมาก / เปิดแอร์ตลอด"></textarea>
+          <div class="help">จดไว้ช่วยอธิบายทีหลังว่าทำไมถังนั้นกินน้ำมันมากหรือน้อยกว่าปกติ</div>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <div id="formAlerts"></div>
+
+  <div class="preview" id="preview">
+    <div class="row hl"><span class="lbl">อัตราสิ้นเปลือง</span><b id="pKml">–</b></div>
+    <div class="row"><span class="lbl">ค่าน้ำมันต่อกิโลเมตร</span><b id="pBahtKm">–</b></div>
+    <div class="row"><span class="lbl">ใช้ไป (ล./100 กม.)</span><b id="pL100">–</b></div>
+    <div class="row"><span class="lbl">ยอดเงินรวม</span><b id="pTotal">–</b></div>
+  </div>
+
+  <button class="btn" id="saveBtn">บันทึก</button>
+  <div style="height:10px"></div>
+  <button class="btn ghost" id="cancelBtn">ยกเลิก</button>
+</div>
+
+<!-- ---------- charge form ---------- -->
+<div id="addElec" hidden>
+  <div id="cEditBanner"></div>
+
+  <div class="card">
+    <h2>ข้อมูลการชาร์จ</h2>
+    <p class="hint">กรอกหลังชาร์จเสร็จ แล้วรีเซ็ต TRIP B</p>
+
+    <div class="field">
+      <label for="cDate">วันที่ชาร์จ</label>
+      <input type="date" id="cDate">
+      <div class="help" id="cDateTh"></div>
+    </div>
+
+    <div class="field">
+      <label>ชาร์จที่ไหน</label>
+      <div class="seg" id="placeSeg" style="margin-bottom:0">
+        <button type="button" data-place="home" aria-pressed="true">🏠 ที่บ้าน</button>
+        <button type="button" data-place="public" aria-pressed="false">⚡ ตู้สาธารณะ</button>
+      </div>
+      <div class="help" id="placeHelp"></div>
+    </div>
+
+    <div class="field" id="cTripField">
+      <label for="cTrip">ระยะทาง TRIP B (กม.)</label>
+      <div class="suffix"><input type="number" id="cTrip" inputmode="decimal" step="0.1" min="0" placeholder="เช่น 96.4"><span class="u">กม.</span></div>
+      <div class="help">ระยะที่วิ่งตั้งแต่ชาร์จครั้งก่อน — อ่านจากหน้าจอรถ <b>ก่อน</b>กดรีเซ็ต TRIP B</div>
+    </div>
+
+    <div class="inline2">
+      <div class="field">
+        <label for="cSocFrom">% แบตก่อนชาร์จ</label>
+        <div class="suffix"><input type="number" id="cSocFrom" inputmode="numeric" step="1" min="0" max="100" placeholder="21"><span class="u">%</span></div>
+      </div>
+      <div class="field">
+        <label for="cSocTo">% แบตหลังชาร์จ</label>
+        <div class="suffix"><input type="number" id="cSocTo" inputmode="numeric" step="1" min="0" max="100" placeholder="100"><span class="u">%</span></div>
+      </div>
+    </div>
+    <div class="gauge" id="socWrap" style="display:none;margin-top:-4px;margin-bottom:16px">
+      <div class="bar"><div class="fill" id="socBase" style="width:0%;background:var(--muted);position:absolute;opacity:.45"></div><div class="fill" id="socFill" style="width:0%;background:var(--elec)"></div></div>
+      <div class="lbl"><span id="socTxt"></span><span>แบต 18.3 kWh</span></div>
+    </div>
+
+    <div id="homeFields">
+      <div class="field">
+        <label>รู้หน่วยไฟที่ใช้จากอะไร</label>
+        <div class="seg" id="srcSeg" style="margin-bottom:0">
+          <button type="button" data-src="soc" aria-pressed="true">ประมาณจาก % แบต</button>
+          <button type="button" data-src="meter" aria-pressed="false">อ่านมิเตอร์บ้าน</button>
+        </div>
+        <div class="help" id="srcHelp"></div>
+      </div>
+
+      <div class="inline2" id="meterFields" hidden>
+        <div class="field">
+          <label for="cMeterA">มิเตอร์ก่อนชาร์จ</label>
+          <div class="suffix"><input type="number" id="cMeterA" inputmode="decimal" step="0.1" min="0" placeholder="เช่น 24310.5"><span class="u">หน่วย</span></div>
+        </div>
+        <div class="field">
+          <label for="cMeterB">มิเตอร์หลังชาร์จ</label>
+          <div class="suffix"><input type="number" id="cMeterB" inputmode="decimal" step="0.1" min="0" placeholder="เช่น 24325.1"><span class="u">หน่วย</span></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="cHomeRate">ค่าไฟบ้าน (บาท/หน่วย)</label>
+        <div class="suffix"><input type="number" id="cHomeRate" inputmode="decimal" step="0.01" min="0"><span class="u">฿/kWh</span></div>
+        <div class="help">ดึงมาจากหน้าตั้งค่า — แก้เฉพาะครั้งนี้ได้ ถ้าครั้งนั้นชาร์จที่อื่น</div>
+      </div>
+      <div class="calcbox" id="homeCalc"></div>
+    </div>
+
+    <div id="publicFields" hidden>
+      <div class="inline2">
+        <div class="field">
+          <label for="cKwh">หน่วยไฟที่ตู้คิด</label>
+          <div class="suffix"><input type="number" id="cKwh" inputmode="decimal" step="0.01" min="0" placeholder="เช่น 16.52"><span class="u">kWh</span></div>
+        </div>
+        <div class="field">
+          <label for="cTotal">ยอดเงินรวม</label>
+          <div class="suffix"><input type="number" id="cTotal" inputmode="decimal" step="0.01" min="0" placeholder="เช่น 132"><span class="u">บาท</span></div>
+        </div>
+      </div>
+      <div class="field">
+        <label for="cRate">ราคาต่อหน่วย</label>
+        <div class="suffix"><input type="number" id="cRate" inputmode="decimal" step="0.01" min="0" placeholder="เช่น 8.00"><span class="u">฿/kWh</span></div>
+      </div>
+      <div class="alert info" style="font-weight:600;font-size:13.5px">
+        <span>💡</span><span>กรอกแค่ <b>2 ช่อง</b> จาก 3 ช่อง ระบบจะเติมช่องที่เหลือให้เอง — และจะเอาตัวเลขนี้ไป<b>เรียนรู้ค่าจริง</b>ของรถ เพื่อประมาณค่าไฟตอนชาร์จที่บ้าน</span>
+      </div>
+      <div class="field">
+        <label for="cStation">ตู้ชาร์จ / สถานที่</label>
+        <input list="cStationList" id="cStation" placeholder="เช่น PTT Station บางนา">
+        <datalist id="cStationList"></datalist>
+      </div>
+    </div>
+
+    <details class="more">
+      <summary>เพิ่มเติม (ไม่บังคับ)</summary>
+      <div class="inner">
+        <div class="field">
+          <label for="cNote">โน้ต</label>
+          <textarea id="cNote" placeholder="เช่น เหยียบแรง ขึ้นทางด่วน / รถติด / เปิดแอร์แรง / ขึ้นเขา"></textarea>
+          <div class="help">การเหยียบมีผลกับการกินไฟมาก จดไว้จะช่วยอธิบายตัวเลขที่แกว่งได้</div>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <div id="cAlerts"></div>
+
+  <div class="preview elecprev" id="cPreview">
+    <div class="row hl"><span class="lbl">อัตราการใช้ไฟ</span><b id="pKwhKm">–</b></div>
+    <div class="row"><span class="lbl">ค่าไฟต่อกิโลเมตร</span><b id="pElecBahtKm">–</b></div>
+    <div class="row"><span class="lbl">หน่วยไฟที่ใช้</span><b id="pKwh">–</b></div>
+    <div class="row"><span class="lbl">ค่าไฟครั้งนี้</span><b id="pElecTotal">–</b></div>
+  </div>
+
+  <button class="btn elecbtn" id="cSaveBtn">บันทึก</button>
+  <div style="height:10px"></div>
+  <button class="btn ghost" id="cCancelBtn">ยกเลิก</button>
+</div>
+</section>
+
+<!-- ============ HISTORY ============ -->
+<section class="view" id="view-history">
+  <div class="seg" id="histKind">
+    <button data-kind="fuel" aria-pressed="true">⛽ น้ำมัน</button>
+    <button data-kind="elec" aria-pressed="false">🔌 ไฟฟ้า</button>
+    <button data-kind="all" aria-pressed="false">📊 รวม</button>
+  </div>
+
+<div id="histElec" hidden></div>
+<div id="histAll" hidden></div>
+
+<div id="histFuel">
+  <div id="grandTable"></div>
+  <div class="seg" id="histSeg">
+    <button data-mode="table" aria-pressed="true">📊 ตาราง</button>
+    <button data-mode="card" aria-pressed="false">🗂 การ์ด (แก้ไข/ลบ)</button>
+  </div>
+  <div id="monthTable"></div>
+  <div id="historyTable"></div>
+  <div id="historyList"></div>
+
+  <div class="card" id="resetCard" style="border-color:var(--critical)">
+    <h2 style="color:var(--critical)">รีเซ็ตข้อมูล</h2>
+    <p class="hint">ลบประวัติการเติมทั้งหมดออกจากเครื่องนี้ ใช้ตอนอยากเริ่มนับใหม่หรือเคลียร์ข้อมูลที่ลองเล่น</p>
+    <button class="btn small ghost" id="backupFirst" style="margin-bottom:10px">⬇︎ สำรองข้อมูลไว้ก่อน (แนะนำ)</button>
+    <button class="btn danger" id="resetBtn" style="font-size:17px;padding:15px">🗑 รีเซ็ตข้อมูลทั้งหมด</button>
+  </div>
+</div>
+</section>
+
+<!-- ============ STATS ============ -->
+<section class="view" id="view-stats">
+  <div class="seg" id="statKind">
+    <button data-kind="fuel" aria-pressed="true">⛽ น้ำมัน</button>
+    <button data-kind="elec" aria-pressed="false">🔌 ไฟฟ้า</button>
+    <button data-kind="all" aria-pressed="false">📊 รวม</button>
+  </div>
+  <div id="statsBody"></div>
+  <div id="statsElec" hidden></div>
+  <div id="statsAll" hidden></div>
+</section>
+
+<!-- ============ SETTINGS ============ -->
+<section class="view" id="view-settings">
+  <div class="card" id="howtoCard">
+    <h2>📖 วิธีใช้งาน</h2>
+    <p class="hint">อ่านครั้งเดียวก็พอ · แตะหัวข้อเพื่อเปิดอ่าน</p>
+
+    <details class="more howto">
+      <summary><b>⛽ เวลาเติมน้ำมัน</b> — ทำ 6 ขั้น</summary>
+      <div class="inner">
+        <ol class="howsteps">
+          <li><b>เติมให้เต็มถัง</b> ทุกครั้ง (รอหัวจ่ายตัดเอง)</li>
+          <li>ก่อนออกจากปั๊ม <b>ดูเลข TRIP A</b> ที่หน้าจอรถ จำไว้หรือถ่ายรูป</li>
+          <li><b>กดรีเซ็ต TRIP A ให้เป็น 0</b> — ห้ามลืมขั้นนี้</li>
+          <li>เปิดเว็บ กด <b>บันทึก</b> → เลือก <b>⛽ น้ำมัน</b></li>
+          <li>กรอก <b>ระยะ TRIP A</b> · <b>จำนวนลิตร</b> · <b>ราคา</b></li>
+          <li>กดปุ่ม <b>บันทึก</b> สีน้ำเงิน</li>
+        </ol>
+        <div class="alert info" style="font-size:13px;margin-bottom:0"><span>💡</span><span>
+          ช่องราคากรอกแค่ <b>2 ใน 3</b> ก็พอ (ลิตร / ราคาต่อลิตร / ยอดเงินรวม) · ถ้าลืมดู TRIP A ให้เว้นว่างไว้ แล้วครั้งหน้าคำนวณได้ตามปกติ</span></div>
+      </div>
+    </details>
+
+    <details class="more howto">
+      <summary><b>🔌 เวลาชาร์จไฟ</b> — ทำ 8 ขั้น</summary>
+      <div class="inner">
+        <ol class="howsteps green">
+          <li>ก่อนเสียบชาร์จ <b>ดู % แบตเตอรี่</b> จำไว้</li>
+          <li>ชาร์จเสร็จแล้ว <b>ดู % แบต</b> อีกครั้ง</li>
+          <li><b>ดูเลข TRIP B</b> แล้ว<b>กดรีเซ็ตเป็น 0</b></li>
+          <li>เปิดเว็บ กด <b>บันทึก</b> → เลือก <b>🔌 ไฟฟ้า</b></li>
+          <li>เลือก <b>🏠 ที่บ้าน</b> หรือ <b>⚡ ตู้สาธารณะ</b></li>
+          <li>กรอก <b>TRIP B</b> และ <b>% แบตก่อน → หลัง</b></li>
+          <li>ถ้าเป็นตู้สาธารณะ กรอก <b>หน่วยไฟกับยอดเงิน</b>จากใบเสร็จ</li>
+          <li>กดปุ่ม <b>บันทึก</b> สีเขียว</li>
+        </ol>
+        <div class="alert info" style="font-size:13px;margin-bottom:0"><span>💡</span><span>
+          ชาร์จที่บ้าน<b>ไม่ต้องกรอกหน่วยไฟ</b> ระบบคำนวณให้เอง · ยิ่งบันทึกการชาร์จที่ตู้สาธารณะบ่อย ตัวเลขค่าไฟบ้านยิ่งแม่น</span></div>
+      </div>
+    </details>
+
+    <details class="more howto">
+      <summary><b>💾 สำรองข้อมูล</b> — ควรทำเดือนละครั้ง</summary>
+      <div class="inner">
+        <ol class="howsteps">
+          <li>ในหน้านี้ เลื่อนขึ้นไปหัวข้อ <b>สำรองข้อมูล</b></li>
+          <li>กด <b>⬇︎ สำรอง (JSON)</b> ไฟล์จะถูกดาวน์โหลด</li>
+          <li>เก็บไฟล์ไว้ใน Google Drive หรือส่งเข้าไลน์ตัวเอง</li>
+        </ol>
+        <div class="alert warn" style="font-size:13px;margin-bottom:0"><span>⚠️</span><span>
+          ข้อมูลเก็บอยู่ใน<b>มือถือเครื่องนี้เครื่องเดียว</b> ถ้าล้างข้อมูลเบราว์เซอร์หรือเปลี่ยนเครื่อง ข้อมูลจะหายทั้งหมด</span></div>
+      </div>
+    </details>
+
+    <details class="more howto">
+      <summary><b>✏️ กรอกผิด แก้ยังไง</b></summary>
+      <div class="inner">
+        <table class="tbl" style="font-size:13px"><tbody>
+          <tr><td style="text-align:left;font-weight:700;width:42%">กรอกตัวเลขผิด</td>
+              <td style="text-align:left">ประวัติ → <b>✏️ แก้ไข / ลบรายการ</b> → กด <b>แก้ไข</b></td></tr>
+          <tr><td style="text-align:left;font-weight:700">บันทึกซ้ำ</td>
+              <td style="text-align:left">โหมดเดียวกัน แล้วกด <b>ลบ</b></td></tr>
+          <tr><td style="text-align:left;font-weight:700">ลืมกรอก TRIP</td>
+              <td style="text-align:left">ในตารางประวัติ กดปุ่ม <b>＋ เพิ่ม</b> ในช่องระยะ</td></tr>
+          <tr><td style="text-align:left;font-weight:700">เริ่มนับใหม่หมด</td>
+              <td style="text-align:left">ประวัติ → ล่างสุด → <b>🗑 รีเซ็ตข้อมูลทั้งหมด</b></td></tr>
+        </tbody></table>
+      </div>
+    </details>
+
+    <details class="more howto">
+      <summary><b>❓ คำถามที่พบบ่อย</b></summary>
+      <div class="inner">
+        <p class="hint" style="line-height:1.7;margin:0">
+          <b>ต้องรู้ไหมว่าเหลือน้ำมันกี่ลิตร?</b> ไม่ต้อง เพราะวัดที่จุด “เต็มถัง” ทั้งสองครั้ง<br><br>
+          <b>ทำไมต้องเติมเต็มถังทุกครั้ง?</b> ถ้าเติมไม่เต็มจะไม่รู้ว่าใช้ไปเท่าไหร่จริง ตัวเลขจะเพี้ยนทันที<br><br>
+          <b>ทำไม กม./kWh ดูสูงผิดปกติ?</b> เพราะ TRIP B นับระยะทั้งหมดตั้งแต่ชาร์จครั้งก่อน ซึ่งบางส่วนวิ่งด้วยน้ำมัน เป็นค่าผสม — ตัวที่เชื่อได้จริงคือ <b>ต้นทุนรวมต่อกิโลเมตร</b><br><br>
+          <b>ตู้ชาร์จคิดหน่วยเกิน ตู้โกงหรือเปล่า?</b> ไม่โกง พลังงานหายไปกับความร้อนตอนแปลงไฟและระบบระบายความร้อนแบต ปกติเกินราว 12–15%<br><br>
+          <b>ได้ต่ำกว่า 26.3 กม./ล. แปลว่ารถมีปัญหาไหม?</b> ไม่ใช่ 26.3 คือตัวเลขตอนแบตหมด ถ้าชาร์จสม่ำเสมอควรได้สูงกว่ามาก
+        </p>
+      </div>
+    </details>
+  </div>
+
+  <div class="card">
+    <h2>สำรองข้อมูล</h2>
+    <p class="hint">ข้อมูลเก็บอยู่ในเครื่องนี้เท่านั้น ควรกดสำรองไว้เป็นระยะ</p>
+    <div class="btnrow">
+      <button class="btn small ghost" id="expJson">⬇︎ สำรอง (JSON)</button>
+      <button class="btn small ghost" id="expCsv">⬇︎ ตาราง (CSV)</button>
+    </div>
+    <div style="height:10px"></div>
+    <button class="btn small ghost" id="impBtn">⬆︎ กู้คืนจากไฟล์สำรอง</button>
+    <input type="file" id="impFile" accept=".json,application/json" style="display:none">
+  </div>
+
+  <div class="card">
+    <h2>ข้อมูลรถ</h2>
+    <div class="field" style="margin:12px 0 0">
+      <label for="sCarName">ชื่อรถ</label>
+      <input id="sCarName" style="font-size:16px">
+    </div>
+    <div class="field" style="margin-top:12px;margin-bottom:0">
+      <label for="sTank">ความจุถังน้ำมัน (ลิตร)</label>
+      <div class="suffix"><input type="number" id="sTank" step="0.1" min="1" style="font-size:16px"><span class="u">ลิตร</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>ระบบไฟฟ้า</h2>
+    <p class="hint">ใช้คำนวณค่าไฟตอนชาร์จที่บ้าน ซึ่งไม่มีมิเตอร์บอกหน่วย</p>
+    <div class="field" style="margin-top:12px">
+      <label for="sBattery">ความจุแบตเตอรี่ (kWh)</label>
+      <div class="suffix"><input type="number" id="sBattery" step="0.1" min="1" style="font-size:16px"><span class="u">kWh</span></div>
+    </div>
+    <div class="field">
+      <label for="sHomeRate">ค่าไฟบ้าน (บาท/หน่วย)</label>
+      <div class="suffix"><input type="number" id="sHomeRate" step="0.01" min="0" style="font-size:16px"><span class="u">฿/kWh</span></div>
+      <div class="help">ไฟที่ชาร์จรถเป็นไฟที่<b>เพิ่มจากของเดิม</b> จึงต้องคิดที่อัตราขั้นบนสุดที่บ้านใช้อยู่ ไม่ใช่ค่าเฉลี่ยของบิล — ใช้เครื่องคำนวณข้างล่างหาให้ได้</div>
+    </div>
+
+    <details class="more" style="margin-bottom:16px">
+      <summary>🧮 คำนวณอัตราขั้นบันไดจากบิลค่าไฟ</summary>
+      <div class="inner">
+        <p class="hint" style="margin:0 0 12px;line-height:1.6">
+          <b>ไม่ต้องมีมิเตอร์แยกครับ</b> — เครื่องมือนี้คำนวณว่า "ถ้าเดือนนั้นไม่ได้ชาร์จรถ บิลจะเป็นเท่าไหร่" แล้วเอาส่วนต่างจากบิลจริงมาหารด้วยหน่วยที่ชาร์จรถ ก็ได้อัตราจริงของไฟที่เข้ารถ
+        </p>
+        <div class="field">
+          <label for="sBaseUnits">หน่วยไฟ<b>ทั้งบิล</b>ในเดือนนั้น</label>
+          <div class="suffix"><input type="number" id="sBaseUnits" step="1" min="0" style="font-size:16px" placeholder="ตัวเลขบนบิลค่าไฟ"><span class="u">หน่วย</span></div>
+          <div class="help">เอาช่อง "จำนวนหน่วย" จากบิลมาใส่ตรง ๆ ได้เลย <b>ไม่ต้องหักอะไรออก</b> — ระบบจะแยกส่วนที่เป็นของรถให้เอง</div>
+        </div>
+        <div class="field">
+          <label for="sEvUnits">เดือนนั้นชาร์จรถที่บ้านกี่หน่วย</label>
+          <div class="suffix"><input type="number" id="sEvUnits" step="1" min="0" style="font-size:16px"><span class="u">หน่วย</span></div>
+          <div class="help" id="evUnitsHelp"></div>
+        </div>
+        <div id="homeMonths"></div>
+        <div class="field">
+          <label for="sFt">ค่า Ft (บาท/หน่วย)</label>
+          <div class="suffix"><input type="number" id="sFt" step="0.0001" style="font-size:16px"><span class="u">฿/kWh</span></div>
+          <div class="help">ปรับทุก 4 เดือน ดูได้ที่บิลค่าไฟ · ปัจจุบัน 0.1623</div>
+        </div>
+        <div class="calcbox" id="tariffCalc"></div>
+        <button class="btn small ghost" id="useRateBtn" style="margin:12px 0 6px">ใช้อัตรานี้เป็นค่าไฟบ้าน</button>
+      </div>
+    </details>
+    <div class="field" style="margin-bottom:0">
+      <label for="sKwhPct">หน่วยไฟต่อแบต 1% (kWh)</label>
+      <div class="suffix"><input type="number" id="sKwhPct" step="0.001" min="0" style="font-size:16px" placeholder="เว้นว่าง = ให้ระบบเรียนรู้เอง"><span class="u">kWh/%</span></div>
+      <div class="help" id="kwhPctHelp"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>ข้อมูลอ้างอิงของรถรุ่นนี้</h2>
+    <div class="kv"><span class="k">ถังน้ำมัน</span><span class="v">45 ลิตร</span></div>
+    <div class="kv"><span class="k">แบตเตอรี่ (Blade)</span><span class="v">18.3 kWh</span></div>
+    <div class="kv"><span class="k">ระยะไฟฟ้าล้วน</span><span class="v">120 กม. (NEDC)</span></div>
+    <div class="kv"><span class="k">เครื่องยนต์</span><span class="v">1.5 ลิตร DM-i</span></div>
+    <div class="kv"><span class="k">โหมดแบตหมด (HEV)</span><span class="v">26.3 กม./ล.</span></div>
+    <div class="kv"><span class="k">เท่ากับ</span><span class="v">3.8 ล./100 กม.</span></div>
+    <div class="kv"><span class="k">ชาร์จ AC สูงสุด</span><span class="v">6.6 kW</span></div>
+    <p class="hint" style="margin:12px 0 0">รถปลั๊กอินไฮบริด ยิ่งชาร์จไฟบ่อย ตัวเลข กม./ลิตร จะยิ่งสูง ค่าที่ได้แต่ละถังจึงแกว่งได้มากเป็นเรื่องปกติ</p>
+  </div>
+
+  <div class="card">
+    <h2>เครื่องมือ</h2>
+    <button class="btn small ghost" id="demoBtn">ใส่ข้อมูลตัวอย่างเพื่อทดลอง</button>
+    <div style="height:10px"></div>
+    <button class="btn small danger" id="clearBtn">ลบข้อมูลทั้งหมด</button>
+  </div>
+</section>
+
+</main>
+
+<nav class="tabbar">
+  <button data-view="home" aria-current="page"><span class="ic">🏠</span>หน้าหลัก</button>
+  <button data-view="add"><span class="ic">⛽</span>บันทึก</button>
+  <button data-view="history"><span class="ic">📋</span>ประวัติ</button>
+  <button data-view="stats"><span class="ic">📈</span>สถิติ</button>
+  <button data-view="settings"><span class="ic">⚙️</span>ตั้งค่า</button>
+</nav>
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- ============ MISSING TRIP A MODAL ============ -->
+<div class="modal" id="noTripModal" hidden>
+  <div class="sheet">
+    <div class="sheeticon">🤔</div>
+    <h3>ยังไม่ได้กรอกระยะ TRIP A</h3>
+    <p>ถ้าไม่มีระยะทาง ระบบจะคำนวณ <b>กม./ลิตร</b> ของครั้งนี้ไม่ได้ จะบันทึกให้แค่ค่าใช้จ่ายเท่านั้น</p>
+    <div class="alert info" style="margin:0 0 16px;text-align:left">
+      <span>💡</span><span>เลข TRIP A อ่านได้จากหน้าจอรถ <b>ก่อน</b>กดรีเซ็ตเป็น 0 — ถ้ายังไม่ได้ดู ยังกลับไปดูที่รถแล้วค่อยกรอกได้</span>
+    </div>
+    <button class="btn" id="ntBack">↩︎ กลับไปกรอกเลข TRIP A</button>
+    <div style="height:10px"></div>
+    <button class="btn ghost" id="ntSkip">บันทึกโดยไม่คำนวณ กม./ลิตร</button>
+  </div>
+</div>
+
+<!-- ============ MISSING TRIP B MODAL ============ -->
+<div class="modal" id="noTripBModal" hidden>
+  <div class="sheet">
+    <div class="sheeticon">🤔</div>
+    <h3>ยังไม่ได้กรอกระยะ TRIP B</h3>
+    <p>ถ้าไม่มีระยะทาง ระบบจะคำนวณ <b>กม./kWh</b> ของครั้งนี้ไม่ได้ จะบันทึกให้แค่ค่าไฟเท่านั้น</p>
+    <div class="alert info" style="margin:0 0 16px;text-align:left">
+      <span>💡</span><span>เลข TRIP B อ่านได้จากหน้าจอรถ <b>ก่อน</b>กดรีเซ็ตเป็น 0</span>
+    </div>
+    <button class="btn elecbtn" id="ntbBack">↩︎ กลับไปกรอกเลข TRIP B</button>
+    <div style="height:10px"></div>
+    <button class="btn ghost" id="ntbSkip">บันทึกโดยไม่คำนวณ กม./kWh</button>
+  </div>
+</div>
+
+<!-- ============ BACKFILL TRIP B MODAL ============ -->
+<div class="modal" id="addTripBModal" hidden>
+  <div class="sheet">
+    <div class="sheeticon">📏</div>
+    <h3>เติมเลข TRIP B ย้อนหลัง</h3>
+    <p id="atbMsg"></p>
+    <div class="field" style="text-align:left">
+      <label for="atbInput">ระยะทาง TRIP B ของครั้งนั้น (กม.)</label>
+      <div class="suffix"><input type="number" id="atbInput" inputmode="decimal" step="0.1" min="0" placeholder="เช่น 96.4"><span class="u">กม.</span></div>
+      <div class="help" id="atbPreview"></div>
+    </div>
+    <button class="btn elecbtn" id="atbSave">บันทึกและคำนวณใหม่</button>
+    <div style="height:10px"></div>
+    <button class="btn ghost" id="atbCancel">ยกเลิก</button>
+  </div>
+</div>
+
+<!-- ============ BACKFILL TRIP A MODAL ============ -->
+<div class="modal" id="addTripModal" hidden>
+  <div class="sheet">
+    <div class="sheeticon">📏</div>
+    <h3>เติมเลข TRIP A ย้อนหลัง</h3>
+    <p id="atMsg"></p>
+    <div class="field" style="text-align:left">
+      <label for="atInput">ระยะทาง TRIP A ของครั้งนั้น (กม.)</label>
+      <div class="suffix"><input type="number" id="atInput" inputmode="decimal" step="0.1" min="0" placeholder="เช่น 720.5"><span class="u">กม.</span></div>
+      <div class="help" id="atPreview"></div>
+    </div>
+    <button class="btn" id="atSave">บันทึกและคำนวณใหม่</button>
+    <div style="height:10px"></div>
+    <button class="btn ghost" id="atCancel">ยกเลิก</button>
+  </div>
+</div>
+
+<!-- ============ RESET MODAL ============ -->
+<div class="modal" id="resetModal" hidden>
+  <div class="sheet">
+    <div class="sheeticon">⚠️</div>
+    <h3>ยืนยันการรีเซ็ตข้อมูล</h3>
+    <p id="resetMsg"></p>
+    <div class="alert bad" style="margin:0 0 14px"><span>❗</span><span>ข้อมูลจะถูกลบถาวร กู้คืนไม่ได้ นอกจากจะมีไฟล์สำรองเก็บไว้</span></div>
+    <button class="btn small ghost" id="mBackup" style="margin-bottom:14px">⬇︎ ดาวน์โหลดไฟล์สำรองก่อน</button>
+    <label class="check" for="mAgree" style="margin-bottom:14px">
+      <input type="checkbox" id="mAgree">
+      <span>ฉันเข้าใจว่าข้อมูลทั้งหมดจะหายถาวร</span>
+    </label>
+    <button class="btn" id="mConfirm" disabled style="background:var(--critical)">ลบข้อมูลทั้งหมด</button>
+    <div style="height:10px"></div>
+    <button class="btn ghost" id="mCancel">ยกเลิก</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* =========================================================
+   1. STATE
+   ========================================================= */
+const KEY = "bydFuelLog.v1";
+const DEFAULTS = { car: "BYD Seal 5 DM-i Premium", tank: 45, battery: 18.3, homeRate: 4.90, kwhPct: null, baseUnits: null, ft: 0.1623, evRange: 120 };
+let state = { records: [], charges: [], settings: { ...DEFAULTS } };
+let editingId = null, cEditingId = null;
+
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(raw){
+      const d = JSON.parse(raw);
+      state.records = Array.isArray(d.records) ? d.records : [];
+      state.charges = Array.isArray(d.charges) ? d.charges : [];
+      state.settings = Object.assign({}, DEFAULTS, d.settings || {});
+    }
+  }catch(e){ console.warn("load failed", e); }
+}
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(state)); }
+  catch(e){ toast("บันทึกลงเครื่องไม่สำเร็จ — กรุณาสำรองข้อมูลเป็นไฟล์"); }
+}
+
+/* =========================================================
+   2. HELPERS
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const TH_MON = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+
+function num(v){ const n = parseFloat(v); return Number.isFinite(n) ? n : null; }
+function fmt(n, d=2){
+  if(n === null || n === undefined || !Number.isFinite(n)) return "–";
+  return n.toLocaleString("en-US",{minimumFractionDigits:d, maximumFractionDigits:d});
+}
+function fmt0(n){ return fmt(n,0); }
+function thDate(iso){
+  if(!iso) return "";
+  const p = iso.split("-"); if(p.length<3) return iso;
+  const y = +p[0], m = +p[1], d = +p[2];
+  return d + " " + (TH_MON[m-1]||"") + " " + (y + 543);
+}
+function thDateShort(iso){          /* "8 มี.ค." — for chart axes */
+  if(!iso) return "";
+  const p = iso.split("-"); if(p.length<3) return iso;
+  return (+p[2]) + " " + (TH_MON[+p[1]-1]||"");
+}
+function thDateMini(iso){          /* "8 มี.ค. 69" — for dense tables */
+  if(!iso) return "";
+  const p = iso.split("-"); if(p.length<3) return iso;
+  return (+p[2]) + " " + (TH_MON[+p[1]-1]||"") + " " + String((+p[0]+543)%100).padStart(2,"0");
+}
+function thMonth(ym){
+  const p = ym.split("-");
+  return (TH_MON[+p[1]-1]||"") + " " + (+p[0] + 543);
+}
+function thMonthShort(ym){
+  const p = ym.split("-");
+  return (TH_MON[+p[1]-1]||"") + String((+p[0]+543)%100).padStart(2,"0");
+}
+function todayISO(){
+  const d = new Date();
+  const off = d.getTimezoneOffset();
+  return new Date(d.getTime() - off*60000).toISOString().slice(0,10);
+}
+let toastT;
+function toast(msg){
+  const el = $("#toast"); el.textContent = msg; el.classList.add("show");
+  clearTimeout(toastT); toastT = setTimeout(()=>el.classList.remove("show"), 2400);
+}
+/* records sorted newest first */
+function sorted(){
+  return state.records.slice().sort((a,b)=> (b.date||"").localeCompare(a.date||"") || (b.id||"").localeCompare(a.id||""));
+}
+function asc(){ return sorted().reverse(); }
+/* records that can produce an efficiency figure */
+function measured(){ return asc().filter(r => r.trip > 0 && r.liters > 0); }
+function kml(r){ return (r.trip>0 && r.liters>0) ? r.trip / r.liters : null; }
+
+/* ---------- charging ---------- */
+function cSorted(){
+  return state.charges.slice().sort((a,b)=> (b.date||"").localeCompare(a.date||"") || (b.id||"").localeCompare(a.id||""));
+}
+function cAsc(){ return cSorted().reverse(); }
+function cMeasured(){ return cAsc().filter(c => c.trip > 0 && c.kwh > 0); }
+function kmkwh(c){ return (c.trip>0 && c.kwh>0) ? c.trip / c.kwh : null; }
+
+/* How many kWh the wall actually delivers per 1% of battery.
+   Learned from public-charger sessions, where the receipt gives real metered kWh
+   against a known SOC gain — that ratio already contains every charging loss,
+   so it beats any textbook efficiency guess. Falls back to the nameplate ratio. */
+function kwhPerPct(){
+  const manual = state.settings.kwhPct;
+  if(manual > 0) return { value: manual, n: 0, source: "manual" };
+  const s = state.charges.filter(c => c.metered && c.kwh > 0 && c.socTo > c.socFrom);
+  /* both public receipts and home meter readings are real measurements */
+  if(s.length){
+    const kwh = s.reduce((a,c)=>a+c.kwh,0);
+    const pct = s.reduce((a,c)=>a+(c.socTo-c.socFrom),0);
+    if(pct > 0) return { value: kwh/pct, n: s.length, source: "learned" };
+  }
+  return { value: (state.settings.battery || 18.3)/100, n: 0, source: "theory" };
+}
+/* ---------- Thai residential tariff, type 1.2 (>150 units/month) ----------
+   Charging an EV never sits in its own tier: it stacks on top of whatever the
+   house already used. The only honest incremental rate is therefore
+   (bill with the car − bill without) ÷ car units, which is what this computes. */
+const TARIFF = { steps:[[150,3.2484],[250,4.2218],[Infinity,4.4217]], service:24.62, vat:0.07 };
+function billTotal(units, ft){
+  let left = units, energy = 0;
+  for(const [size, rate] of TARIFF.steps){
+    const u = Math.min(left, size); if(u <= 0) break;
+    energy += u*rate; left -= u;
+  }
+  return (energy + units*ft + TARIFF.service) * (1 + TARIFF.vat);
+}
+function marginalRate(base, add, ft){
+  if(!(add > 0)) return null;
+  return (billTotal(base+add, ft) - billTotal(base, ft)) / add;
+}
+/* average kWh per month actually charged at home, for the calculator's default */
+function homeKwhPerMonth(){
+  const hs = state.charges.filter(c=>c.place==="home");
+  if(!hs.length) return null;
+  /* span the whole elapsed period, not just the months that happen to have a
+     charge — otherwise a skipped month inflates the average */
+  const ds = hs.map(c=>Date.parse(c.date)).filter(Number.isFinite).sort((a,b)=>a-b);
+  const months = ds.length>1 ? Math.max(1, (ds[ds.length-1]-ds[0])/(30.44*86400000)) : 1;
+  return hs.reduce((s,c)=>s+c.kwh,0) / months;
+}
+
+/* ---------- combined cost, over one shared denominator ----------
+   TRIP A windows and TRIP B windows both tile the SAME odometer distance, so
+   their two baht/km rates only add up if they cover the same kilometres. When
+   coverage differs (a charge went unlogged, or charging started later), adding
+   the raw rates invents cost that was never spent. Everything below therefore
+   divides by ONE reference distance: whichever log covers more ground, since
+   neither can overcount. */
+function costBasis(records, charges){
+  const fm = records.filter(r=>r.trip>0 && r.liters>0);
+  const cm = charges.filter(c=>c.trip>0 && c.kwh>0);
+  const fKm = fm.reduce((s,r)=>s+r.trip,0);
+  const eKm = cm.reduce((s,c)=>s+c.trip,0);
+  const fBaht = fm.reduce((s,r)=>s+r.total,0);
+  const eBaht = cm.reduce((s,c)=>s+c.total,0);
+  const ref = Math.max(fKm, eKm);
+  const cover = (fKm>0 && eKm>0) ? Math.min(fKm,eKm)/Math.max(fKm,eKm) : null;
+  return {
+    fKm, eKm, fBaht, eBaht, ref, cover,
+    /* null, not 0, when that side has no measured distance — 0 would read as
+       "this costs nothing per km" instead of "not enough data yet" */
+    fuelRate: (ref>0 && fKm>0) ? fBaht/ref : null,
+    elecRate: (ref>0 && eKm>0) ? eBaht/ref : null,
+    totalRate: ref>0 ? (fBaht+eBaht)/ref : null,
+    /* money recorded on a side that has no measured distance at all */
+    fuelOrphan: (fKm<=0 && records.some(r=>r.total>0)) ? records.reduce((s,r)=>s+(r.total||0),0) : 0,
+    elecOrphan: (eKm<=0 && charges.some(c=>c.total>0)) ? charges.reduce((s,c)=>s+(c.total||0),0) : 0,
+    /* cost per km measured only across the kilometres each log actually covers */
+    fuelOwnRate: fKm>0 ? fBaht/fKm : null,
+    elecOwnRate: eKm>0 ? eBaht/eKm : null
+  };
+}
+/* one warning string when the two logs disagree about how far the car went */
+function coverageWarning(b){
+  if(b.fuelOrphan > 0 || b.elecOrphan > 0){
+    const side = b.fuelOrphan > 0 ? "น้ำมัน" : "ไฟฟ้า";
+    const amt  = b.fuelOrphan > 0 ? b.fuelOrphan : b.elecOrphan;
+    return '<div class="alert warn" style="margin:12px 0 0;font-size:13px"><span>⚠️</span><span>'+
+      'มีค่า'+side+' <b>'+fmt0(amt)+' บาท</b> ที่ยังไม่มีระยะทางกำกับ (ไม่ได้กรอก TRIP) '+
+      'จึงยังคิดเป็นบาท/กม. ไม่ได้ และยัง<b>ไม่ถูกนับ</b>ในต้นทุนรวม — เติมเลข TRIP ย้อนหลังได้ในแท็บประวัติ</span></div>';
+  }
+  if(b.cover === null || b.cover >= 0.85) return "";
+  const low = b.fKm < b.eKm ? "น้ำมัน" : "ไฟฟ้า";
+  return '<div class="alert warn" style="margin:12px 0 0;font-size:13px"><span>⚠️</span><span>'+
+    'ระยะจากบันทึกน้ำมัน <b>'+fmt0(b.fKm)+' กม.</b> แต่จากบันทึกไฟฟ้า <b>'+fmt0(b.eKm)+' กม.</b> — '+
+    'ทั้งสองควรใกล้เคียงกันเพราะวัดระยะทางเดียวกัน ส่วนต่างแปลว่าฝั่ง<b>'+low+'</b>ยังบันทึกไม่ครบ '+
+    'ต้นทุนรวมจึงคิดจากระยะที่ยาวกว่า ('+fmt0(b.ref)+' กม.) และอาจ<b>ต่ำกว่าความจริง</b>จนกว่าจะบันทึกครบ</span></div>';
+}
+
+/* charging efficiency implied by the learned ratio */
+function chargeEff(){
+  const f = kwhPerPct();
+  /* with no measured session the ratio is the nameplate divided by itself —
+     exactly 1.0, which would be reported as a measured 100% efficiency */
+  if(f.source === "theory") return null;
+  const theory = (state.settings.battery || 18.3)/100;
+  return f.value > 0 ? theory / f.value : null;
+}
+
+/* =========================================================
+   3. NAVIGATION
+   ========================================================= */
+const TITLES = {
+  home:["บันทึกน้ำมัน", ()=>state.settings.car],
+  add:["บันทึกข้อมูล", ()=>$("#addElec") && !$("#addElec").hidden ? "ชาร์จเสร็จ แล้วรีเซ็ต TRIP B" : "เติมเต็มถัง แล้วรีเซ็ต TRIP A"],
+  history:["ประวัติ", ()=>state.records.length + " เติมน้ำมัน · " + state.charges.length + " ชาร์จไฟ"],
+  stats:["สถิติ", ()=>"แนวโน้มและค่าใช้จ่าย"],
+  settings:["ตั้งค่า", ()=>state.settings.car]
+};
+function go(view){
+  $$(".view").forEach(v=>v.classList.toggle("active", v.id === "view-"+view));
+  $$("nav.tabbar button").forEach(b=>{
+    if(b.dataset.view===view) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current");
+  });
+  const t = TITLES[view]; $("#hdTitle").textContent = t[0]; $("#hdSub").textContent = t[1]();
+  window.scrollTo(0,0);
+  if(view==="home") renderHome();
+  if(view==="history") renderHistory();
+  if(view==="stats") renderStats();
+}
+$$("nav.tabbar button").forEach(b=> b.onclick = ()=>{
+  if(b.dataset.view === "add"){ if(editingId) resetForm(); if(cEditingId) cResetForm(); }
+  go(b.dataset.view);
+});
+$("#goAdd").onclick = ()=>{ resetForm(); go("add"); showAdd("fuel"); };
+$("#goAddElec").onclick = ()=>{ cResetForm(); go("add"); showAdd("elec"); };
+
+/* theme */
+function applyTheme(t){
+  document.documentElement.dataset.theme = t;
+  $("#themeBtn").textContent = t === "dark" ? "☀️" : "🌙";
+  localStorage.setItem(KEY+".theme", t);
+  if($("#view-stats").classList.contains("active")) renderStats();
+  if($("#view-home").classList.contains("active")) renderHome();
+}
+$("#themeBtn").onclick = ()=> applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
+
+/* =========================================================
+   4. FORM
+   ========================================================= */
+const F = { date:"#fDate", first:"#fFirst", trip:"#fTrip", liters:"#fLiters", price:"#fPrice",
+            total:"#fTotal", station:"#fStation", carAvg:"#fCarAvg", odo:"#fOdo", note:"#fNote" };
+
+/* which of liters/price/total the user last typed in (max 2 kept) */
+let typedOrder = [];
+["liters","price","total"].forEach(k=>{
+  $(F[k]).addEventListener("input", ()=>{
+    $(F[k]).classList.remove("calc");
+    typedOrder = typedOrder.filter(x=>x!==k); typedOrder.push(k);
+    if(typedOrder.length>2) typedOrder.shift();
+    autoFill(); updatePreview();
+  });
+});
+function autoFill(){
+  const L=$(F.liters), P=$(F.price), T=$(F.total);
+  const target = ["liters","price","total"].find(k=>!typedOrder.includes(k));
+  if(!target || typedOrder.length<2) return;
+  const l=num(L.value), p=num(P.value), t=num(T.value);
+  const set=(el,v)=>{ el.value = Number.isFinite(v)&&v>0 ? (Math.round(v*100)/100) : ""; el.classList.add("calc"); };
+  if(target==="total" && l>0 && p>0) set(T, l*p);
+  else if(target==="price" && l>0 && t>0) set(P, t/l);
+  else if(target==="liters" && p>0 && t>0) set(L, t/p);
+}
+/* contextual explainer: only shows on the very first entry */
+function renderFirstHint(){
+  const box = $("#firstHint"); if(!box) return;
+  if(state.records.length === 0 && !editingId){
+    box.innerHTML = '<div class="alert info"><span>👋</span><span><b>บันทึกครั้งแรก:</b> ถ้าตอนเติมครั้งที่แล้วได้กดรีเซ็ต TRIP A ไว้ '+
+      '(ตามที่จดในสมุดอยู่แล้ว) ก็กรอกเลข TRIP A ได้ตามปกติเลยครับ · '+
+      'ไม่จำเป็นต้องรู้ว่าเหลือน้ำมันในถังเท่าไหร่ เพราะเราวัดที่ "เต็มถัง" ทั้งสองครั้ง</span></div>';
+  } else box.innerHTML = "";
+}
+[F.trip].forEach(s=> $(s).addEventListener("input", updatePreview));
+$(F.date).addEventListener("input", ()=>{
+  $("#fDateTh").textContent = $(F.date).value ? "= " + thDate($(F.date).value) : "";
+});
+
+function updatePreview(){
+  const trip = num($(F.trip).value), l = num($(F.liters).value);
+  const p = num($(F.price).value), t = num($(F.total).value);
+  const tank = state.settings.tank || 45;
+
+  /* gauge */
+  const g = $("#gaugeWrap");
+  if(l>0){
+    g.style.display="";
+    const pct = Math.max(0, Math.min(100, l/tank*100));
+    $("#gaugeFill").style.width = pct.toFixed(1)+"%";
+    $("#gaugeFill").style.background = l>tank ? "var(--critical)" : "var(--series-1)";
+    $("#gaugeTxt").textContent = fmt(l,2)+" ลิตร ("+pct.toFixed(0)+"% ของถัง)";
+  } else g.style.display="none";
+
+  /* alerts */
+  const al=[];
+  if(l>0 && l > tank + 0.5) al.push(["bad","⚠️","เติม "+fmt(l,2)+" ลิตร มากกว่าความจุถัง ("+tank+" ลิตร) — ลองตรวจตัวเลขอีกครั้ง"]);
+  const k = (trip>0 && l>0) ? trip/l : null;
+  if(k !== null && (k < 8 || k > 60)) al.push(["warn","🤔","ได้ "+fmt(k,2)+" กม./ลิตร ซึ่งผิดปกติไปหน่อย — ลองเช็ก TRIP A กับจำนวนลิตรอีกที"]);
+  if(p>0 && (p<20 || p>60)) al.push(["warn","🤔","ราคา "+fmt(p,2)+" บาท/ลิตร ดูผิดปกติ — ลองเช็กอีกที"]);
+  $("#formAlerts").innerHTML = al.map(a=>'<div class="alert '+a[0]+'"><span>'+a[1]+'</span><span>'+a[2]+'</span></div>').join("");
+
+  const total = (t>0) ? t : (l>0&&p>0 ? l*p : null);
+  $("#pKml").textContent  = k!==null ? fmt(k,2)+" กม./ล." : "–";
+  $("#pL100").textContent = k!==null ? fmt(100/k,2)+" ล./100 กม." : "–";
+  $("#pBahtKm").textContent = (total && trip>0) ? fmt(total/trip,2)+" บาท/กม." : "–";
+  $("#pTotal").textContent = total ? fmt(total,2)+" บาท" : "–";
+}
+
+function resetForm(){
+  editingId = null;
+  $("#editBanner").innerHTML = "";
+  $(F.date).value = todayISO();
+  ["trip","liters","price","total","station","carAvg","odo","note"].forEach(k=>{ $(F[k]).value=""; $(F[k]).classList.remove("calc"); });
+  typedOrder = [];
+  /* prefill price with the most recent price used */
+  const last = sorted()[0];
+  if(last && last.price>0){ $(F.price).value = last.price; typedOrder=["price"]; }
+  $("#saveBtn").textContent = "บันทึก";
+  $("#fDateTh").textContent = "= " + thDate($(F.date).value);
+  renderFirstHint();
+  refreshStations();
+  updatePreview();
+}
+function refreshStations(){
+  const names = [...new Set(state.records.map(r=>r.station).filter(Boolean))];
+  $("#stationList").innerHTML = names.map(n=>'<option value="'+n.replace(/"/g,"&quot;")+'">').join("");
+}
+
+$("#cancelBtn").onclick = ()=>{ resetForm(); go("home"); };
+
+/* Leaving TRIP A blank is the ONLY way to log a fill without an efficiency
+   figure — and it always costs a deliberate confirmation, so it cannot happen
+   by a stray tap the way a checkbox could. */
+$("#saveBtn").onclick = ()=>{
+  const trip = num($(F.trip).value) || 0;
+  const liters = num($(F.liters).value) || 0;
+  if(liters <= 0){ toast("กรุณากรอกจำนวนลิตรที่เติม"); $(F.liters).focus(); return; }
+  if(trip <= 0){ $("#noTripModal").hidden = false; return; }
+  commitSave(0);
+};
+$("#ntBack").onclick = ()=>{ $("#noTripModal").hidden = true; $(F.trip).focus(); $(F.trip).scrollIntoView({block:"center"}); };
+$("#ntSkip").onclick = ()=>{ $("#noTripModal").hidden = true; commitSave(0); };
+$("#noTripModal").onclick = e =>{ if(e.target.id==="noTripModal") $("#noTripModal").hidden = true; };
+
+function commitSave(){
+  const date = $(F.date).value || todayISO();
+  const trip = num($(F.trip).value) || 0;
+  const liters = num($(F.liters).value) || 0;
+  let price = num($(F.price).value) || 0;
+  let total = num($(F.total).value) || 0;
+
+  if(price<=0 && total<=0){ toast("กรุณากรอกราคาต่อลิตร หรือยอดเงินรวม"); $(F.price).focus(); return; }
+  if(price<=0 && total>0) price = total/liters;
+  if(total<=0 && price>0) total = liters*price;
+
+  const rec = {
+    id: editingId || (Date.now().toString(36)+Math.random().toString(36).slice(2,7)),
+    date, trip, liters,
+    price: Math.round(price*10000)/10000,
+    total: Math.max(Math.round(total*100)/100, total>0 ? 0.01 : 0),
+    station: $(F.station).value.trim(),
+    carAvg: num($(F.carAvg).value),
+    odo: num($(F.odo).value),
+    note: $(F.note).value.trim()
+  };
+  if(editingId){
+    const i = state.records.findIndex(r=>r.id===editingId);
+    if(i>=0) state.records[i] = rec; else state.records.push(rec);
+    toast("แก้ไขเรียบร้อย");
+  } else {
+    state.records.push(rec);
+    toast(trip>0 ? "บันทึกแล้ว — "+fmt(trip/liters,2)+" กม./ลิตร" : "บันทึกแล้ว (ไม่มี TRIP A)");
+  }
+  save(); resetForm(); go("home");
+}
+
+function editRecord(id){
+  const r = state.records.find(x=>x.id===id); if(!r) return;
+  editingId = id;
+  $("#editBanner").innerHTML = '<div class="alert info"><span>✏️</span><span>กำลังแก้ไขรายการวันที่ <b>'+thDate(r.date)+'</b></span></div>';
+  $(F.date).value = r.date;
+  $(F.trip).value = r.trip>0 ? r.trip : "";
+  $(F.liters).value = r.liters || "";
+  $(F.price).value = r.price ? Math.round(r.price*100)/100 : "";
+  $(F.total).value = r.total || "";
+  $(F.station).value = r.station || "";
+  $(F.carAvg).value = r.carAvg || "";
+  $(F.odo).value = r.odo || "";
+  $(F.note).value = r.note || "";
+  $("#fDateTh").textContent = "= " + thDate(r.date);
+  renderFirstHint();
+  ["liters","price","total"].forEach(k=>$(F[k]).classList.remove("calc"));
+  /* seed so that correcting the money recomputes PRICE, never the pump's liters */
+  typedOrder = ["price","liters"];
+  $("#saveBtn").textContent = "บันทึกการแก้ไข";
+  refreshStations(); updatePreview(); go("add");
+}
+/* ---- backfill a missing TRIP A without opening the whole edit form ---- */
+let addTripId = null;
+function openAddTrip(id){
+  const r = state.records.find(x=>x.id===id); if(!r) return;
+  addTripId = id;
+  $("#atMsg").innerHTML = "รายการวันที่ <b>"+thDate(r.date)+"</b>"+(r.station?" · "+ESC(r.station):"")+
+    "<br>เติมไป "+fmt(r.liters,2)+" ลิตร · "+fmt0(r.total)+" บาท";
+  $("#atInput").value = ""; $("#atPreview").textContent = "";
+  $("#addTripModal").hidden = false;
+  setTimeout(()=>$("#atInput").focus(), 120);
+}
+$("#atInput").addEventListener("input", ()=>{
+  const r = state.records.find(x=>x.id===addTripId);
+  const t = num($("#atInput").value);
+  $("#atPreview").innerHTML = (r && t>0)
+    ? "จะได้ <b>"+fmt(t/r.liters,2)+" กม./ลิตร</b> · "+fmt(r.total/t,2)+" บาท/กม."
+    : "";
+});
+$("#atCancel").onclick = ()=>{ $("#addTripModal").hidden = true; addTripId = null; };
+$("#addTripModal").onclick = e =>{ if(e.target.id==="addTripModal") $("#atCancel").click(); };
+$("#atSave").onclick = ()=>{
+  const r = state.records.find(x=>x.id===addTripId);
+  const t = num($("#atInput").value);
+  if(!r) return;
+  if(!(t>0)){ toast("กรุณากรอกระยะทาง"); $("#atInput").focus(); return; }
+  r.trip = t; save();
+  $("#addTripModal").hidden = true; addTripId = null;
+  renderHistory(); renderHome(); if($("#view-stats").classList.contains("active")) renderStats();
+  toast("คำนวณใหม่แล้ว — "+fmt(t/r.liters,2)+" กม./ลิตร");
+};
+
+function delRecord(id){
+  const r = state.records.find(x=>x.id===id); if(!r) return;
+  if(!confirm("ลบรายการวันที่ "+thDate(r.date)+" ?")) return;
+  state.records = state.records.filter(x=>x.id!==id);
+  save(); renderHistory(); renderHome(); toast("ลบแล้ว");
+}
+
+/* =========================================================
+   4b. CHARGE FORM
+   ========================================================= */
+let cPlace = "home";
+let cTypedOrder = [];
+
+$$("#addSeg button").forEach(b=> b.onclick = ()=>{
+  const k = b.dataset.kind;
+  $$("#addSeg button").forEach(x=>x.setAttribute("aria-pressed", String(x.dataset.kind===k)));
+  $("#addFuel").hidden = k!=="fuel";
+  $("#addElec").hidden = k!=="elec";
+  $("#hdSub").textContent = k==="fuel" ? "เติมเต็มถัง แล้วรีเซ็ต TRIP A" : "ชาร์จเสร็จ แล้วรีเซ็ต TRIP B";
+  window.scrollTo(0,0);
+});
+function showAdd(kind){
+  const b = $('#addSeg button[data-kind="'+kind+'"]');
+  if(b) b.click();
+}
+
+$$("#placeSeg button").forEach(b=> b.onclick = ()=>{
+  cPlace = b.dataset.place;
+  $$("#placeSeg button").forEach(x=>x.setAttribute("aria-pressed", String(x.dataset.place===cPlace)));
+  $("#publicFields").hidden = cPlace!=="public";
+  $("#homeFields").hidden = cPlace!=="home";
+  $("#placeHelp").innerHTML = cPlace==="home"
+    ? 'ที่บ้านไม่มีใบเสร็จ ระบบจึงต้อง<b>คำนวณให้</b> — ดูขั้นตอนการคิดได้ในกล่องด้านล่าง'
+    : 'กรอกหน่วยไฟกับยอดเงินจากใบเสร็จ — ตัวเลขนี้จะถูกใช้เรียนรู้ค่าจริงของรถ';
+  updateCPreview();
+});
+
+["cKwh","cRate","cTotal"].forEach(id=>{
+  $("#"+id).addEventListener("input", ()=>{
+    $("#"+id).classList.remove("calc");
+    const k = id.replace("c","").toLowerCase();
+    cTypedOrder = cTypedOrder.filter(x=>x!==k); cTypedOrder.push(k);
+    if(cTypedOrder.length>2) cTypedOrder.shift();
+    cAutoFill(); updateCPreview();
+  });
+});
+function cAutoFill(){
+  const K=$("#cKwh"), R=$("#cRate"), T=$("#cTotal");
+  const target = ["kwh","rate","total"].find(x=>!cTypedOrder.includes(x));
+  if(!target || cTypedOrder.length<2) return;
+  const k=num(K.value), r=num(R.value), t=num(T.value);
+  const set=(el,v)=>{ el.value = Number.isFinite(v)&&v>0 ? (Math.round(v*100)/100) : ""; el.classList.add("calc"); };
+  if(target==="total" && k>0 && r>0) set(T, k*r);
+  else if(target==="rate" && k>0 && t>0) set(R, t/k);
+  else if(target==="kwh" && r>0 && t>0) set(K, t/r);
+}
+let cSrc = "soc";
+$$("#srcSeg button").forEach(b=> b.onclick = ()=>{
+  cSrc = b.dataset.src;
+  $$("#srcSeg button").forEach(x=>x.setAttribute("aria-pressed", String(x.dataset.src===cSrc)));
+  $("#meterFields").hidden = cSrc!=="meter";
+  $("#srcHelp").innerHTML = cSrc==="soc"
+    ? 'ง่ายที่สุด แต่เป็นค่า<b>ประมาณ</b> — ความแม่นขึ้นกับค่าที่เรียนรู้จากตู้สาธารณะ'
+    : 'แม่นกว่ามาก — จดเลขมิเตอร์หน้าบ้านก่อนเสียบและหลังถอด ส่วนต่างคือหน่วยที่ใช้จริง (จะมีไฟบ้านอื่น ๆ ปนมาเล็กน้อย)';
+  updateCPreview();
+});
+["cTrip","cSocFrom","cSocTo","cHomeRate","cMeterA","cMeterB"].forEach(id=> $("#"+id).addEventListener("input", updateCPreview));
+$("#cDate").addEventListener("input", ()=>{
+  $("#cDateTh").textContent = $("#cDate").value ? "= " + thDate($("#cDate").value) : "";
+});
+
+/* what this session would record, given whatever is filled in so far */
+function draftCharge(){
+  const trip = num($("#cTrip").value) || 0;
+  const from = num($("#cSocFrom").value);
+  const to   = num($("#cSocTo").value);
+  const gain = (from!==null && to!==null && to>from) ? to-from : null;
+  let kwh = null, total = null, rate = null, metered = false;
+  if(cPlace === "public"){
+    kwh = num($("#cKwh").value); rate = num($("#cRate").value); total = num($("#cTotal").value);
+    if(!(kwh>0) && rate>0 && total>0) kwh = total/rate;
+    if(!(total>0) && kwh>0 && rate>0) total = kwh*rate;
+    if(!(rate>0) && kwh>0 && total>0) rate = total/kwh;
+    metered = kwh>0;
+  } else {
+    rate = num($("#cHomeRate").value) || state.settings.homeRate || 4.9;
+    if(cSrc === "meter"){
+      const a = num($("#cMeterA").value), b = num($("#cMeterB").value);
+      if(a!==null && b!==null && b>a){ kwh = b-a; metered = true; }
+    } else if(gain !== null){
+      kwh = gain * kwhPerPct().value;
+    }
+    if(kwh>0) total = kwh * rate;
+  }
+  return { trip, from, to, gain, kwh, total, rate, metered, src: cPlace==="home" ? cSrc : "receipt" };
+}
+
+function updateCPreview(){
+  const d = draftCharge();
+  const batt = state.settings.battery || 18.3;
+
+  const g = $("#socWrap");
+  if(d.from !== null || d.to !== null){
+    g.style.display = "";
+    const a = Math.max(0, Math.min(100, d.from ?? 0)), b = Math.max(0, Math.min(100, d.to ?? a));
+    $("#socBase").style.width = a+"%";
+    $("#socFill").style.width = b+"%";
+    $("#socFill").style.marginLeft = "0";
+    $("#socTxt").innerHTML = d.gain !== null
+      ? "จาก "+a+"% → "+b+"% = เพิ่มมา <b>"+d.gain+"%</b>"
+      : "กรอก % ก่อนและหลังชาร์จ";
+  } else g.style.display = "none";
+
+  const al = [];
+  if(d.from !== null && d.to !== null && d.to <= d.from)
+    al.push(["bad","⚠️","% หลังชาร์จต้องมากกว่า % ก่อนชาร์จ"]);
+  if(d.gain !== null && d.kwh > 0 && d.metered){
+    const per = d.kwh/d.gain, theory = batt/100;
+    if(per < theory*0.95)
+      al.push(["warn","🤔","ตู้คิด "+fmt(d.kwh,2)+" kWh สำหรับ "+d.gain+"% ซึ่งน้อยกว่าที่แบตรับได้ตามทฤษฎี — ลองเช็ก % หรือหน่วยไฟอีกที"]);
+    else if(per > theory*1.45)
+      al.push(["warn","🤔","ตู้คิดหน่วยสูงผิดปกติ ("+fmt(per/theory*100-100,0)+"% เกินทฤษฎี) — อาจมีค่าบริการรวมอยู่ หรือกรอก % ผิด"]);
+  }
+  const k = (d.trip>0 && d.kwh>0) ? d.trip/d.kwh : null;
+  if(k !== null && (k < 1.5 || k > 15))
+    al.push(["warn","🤔","ได้ "+fmt(k,2)+" กม./kWh ซึ่งผิดปกติ — ลองเช็ก TRIP B อีกที"]);
+  $("#cAlerts").innerHTML = al.map(a=>'<div class="alert '+a[0]+'"><span>'+a[1]+'</span><span>'+a[2]+'</span></div>').join("");
+
+  /* show the arithmetic instead of hiding it */
+  const cb = $("#homeCalc");
+  if(cPlace === "home"){
+    const f = kwhPerPct();
+    const lines = [];
+    if(cSrc === "meter"){
+      const a = num($("#cMeterA").value), b = num($("#cMeterB").value);
+      lines.push(["", "มิเตอร์หลังชาร์จ", b!==null?fmt(b,1):"—"]);
+      lines.push(["−", "มิเตอร์ก่อนชาร์จ", a!==null?fmt(a,1):"—"]);
+      lines.push(["=", "หน่วยไฟที่ใช้จริง", d.kwh>0?fmt(d.kwh,2)+" หน่วย":"—"]);
+    } else {
+      lines.push(["", "แบตเพิ่มขึ้น", d.gain!==null?d.gain+" %":"—"]);
+      lines.push(["×", "หน่วยไฟต่อ 1% "+(f.source==="learned"?"(ค่าจริงที่เรียนรู้มา)":f.source==="manual"?"(ตั้งเอง)":"(ตามป้ายรถ)"), fmt(f.value,3)]);
+      lines.push(["=", "หน่วยไฟที่ใช้ (ประมาณ)", d.kwh>0?fmt(d.kwh,2)+" หน่วย":"—"]);
+    }
+    lines.push(["×", "ค่าไฟบ้าน", fmt(d.rate||0,2)+" ฿/หน่วย"]);
+    cb.innerHTML = lines.map((l,i)=>'<div class="cl'+(i===lines.length-1?"":"")+'"><span class="op">'+l[0]+'</span>'+
+        '<span class="lb">'+l[1]+'</span><span class="vl">'+l[2]+'</span></div>').join("")+
+      '<div class="cl res"><span class="op">=</span><span class="lb">ค่าไฟครั้งนี้</span>'+
+        '<span class="vl">'+(d.total>0?fmt(d.total,2)+" บาท":"—")+'</span></div>'+
+      (cSrc==="soc" && f.source!=="theory"
+        ? '<p class="note">ค่า '+fmt(f.value,3)+' มาจากใบเสร็จตู้สาธารณะ '+f.n+' ครั้ง จึงรวมไฟที่สูญไปตอนชาร์จไว้แล้ว</p>'
+        : cSrc==="soc"
+          ? '<p class="note">ยังไม่มีข้อมูลตู้สาธารณะ จึงใช้ค่าตามป้ายไปก่อน ซึ่งจะ<b>ต่ำกว่าความจริง</b> — ชาร์จข้างนอกสักครั้งแล้วบันทึกไว้ ตัวเลขจะแม่นขึ้นทันที</p>'
+          : '<p class="note">วิธีนี้แม่นที่สุดสำหรับการชาร์จที่บ้าน และจะถูกนำไปช่วยเรียนรู้ค่าจริงของรถด้วย</p>');
+  } else cb.innerHTML = "";
+
+  $("#pKwhKm").textContent   = k!==null ? fmt(k,2)+" กม./kWh" : "–";
+  $("#pElecBahtKm").textContent = (d.total>0 && d.trip>0) ? fmt(d.total/d.trip,2)+" บาท/กม." : "–";
+  $("#pKwh").innerHTML = d.kwh>0
+    ? fmt(d.kwh,2)+" kWh"+(d.metered?"":' <small style="font-size:12px;font-weight:600;color:var(--muted)">(ประมาณ)</small>')
+    : "–";
+  $("#pElecTotal").textContent = d.total>0 ? fmt(d.total,2)+" บาท" : "–";
+}
+
+function cResetForm(){
+  cEditingId = null;
+  $("#cEditBanner").innerHTML = "";
+  $("#cDate").value = todayISO();
+  $("#cDateTh").textContent = "= " + thDate(todayISO());
+  ["cTrip","cSocFrom","cSocTo","cKwh","cRate","cTotal","cStation","cNote","cMeterA","cMeterB"].forEach(id=>{
+    $("#"+id).value=""; $("#"+id).classList.remove("calc");
+  });
+  cTypedOrder = [];
+  const last = cSorted().find(c=>c.metered && c.rate>0);
+  if(last){ $("#cRate").value = Math.round(last.rate*100)/100; cTypedOrder=["rate"]; }
+  $("#cHomeRate").value = state.settings.homeRate;
+  $('#srcSeg button[data-src="soc"]').click();
+  $('#placeSeg button[data-place="home"]').click();
+  $("#cSaveBtn").textContent = "บันทึก";
+  $("#cStationList").innerHTML = [...new Set(state.charges.map(c=>c.station).filter(Boolean))]
+    .map(n=>'<option value="'+n.replace(/"/g,"&quot;")+'">').join("");
+  updateCPreview();
+}
+$("#cCancelBtn").onclick = ()=>{ cResetForm(); go("home"); };
+
+$("#cSaveBtn").onclick = ()=>{
+  const d = draftCharge();
+  if(d.from===null || d.to===null){ toast("กรุณากรอก % แบตก่อนและหลังชาร์จ"); $("#cSocFrom").focus(); return; }
+  if(d.to <= d.from){ toast("% หลังชาร์จต้องมากกว่า % ก่อนชาร์จ"); $("#cSocTo").focus(); return; }
+  if(cPlace==="public" && !(d.kwh>0)){ toast("กรุณากรอกหน่วยไฟ หรือยอดเงิน + ราคาต่อหน่วย"); $("#cKwh").focus(); return; }
+  if(cPlace==="home" && cSrc==="meter" && !(d.kwh>0)){ toast("เลขมิเตอร์หลังชาร์จต้องมากกว่าก่อนชาร์จ"); $("#cMeterB").focus(); return; }
+  if(cPlace==="public" && !(d.total>0)){ toast("กรุณากรอกยอดเงิน หรือราคาต่อหน่วย"); $("#cTotal").focus(); return; }
+  if(!(d.trip>0)){ $("#noTripBModal").hidden = false; return; }
+  cCommit();
+};
+$("#ntbBack").onclick = ()=>{ $("#noTripBModal").hidden = true; $("#cTrip").focus(); $("#cTrip").scrollIntoView({block:"center"}); };
+$("#ntbSkip").onclick = ()=>{ $("#noTripBModal").hidden = true; cCommit(); };
+$("#noTripBModal").onclick = e =>{ if(e.target.id==="noTripBModal") $("#noTripBModal").hidden = true; };
+
+function cCommit(){
+  const d = draftCharge();
+  const rec = {
+    id: cEditingId || ("c"+Date.now().toString(36)+Math.random().toString(36).slice(2,7)),
+    date: $("#cDate").value || todayISO(),
+    trip: d.trip || 0,
+    socFrom: d.from, socTo: d.to,
+    place: cPlace,
+    metered: !!d.metered,
+    src: d.src,
+    kwh: Math.round((d.kwh||0)*1000)/1000,
+    rate: Math.round((d.rate||0)*10000)/10000,
+    total: d.total>0 ? Math.max(Math.round(d.total*100)/100, 0.01) : 0,
+    station: cPlace==="public" ? $("#cStation").value.trim() : "ที่บ้าน",
+    note: $("#cNote").value.trim()
+  };
+  if(cEditingId){
+    const i = state.charges.findIndex(c=>c.id===cEditingId);
+    if(i>=0) state.charges[i] = rec; else state.charges.push(rec);
+    toast("แก้ไขเรียบร้อย");
+  } else {
+    state.charges.push(rec);
+    toast(rec.trip>0 ? "บันทึกแล้ว — "+fmt(rec.trip/rec.kwh,2)+" กม./kWh" : "บันทึกแล้ว (ไม่มี TRIP B)");
+  }
+  save(); cResetForm(); go("home");
+}
+
+function cEditRecord(id){
+  const c = state.charges.find(x=>x.id===id); if(!c) return;
+  cEditingId = id;
+  $("#cEditBanner").innerHTML = '<div class="alert info"><span>✏️</span><span>กำลังแก้ไขการชาร์จวันที่ <b>'+thDate(c.date)+'</b></span></div>';
+  $("#cDate").value = c.date; $("#cDateTh").textContent = "= " + thDate(c.date);
+  $("#cTrip").value = c.trip>0 ? c.trip : "";
+  $("#cSocFrom").value = c.socFrom; $("#cSocTo").value = c.socTo;
+  $('#placeSeg button[data-place="'+(c.place||"home")+'"]').click();
+  if(c.place!=="public"){
+    $("#cHomeRate").value = Math.round((c.rate||state.settings.homeRate)*100)/100;
+    $('#srcSeg button[data-src="'+(c.src==="meter"?"meter":"soc")+'"]').click();
+    if(c.src==="meter"){ $("#cMeterA").value = ""; $("#cMeterB").value = ""; }
+    ["cKwh","cRate","cTotal"].forEach(id=>$("#"+id).value="");
+  }
+  if(c.place==="public"){
+    $("#cKwh").value = Math.round(c.kwh*100)/100;
+    $("#cRate").value = Math.round(c.rate*100)/100;
+    $("#cTotal").value = c.total;
+    $("#cStation").value = c.station==="ที่บ้าน" ? "" : (c.station||"");
+    cTypedOrder = ["kwh","total"];
+  }
+  $("#cNote").value = c.note || "";
+  ["cKwh","cRate","cTotal"].forEach(id=>$("#"+id).classList.remove("calc"));
+  $("#cSaveBtn").textContent = "บันทึกการแก้ไข";
+  updateCPreview(); go("add"); showAdd("elec");
+}
+function cDelRecord(id){
+  const c = state.charges.find(x=>x.id===id); if(!c) return;
+  if(!confirm("ลบการชาร์จวันที่ "+thDate(c.date)+" ?")) return;
+  state.charges = state.charges.filter(x=>x.id!==id);
+  save(); renderHistory(); renderHome(); toast("ลบแล้ว");
+}
+/* backfill TRIP B */
+let addTripBId = null;
+function openAddTripB(id){
+  const c = state.charges.find(x=>x.id===id); if(!c) return;
+  addTripBId = id;
+  $("#atbMsg").innerHTML = "การชาร์จวันที่ <b>"+thDate(ESC(c.date))+"</b><br>ใช้ไฟ "+fmt(c.kwh,2)+" kWh · "+fmt(c.total,2)+" บาท";
+  $("#atbInput").value=""; $("#atbPreview").textContent="";
+  $("#addTripBModal").hidden = false;
+  setTimeout(()=>$("#atbInput").focus(),120);
+}
+$("#atbInput").addEventListener("input", ()=>{
+  const c = state.charges.find(x=>x.id===addTripBId), t = num($("#atbInput").value);
+  $("#atbPreview").innerHTML = (c && t>0) ? "จะได้ <b>"+fmt(t/c.kwh,2)+" กม./kWh</b> · "+fmt(c.total/t,2)+" บาท/กม." : "";
+});
+$("#atbCancel").onclick = ()=>{ $("#addTripBModal").hidden = true; addTripBId=null; };
+$("#addTripBModal").onclick = e =>{ if(e.target.id==="addTripBModal") $("#atbCancel").click(); };
+$("#atbSave").onclick = ()=>{
+  const c = state.charges.find(x=>x.id===addTripBId), t = num($("#atbInput").value);
+  if(!c) return;
+  if(!(t>0)){ toast("กรุณากรอกระยะทาง"); $("#atbInput").focus(); return; }
+  c.trip = t; save(); $("#addTripBModal").hidden = true; addTripBId=null;
+  renderHistory(); renderHome(); toast("คำนวณใหม่แล้ว — "+fmt(t/c.kwh,2)+" กม./kWh");
+};
+
+/* =========================================================
+   5. HOME
+   ========================================================= */
+function renderHome(){
+  const m = measured();
+  const all = state.records;
+  if(m.length){
+    const last = m[m.length-1];
+    const k = kml(last);
+    $("#hLast").textContent = fmt(k,2);
+    $("#hMeta").textContent = thDate(last.date) + " · " + fmt(last.trip,1) + " กม. · " + fmt(last.liters,2) + " ลิตร · " + fmt0(last.total) + " บาท";
+    const d = $("#hDelta");
+    if(m.length>1){
+      const prevK = kml(m[m.length-2]);
+      const diff = k - prevK;
+      const pct = prevK ? diff/prevK*100 : 0;
+      const flat = Math.abs(pct) < 0.5;
+      d.className = "delta " + (flat ? "flat" : (diff>0 ? "up" : "down"));
+      d.textContent = flat ? "≈ เท่าเดิมกับครั้งก่อน"
+        : (diff>0?"▲ ดีขึ้น ":"▼ ลดลง ") + fmt(Math.abs(diff),2)+" กม./ล. ("+fmt(Math.abs(pct),1)+"%) จากครั้งก่อน";
+    } else d.textContent = "";
+  } else {
+    $("#hLast").textContent = "–"; $("#hDelta").textContent = "";
+    $("#hMeta").textContent = all.length ? "ยังต้องเติมอีก 1 ครั้งจึงจะคำนวณได้" : "ยังไม่มีข้อมูล";
+  }
+
+  const totKm = m.reduce((s,r)=>s+r.trip,0);
+  const totL  = m.reduce((s,r)=>s+r.liters,0);
+  const totB  = m.reduce((s,r)=>s+(r.total||0),0);
+  $("#hAvg").innerHTML     = (totL>0 ? fmt(totKm/totL,2) : "–") + '<small>กม./ล.</small>';
+  const ym = todayISO().slice(0,7);
+  const mo = all.filter(r=>(r.date||"").slice(0,7)===ym).reduce((s,r)=>s+(r.total||0),0);
+  $("#hMonth").innerHTML   = fmt0(mo) + '<small>บาท</small>';
+
+  /* ---------- electricity ---------- */
+  const cm = cMeasured();
+  const heroE = $("#heroElec");
+  heroE.style.display = state.charges.length ? "" : "none";
+  if(cm.length){
+    const last = cm[cm.length-1], k = kmkwh(last);
+    $("#eLast").textContent = fmt(k,2);
+    $("#eMeta").textContent = thDate(last.date) + " · " + fmt(last.trip,0) + " กม. · " +
+      fmt(last.kwh,2) + " kWh · " + fmt0(last.total) + " บาท" + (last.metered ? "" : " (ประมาณ)");
+    const d = $("#eDelta");
+    if(cm.length>1){
+      const prev = kmkwh(cm[cm.length-2]), diff = k - prev, pct = prev ? diff/prev*100 : 0;
+      const flat = Math.abs(pct) < 0.5;
+      d.className = "delta " + (flat ? "flat" : (diff>0 ? "up" : "down"));
+      d.textContent = flat ? "≈ เท่าเดิมกับครั้งก่อน"
+        : (diff>0?"▲ ดีขึ้น ":"▼ ลดลง ") + fmt(Math.abs(diff),2)+" กม./kWh ("+fmt(Math.abs(pct),1)+"%) จากครั้งก่อน";
+    } else d.textContent = "";
+  } else if(state.charges.length){
+    $("#eLast").textContent = "–"; $("#eDelta").textContent = "";
+    $("#eMeta").textContent = "ยังต้องชาร์จอีก 1 ครั้งจึงจะคำนวณได้";
+  }
+  const eKm = cm.reduce((s,c)=>s+c.trip,0);
+  const eKwh = cm.reduce((s,c)=>s+c.kwh,0);
+  const eBahtM = cm.reduce((s,c)=>s+c.total,0);
+  const eBahtAll = state.charges.reduce((s,c)=>s+(c.total||0),0);
+  $("#eAvg").innerHTML  = (eKwh>0 ? fmt(eKm/eKwh,2) : "–") + '<small>กม./kWh</small>';
+  $("#eMonth").innerHTML = fmt0(state.charges.filter(c=>(c.date||"").slice(0,7)===ym)
+    .reduce((s,c)=>s+(c.total||0),0)) + '<small>บาท</small>';
+
+  /* ---------- combined cost per km ----------
+     Fuel km and electricity km are two windowed views of the SAME odometer
+     distance, so they must never be added. Each side's baht/km is already a
+     rate on its own measured distance — adding the two RATES is what gives
+     the true total cost per kilometre. */
+  const B = costBasis(state.records, state.charges);
+  const fRate = B.fuelRate, eRate = B.elecRate, both = B.totalRate || 0;
+  $("#cFuel").innerHTML = fRate!==null ? fmt(fRate,2)+' <small style="font-size:12px;color:var(--muted)">บาท/กม.</small>' : "–";
+  $("#cElec").innerHTML = eRate!==null ? fmt(eRate,2)+' <small style="font-size:12px;color:var(--muted)">บาท/กม.</small>' : "–";
+  $("#cAll").innerHTML = both>0 ? fmt(both,2)+' <small style="font-size:13px;color:var(--muted)">บาท/กม.</small>' : "–";
+  $("#costCard").style.display = both>0 ? "" : "none";
+  if(both>0){
+    const fp = (fRate||0)/both*100;
+    $("#cSplit").innerHTML = '<i class="fuel" style="width:'+fp.toFixed(1)+'%"></i><i class="elec" style="width:'+(100-fp).toFixed(1)+'%"></i>';
+    $("#cSplitLbl").innerHTML = 'ต้นทุนมาจากน้ำมัน <b>'+fmt(fp,0)+'%</b> · ไฟฟ้า <b>'+fmt(100-fp,0)+'%</b>'+
+      '<br><span style="font-size:12px">คิดจากเงินรวม '+fmt0(B.fBaht+B.eBaht)+' บาท ÷ ระยะ '+fmt0(B.ref)+' กม.</span>';
+  } else { $("#cSplit").innerHTML=""; $("#cSplitLbl").textContent=""; }
+  $("#coverWarn").innerHTML = coverageWarning(B);
+
+  renderDash();
+  $("#homeTip").style.display = (all.length || state.charges.length) ? "none" : "";
+  const w = $("#homeMiniWrap");
+  if(m.length>=2){
+    w.style.display="";
+    drawLine($("#homeMini"), m.slice(-8).map(r=>({x:thDateShort(r.date), xFull:thDate(r.date), y:kml(r), sub:fmt(r.trip,0)+" กม. · "+fmt(r.liters,2)+" ล."})),
+      {color:"var(--series-1)", unit:"กม./ล.", height:170, zero:false});
+  } else w.style.display="none";
+}
+
+
+/* =========================================================
+   5b. CAR DASHBOARD
+   The app never sees the car's sensors, so these levels are
+   ESTIMATES derived from the owner's own measured averages plus
+   the TRIP numbers they type in. Every label says ประมาณ, and
+   nothing here feeds the statistics.
+   ========================================================= */
+function nowTrips(){
+  try{ return JSON.parse(localStorage.getItem(KEY+".now") || "{}"); }catch(e){ return {}; }
+}
+function setNowTrips(o){ localStorage.setItem(KEY+".now", JSON.stringify(o)); }
+
+function estimateLevels(){
+  const n = nowTrips();
+  const tank = state.settings.tank || 45;
+  const batt = state.settings.battery || 18.3;
+  const evRange = state.settings.evRange || 120;
+  const m = measured();
+  const kmpl = m.length ? m.reduce((a,r)=>a+r.trip,0) / m.reduce((a,r)=>a+r.liters,0) : null;
+
+  let fuelL = null, fuelPct = null, soc = null, evLeft = null, fuelKm = null;
+  if(n.a >= 0 && kmpl){
+    fuelL = Math.max(0, tank - n.a / kmpl);
+    fuelPct = Math.max(0, Math.min(100, fuelL / tank * 100));
+    fuelKm = fuelL * kmpl;
+  }
+  const lastCharge = cSorted()[0];
+  if(n.b >= 0 && lastCharge){
+    /* battery drain is paced by the car's EV range, not by the blended
+       km/kWh figure — that one includes petrol kilometres */
+    soc = Math.max(0, Math.min(100, (lastCharge.socTo || 100) - (n.b / evRange * 100)));
+    evLeft = soc / 100 * evRange;
+  }
+  return { fuelL, fuelPct, fuelKm, soc, evLeft, kmpl, tank, evRange, hasA: n.a>=0, hasB: n.b>=0 };
+}
+
+function renderDash(){
+  const L = estimateLevels();
+  $("#dashCar").textContent = state.settings.car || "BYD Seal 5 DM-i";
+
+  const setBar = (barId, valId, pct, text) => {
+    const bar = $(barId);
+    bar.style.width = (pct===null ? 0 : pct) + "%";
+    bar.classList.toggle("low", pct !== null && pct < 15);
+    $(valId).textContent = text;
+  };
+  setBar("#lvlFuelBar", "#lvlFuelV",
+    L.fuelPct, L.fuelPct===null ? "–" : fmt(L.fuelL,1)+" ล. ("+fmt(L.fuelPct,0)+"%)");
+  setBar("#lvlBattBar", "#lvlBattV",
+    L.soc, L.soc===null ? "–" : fmt(L.soc,0)+"%");
+
+  /* badges drawn on the car body */
+  const g = $("#carBadges");
+  const pill = (x, txt, col) =>
+    '<g><rect x="'+x+'" y="76" width="62" height="21" rx="10.5" fill="'+col+'"/>'+
+    '<text x="'+(x+31)+'" y="90.5" text-anchor="middle" class="badgepill" fill="#fff">'+txt+'</text></g>';
+  g.innerHTML =
+    (L.soc!==null     ? pill(152, "\u26A1 "+fmt(L.soc,0)+"%",    "var(--elec-ink)") : "") +
+    (L.fuelPct!==null ? pill(220, "\u26FD "+fmt(L.fuelPct,0)+"%", "var(--series-1)") : "");
+
+  const note = $("#lvlNote");
+  if(L.fuelPct===null && L.soc===null){
+    note.innerHTML = L.kmpl
+      ? "กรอกเลข TRIP จากหน้าจอรถด้านล่าง เพื่อดูว่าตอนนี้เหลือเท่าไหร่"
+      : "ยังไม่มีสถิติพอจะประมาณระดับได้ — บันทึกการเติมสัก 2 ครั้งก่อน";
+  } else {
+    const parts = [];
+    if(L.fuelKm!==null) parts.push("น้ำมันวิ่งได้อีกราว <b>"+fmt0(L.fuelKm)+" กม.</b>");
+    if(L.evLeft!==null) parts.push("ไฟฟ้าอีกราว <b>"+fmt0(L.evLeft)+" กม.</b>");
+    note.innerHTML = parts.join(" · ") + "<br><span style=\"font-size:11px\">ค่าประมาณจากสถิติของคุณเอง ไม่ใช่ตัวเลขจากรถ</span>";
+  }
+}
+["nowA","nowB"].forEach(id=>{
+  $("#"+id).addEventListener("input", ()=>{
+    const o = nowTrips();
+    const v = num($("#"+id).value);
+    o[id==="nowA"?"a":"b"] = (v>=0 ? v : undefined);
+    setNowTrips(o); renderDash();
+  });
+});
+$("#clearNow").onclick = ()=>{
+  setNowTrips({}); $("#nowA").value=""; $("#nowB").value=""; renderDash();
+  toast("ล้างค่าแล้ว");
+};
+
+/* =========================================================
+   6. HISTORY
+   ========================================================= */
+/* ---- grand cost summary table ---- */
+function renderGrandTable(){
+  const box = $("#grandTable"); if(!box) return;
+  const rs = sorted(), m = measured();
+  if(!rs.length){ box.innerHTML=""; return; }
+  const km = m.reduce((s,r)=>s+r.trip,0);
+  const litAll = rs.reduce((s,r)=>s+r.liters,0);
+  const litM = m.reduce((s,r)=>s+r.liters,0);
+  const baht = rs.reduce((s,r)=>s+r.total,0);
+  /* cost-per-km must pair spending with the distance it actually covered,
+     so it uses only fills that have a TRIP A reading */
+  const bahtM = m.reduce((s,r)=>s+r.total,0);
+  const row = (k,v,hl)=>'<tr><td style="text-align:left;font-weight:650;color:var(--text-secondary)">'+k+'</td>'+
+    '<td style="font-weight:'+(hl?800:700)+';'+(hl?'color:var(--series-1);font-size:15px':'')+'">'+v+'</td></tr>';
+  box.innerHTML = '<div class="card" style="padding:14px"><h2>สรุปค่าใช้จ่ายทั้งหมด</h2>'+
+    '<p class="hint">ยอดสะสมตั้งแต่เริ่มบันทึก ('+thDateMini(asc()[0].date)+' – '+thDateMini(rs[0].date)+')</p>'+
+    '<table class="tbl"><tbody>'+
+      row("จำนวนครั้งที่เติม", rs.length+" ครั้ง")+
+      row("น้ำมันรวม", fmt(litAll,2)+" ลิตร")+
+      row("<b>ค่าน้ำมันรวมทั้งหมด</b>", fmt0(baht)+" บาท", true)+
+      row("ระยะทางรวม", fmt0(km)+" กม.")+
+      row("อัตราสิ้นเปลืองเฉลี่ย", (litM>0?fmt(km/litM,2):"—")+" กม./ลิตร", true)+
+      row("ค่าน้ำมันเฉลี่ย", (km>0?fmt(bahtM/km,2):"—")+" บาท/กม.")+
+      row("ราคาน้ำมันเฉลี่ยที่เติม", (litAll>0?fmt(baht/litAll,2):"—")+" บาท/ลิตร")+
+      row("จ่ายเฉลี่ยต่อการเติม 1 ครั้ง", fmt0(baht/rs.length)+" บาท")+
+      row("เติมเฉลี่ยต่อครั้ง", fmt(litAll/rs.length,2)+" ลิตร")+
+      row("วิ่งได้เฉลี่ยต่อถัง", (m.length?fmt0(km/m.length):"—")+" กม.")+
+    '</tbody></table></div>';
+}
+
+/* ---- monthly roll-up ---- */
+function monthlyRows(){
+  const by = {};
+  asc().forEach(r=>{
+    const k = (r.date||"").slice(0,7); if(!k) return;
+    const b = by[k] || (by[k] = {n:0, liters:0, baht:0, km:0, mLiters:0});
+    b.n++; b.liters += r.liters||0; b.baht += r.total||0;
+    if(r.trip>0){ b.km += r.trip; b.mLiters += r.liters||0; }
+  });
+  return Object.keys(by).sort().reverse().map(k=>Object.assign({ym:k}, by[k]));
+}
+function renderMonthTable(){
+  const box = $("#monthTable"); if(!box) return;
+  const rows = monthlyRows();
+  if(!rows.length){ box.innerHTML=""; return; }
+  const tot = rows.reduce((a,b)=>({n:a.n+b.n, liters:a.liters+b.liters, baht:a.baht+b.baht, km:a.km+b.km, mLiters:a.mLiters+b.mLiters}),
+                          {n:0,liters:0,baht:0,km:0,mLiters:0});
+  box.innerHTML = '<div class="card" style="padding:14px"><h2>สรุปรายเดือน</h2>'+
+    '<p class="hint">แต่ละเดือนเติมกี่ครั้ง กี่ลิตร และจ่ายไปเท่าไหร่</p>'+
+    '<div class="htable"><table class="tbl" style="min-width:480px">'+
+    '<thead><tr><th style="text-align:left">เดือน</th><th>ครั้ง</th><th>ลิตร</th><th>ยอดเงิน<br>(บาท)</th><th>ระยะ<br>(กม.)</th><th>กม./ล.<br>เฉลี่ย</th></tr></thead><tbody>'+
+    rows.map(r=>'<tr>'+
+      '<td style="text-align:left;white-space:nowrap;font-weight:750">'+thMonth(r.ym)+'</td>'+
+      '<td>'+r.n+'</td>'+
+      '<td>'+fmt(r.liters,2)+'</td>'+
+      '<td style="font-weight:800">'+fmt0(r.baht)+'</td>'+
+      '<td>'+(r.km?fmt0(r.km):"—")+'</td>'+
+      '<td style="font-weight:800;color:var(--series-1)">'+(r.mLiters>0?fmt(r.km/r.mLiters,2):"—")+'</td>'+
+    '</tr>').join("")+
+    '</tbody><tfoot><tr style="border-top:2px solid var(--axis)">'+
+      '<td style="text-align:left;font-weight:800;padding-top:10px">รวมทั้งหมด</td>'+
+      '<td style="font-weight:800;padding-top:10px">'+tot.n+'</td>'+
+      '<td style="font-weight:800;padding-top:10px">'+fmt(tot.liters,2)+'</td>'+
+      '<td style="font-weight:800;padding-top:10px">'+fmt0(tot.baht)+'</td>'+
+      '<td style="font-weight:800;padding-top:10px">'+fmt0(tot.km)+'</td>'+
+      '<td style="font-weight:800;padding-top:10px;color:var(--series-1)">'+(tot.mLiters>0?fmt(tot.km/tot.mLiters,2):"—")+'</td>'+
+    '</tr></tfoot></table></div></div>';
+}
+
+let histMode = localStorage.getItem(KEY+".histMode") || "table";
+$$("#histSeg button").forEach(b=> b.onclick = ()=>{
+  histMode = b.dataset.mode; localStorage.setItem(KEY+".histMode", histMode); renderHistory();
+});
+
+function renderHistory(){
+  $$("#histKind button").forEach(b=> b.setAttribute("aria-pressed", String(b.dataset.kind===histKind)));
+  $("#histFuel").hidden = histKind!=="fuel";
+  $("#histElec").hidden = histKind!=="elec";
+  $("#histAll").hidden  = histKind!=="all";
+  if(histKind==="elec"){ renderHistElec(); return; }
+  if(histKind==="all"){ renderHistAll(); return; }
+  const rs = sorted();
+  const m = measured();
+  $$("#histSeg button").forEach(b=> b.setAttribute("aria-pressed", String(b.dataset.mode===histMode)));
+
+  const box = $("#historyList"), tbox = $("#historyTable");
+  $("#resetCard").style.display = rs.length ? "" : "none";
+  $("#histSeg").style.display = rs.length ? "" : "none";
+  renderGrandTable();
+  renderMonthTable();
+  if(!rs.length){
+    tbox.innerHTML = "";
+    box.innerHTML = '<div class="empty"><div class="big">⛽</div><p>ยังไม่มีรายการ</p><small>กดแท็บ “บันทึก” ด้านล่างเพื่อเพิ่มการเติมครั้งแรก</small></div>';
+    return;
+  }
+
+  /* ---- table view ---- */
+  if(histMode === "table"){
+    box.innerHTML = "";
+    const esc = s => (s||"").replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+    tbox.innerHTML = '<div class="card" style="padding:14px"><h2>ประวัติการเติมทั้งหมด</h2>'+
+      '<p class="hint">เรียงจากครั้งล่าสุดขึ้นก่อน</p>'+
+      '<table class="tbl dense grouped warm">'+
+      '<thead><tr><th style="text-align:left">วันที่ / ปั๊ม</th><th>ระยะ<br>(กม.)</th><th>ลิตร</th><th>฿/ล.</th><th>ยอดเงิน<br>(บาท)</th><th>กม./<br>ลิตร</th></tr></thead><tbody>'+
+      (()=>{
+        const by = {};
+        rs.forEach(r=>{ const k=(r.date||"").slice(0,7); (by[k] || (by[k]=[])).push(r); });
+        return Object.keys(by).sort().reverse().map(ym=>{
+          const g = by[ym];
+          const gm = g.filter(r=>r.trip>0 && r.liters>0);
+          const km = gm.reduce((s,r)=>s+r.trip,0);
+          const litM = gm.reduce((s,r)=>s+r.liters,0);
+          const litAll = g.reduce((s,r)=>s+r.liters,0);
+          const baht = g.reduce((s,r)=>s+r.total,0);
+          return '<tr class="mhead"><td colspan="6">'+thMonth(ym)+' · '+g.length+' ครั้ง</td></tr>'+
+            g.map(r=>{
+              const k = kml(r);
+              return '<tr'+(k===null?' class="nomeasure"':'')+'>'+
+                '<td class="st"><span class="d">'+thDateMini(r.date)+'</span>'+
+                  (r.station?'<span class="s">'+esc(r.station)+'</span>':'')+'</td>'+
+                '<td>'+(r.trip>0?fmt(r.trip,0):'<button class="addtrip" data-addtrip="'+r.id+'" title="เติมเลข TRIP A ย้อนหลัง">＋ เพิ่ม</button>')+'</td>'+
+                '<td>'+fmt(r.liters,2)+'</td>'+
+                '<td>'+fmt(r.price,2)+'</td>'+
+                '<td style="font-weight:750">'+fmt0(r.total)+'</td>'+
+                '<td style="font-weight:800;color:'+(k===null?'var(--muted)':'var(--series-1)')+'">'+(k===null?"—":fmt(k,2))+'</td>'+
+              '</tr>'+
+              (r.note?'<tr class="noterow'+(k===null?' nomeasure':'')+'"><td colspan="6">📝 '+esc(r.note)+'</td></tr>':'');
+            }).join("")+
+            '<tr class="msum">'+
+              '<td style="text-align:left">รวม / เฉลี่ย</td>'+
+              '<td>'+(km?fmt0(km):"—")+'</td>'+
+              '<td>'+fmt(litAll,1)+'</td>'+
+              '<td>'+(litAll>0?fmt(baht/litAll,2):"—")+'</td>'+
+              '<td>'+fmt0(baht)+'</td>'+
+              '<td style="color:var(--series-1)">'+(litM>0?fmt(km/litM,2):"—")+'</td>'+
+            '</tr>'+
+            '<tr class="gap"><td colspan="6"></td></tr>';
+        }).join("");
+      })()+
+      '</tbody><tfoot><tr>'+
+        '<td style="text-align:left;font-weight:800">รวม '+rs.length+' ครั้ง</td>'+
+        '<td style="font-weight:800">'+fmt0(m.reduce((s,r)=>s+r.trip,0))+'</td>'+
+        '<td style="font-weight:800">'+fmt(rs.reduce((s,r)=>s+r.liters,0),1)+'</td>'+
+        '<td>—</td>'+
+        '<td style="font-weight:800">'+fmt0(rs.reduce((s,r)=>s+r.total,0))+'</td>'+
+        '<td style="font-weight:800;color:var(--series-1)">'+
+          (m.length? fmt(m.reduce((s,r)=>s+r.trip,0)/m.reduce((s,r)=>s+r.liters,0),2) : "—")+'</td>'+
+      '</tr></tfoot></table>'+
+      (rs.some(r=>kml(r)===null)?'<p class="scrollhint">แถวสีจาง = ครั้งที่ไม่มีเลข TRIP A จึงคำนวณ กม./ลิตร ไม่ได้ — ถ้านึกออกทีหลังว่าวิ่งไปเท่าไหร่ กด <b>＋ เพิ่ม</b> ในช่องระยะเพื่อเติมย้อนหลังได้</p>':'')+
+      '<button class="btn small ghost" id="toCards" style="margin-top:12px">✏️ แก้ไข / ลบรายการ</button></div>';
+    $("#toCards").onclick = ()=>{ histMode="card"; localStorage.setItem(KEY+".histMode","card"); renderHistory(); };
+    tbox.querySelectorAll("[data-addtrip]").forEach(b=> b.onclick = ()=>openAddTrip(b.dataset.addtrip));
+    return;
+  }
+
+  /* ---- card view ---- */
+  tbox.innerHTML = "";
+  box.innerHTML = rs.map(r=>{
+    const k = kml(r);
+    const esc = s => (s||"").replace(/[&<>]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+    return '<div class="entry">'+
+      '<div class="hd"><div><div class="date">'+thDate(r.date)+'</div>'+
+        (r.station?'<div class="station">📍 '+esc(r.station)+'</div>':'')+'</div>'+
+        (k!==null?'<div class="kml">'+fmt(k,2)+'<small>กม./ลิตร</small></div>':'<div class="kml" style="color:var(--muted);font-size:13.5px;font-weight:650">ไม่มี TRIP A<br><small style="text-align:right">คำนวณไม่ได้</small></div>')+
+      '</div>'+
+      '<div class="grid">'+
+        '<div>ระยะ TRIP A<b>'+(r.trip>0?fmt(r.trip,1):"–")+'</b></div>'+
+        '<div>เติม (ลิตร)<b>'+fmt(r.liters,2)+'</b></div>'+
+        '<div>ยอดเงิน (บาท)<b>'+fmt0(r.total)+'</b></div>'+
+        '<div>ราคา/ลิตร<b>'+fmt(r.price,2)+'</b></div>'+
+        '<div>บาท/กม.<b>'+(r.trip>0?fmt(r.total/r.trip,2):"–")+'</b></div>'+
+        '<div>ล./100 กม.<b>'+(k!==null?fmt(100/k,2):"–")+'</b></div>'+
+      '</div>'+
+      (r.note? '<div class="note">📝 '+esc(r.note)+'</div>':'')+
+      '<div class="acts">'+(k===null?'<button data-addtrip="'+r.id+'" style="color:var(--series-1);border-color:var(--series-1)">＋ เติม TRIP A</button>':'')+
+        '<button data-edit="'+r.id+'">แก้ไข</button><button class="del" data-del="'+r.id+'">ลบ</button></div>'+
+    '</div>';
+  }).join("");
+  box.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>editRecord(b.dataset.edit));
+  box.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>delRecord(b.dataset.del));
+  box.querySelectorAll("[data-addtrip]").forEach(b=>b.onclick=()=>openAddTrip(b.dataset.addtrip));
+}
+
+/* =========================================================
+   6b. ELECTRICITY + COMBINED VIEWS
+   ========================================================= */
+let histKind = localStorage.getItem(KEY+".histKind") || "fuel";
+let statKind = localStorage.getItem(KEY+".statKind") || "fuel";
+$$("#histKind button").forEach(b=> b.onclick = ()=>{
+  histKind = b.dataset.kind; localStorage.setItem(KEY+".histKind", histKind); renderHistory();
+});
+$$("#statKind button").forEach(b=> b.onclick = ()=>{
+  statKind = b.dataset.kind; localStorage.setItem(KEY+".statKind", statKind); renderStats();
+});
+
+const ESC = s => (s||"").replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ---- month roll-up over charges ---- */
+function chargeMonths(){
+  const by = {};
+  cAsc().forEach(c=>{
+    const k=(c.date||"").slice(0,7); if(!k) return;
+    const b = by[k] || (by[k]={n:0,kwh:0,baht:0,km:0,mKwh:0,pct:0});
+    b.n++; b.kwh += c.kwh||0; b.baht += c.total||0; b.pct += (c.socTo-c.socFrom)||0;
+    if(c.trip>0 && c.kwh>0){ b.km += c.trip; b.mKwh += c.kwh; }
+  });
+  return Object.keys(by).sort().reverse().map(k=>Object.assign({ym:k}, by[k]));
+}
+
+/* ---- combined month roll-up: fuel + electricity side by side ---- */
+function combinedMonths(){
+  const keys = new Set();
+  state.records.forEach(r=>{ if(r.date) keys.add(r.date.slice(0,7)); });
+  state.charges.forEach(c=>{ if(c.date) keys.add(c.date.slice(0,7)); });
+  return [...keys].sort().reverse().map(ym=>{
+    const fr = state.records.filter(r=>(r.date||"").slice(0,7)===ym);
+    const cr = state.charges.filter(c=>(c.date||"").slice(0,7)===ym);
+    const fm = fr.filter(r=>r.trip>0 && r.liters>0);
+    const cm = cr.filter(c=>c.trip>0 && c.kwh>0);
+    const b = costBasis(fr, cr);
+    /* Within a single month the two logs do NOT tile the same distance — a tank
+       lasts months while charges are weekly — so each side is divided by the
+       distance it actually measured, and the combined rate is only offered when
+       both sides have data. */
+    const combinable = b.fKm>0 && b.eKm>0;
+    return {
+      ym,
+      fuelBaht: fr.reduce((s,r)=>s+(r.total||0),0),
+      elecBaht: cr.reduce((s,c)=>s+(c.total||0),0),
+      fuelRate: b.fuelOwnRate, elecRate: b.elecOwnRate,
+      totalRate: combinable ? b.fuelOwnRate + b.elecOwnRate : null,
+      partial: !combinable,
+      kml: fm.length ? b.fKm/fm.reduce((s,r)=>s+r.liters,0) : null,
+      kmkwh: cm.length ? b.eKm/cm.reduce((s,c)=>s+c.kwh,0) : null,
+      km: b.ref, fKm: b.fKm, eKm: b.eKm
+    };
+  });
+}
+
+/* ---- history: electricity ---- */
+function renderHistElec(){
+  const box = $("#histElec");
+  const cs = cSorted(), cm = cMeasured();
+  if(!cs.length){
+    box.innerHTML = '<div class="empty"><div class="big">🔌</div><p>ยังไม่มีการชาร์จ</p>'+
+      '<small>กดแท็บ “บันทึก” แล้วเลือก 🔌 ไฟฟ้า เพื่อเพิ่มครั้งแรก</small></div>';
+    return;
+  }
+  const kwhAll = cs.reduce((s,c)=>s+c.kwh,0), bahtAll = cs.reduce((s,c)=>s+c.total,0);
+  const km = cm.reduce((s,c)=>s+c.trip,0), kwhM = cm.reduce((s,c)=>s+c.kwh,0);
+  const f = kwhPerPct(), eff = chargeEff();
+  const row=(k,v,hl)=>'<tr><td style="text-align:left;font-weight:650;color:var(--text-secondary)">'+k+'</td>'+
+    '<td style="font-weight:'+(hl?800:700)+';'+(hl?'color:var(--elec-ink);font-size:15px':'')+'">'+v+'</td></tr>';
+
+  box.innerHTML =
+  '<div class="card" style="padding:14px"><h2>สรุปค่าไฟทั้งหมด</h2>'+
+    '<p class="hint">ยอดสะสมตั้งแต่เริ่มบันทึก ('+thDateMini(cAsc()[0].date)+' – '+thDateMini(cs[0].date)+')</p>'+
+    '<table class="tbl"><tbody>'+
+      row("จำนวนครั้งที่ชาร์จ", cs.length+" ครั้ง")+
+      row("หน่วยไฟรวม", fmt(kwhAll,2)+" kWh")+
+      row("<b>ค่าไฟรวมทั้งหมด</b>", fmt0(bahtAll)+" บาท", true)+
+      row("ระยะทางรวม", fmt0(km)+" กม.")+
+      row("อัตราการใช้ไฟเฉลี่ย", (kwhM>0?fmt(km/kwhM,2):"—")+" กม./kWh", true)+
+      row("เท่ากับ", (km>0?fmt(kwhM/km*100,2):"—")+" kWh/100 กม.")+
+      row("ค่าไฟเฉลี่ย", (km>0?fmt(cm.reduce((s,c)=>s+c.total,0)/km,2):"—")+" บาท/กม.")+
+      row("ราคาต่อหน่วยเฉลี่ย", (kwhAll>0?fmt(bahtAll/kwhAll,2):"—")+" บาท/kWh")+
+    '</tbody></table></div>'+
+
+  '<div class="card" style="padding:14px"><h2>ค่าจริงของรถคันนี้</h2>'+
+    '<p class="hint">ใช้ประมาณหน่วยไฟตอนชาร์จที่บ้าน ซึ่งไม่มีมิเตอร์</p>'+
+    '<table class="tbl"><tbody>'+
+      row("หน่วยไฟต่อแบต 1%", fmt(f.value,3)+" kWh", true)+
+      row("ตามป้ายรถ (ทฤษฎี)", fmt((state.settings.battery||18.3)/100,3)+" kWh")+
+      row("ประสิทธิภาพการชาร์จ", eff ? fmt(eff*100,1)+" %" : "—")+
+      row("ที่มา", f.source==="learned" ? "เรียนรู้จากครั้งที่วัดหน่วยจริง "+f.n+" ครั้ง"
+            : f.source==="manual" ? "ตั้งค่าเอง" : "ยังใช้ค่าตามป้าย (ยังไม่มีข้อมูลตู้)")+
+    '</tbody></table>'+
+    (f.source==="theory"
+      ? '<div class="alert info" style="margin:12px 0 0;font-size:13.5px"><span>💡</span><span>พอบันทึกการชาร์จที่<b>ตู้สาธารณะ</b>สักครั้ง ระบบจะเรียนรู้ค่าจริงเองทันที แล้วค่าไฟบ้านจะแม่นขึ้น</span></div>'
+      : '<div class="alert info" style="margin:12px 0 0;font-size:13.5px"><span>ℹ️</span><span>ส่วนต่างจากค่าตามป้ายคือพลังงานที่หายไปกับความร้อนตอนแปลงไฟ ระบบระบายความร้อนแบต และช่วงท้ายที่ชาร์จช้าลง — เป็นเรื่องปกติของรถทุกคัน</span></div>')+
+  '</div>'+
+
+  '<div class="card" style="padding:14px"><h2>ประวัติการชาร์จทั้งหมด</h2>'+
+    '<p class="hint">เรียงจากครั้งล่าสุดขึ้นก่อน · แถบสีเขียวคือแต่ละเดือน</p>'+
+    '<table class="tbl dense grouped warm elecband">'+
+    '<thead><tr><th style="text-align:left">วันที่ / ที่ชาร์จ</th><th>ระยะ<br>(กม.)</th><th>%</th><th>kWh</th><th>ค่าไฟ<br>(บาท)</th><th>กม./<br>kWh</th></tr></thead><tbody>'+
+    (()=>{
+      const by = {};
+      cs.forEach(c=>{ const k=(c.date||"").slice(0,7); (by[k]||(by[k]=[])).push(c); });
+      return Object.keys(by).sort().reverse().map(ym=>{
+        const g = by[ym], gm = g.filter(c=>c.trip>0 && c.kwh>0);
+        const gkm = gm.reduce((s,c)=>s+c.trip,0), gkwhM = gm.reduce((s,c)=>s+c.kwh,0);
+        const gkwh = g.reduce((s,c)=>s+c.kwh,0), gb = g.reduce((s,c)=>s+c.total,0);
+        return '<tr class="mhead"><td colspan="6">'+thMonth(ym)+' · '+g.length+' ครั้ง</td></tr>'+
+          g.map(c=>{
+            const k = kmkwh(c);
+            return '<tr'+(k===null?' class="nomeasure"':'')+'>'+
+              '<td class="st"><span class="d">'+thDateMini(c.date)+'</span>'+
+                '<span class="s">'+(c.place==="home"?"🏠 ที่บ้าน":"⚡ "+ESC(c.station||"ตู้สาธารณะ"))+'</span></td>'+
+              '<td>'+(c.trip>0?fmt0(c.trip):'<button class="addtrip elec" data-addtripb="'+c.id+'">＋ เพิ่ม</button>')+'</td>'+
+              '<td class="soc"><span class="full">'+c.socFrom+'→'+c.socTo+'</span>'+
+                '<span class="gain">+'+(c.socTo-c.socFrom)+'</span></td>'+
+              '<td>'+fmt(c.kwh,2)+(c.metered?"":'<span class="estmark">ประมาณ</span>')+'</td>'+
+              '<td style="font-weight:750">'+fmt0(c.total)+'</td>'+
+              '<td style="font-weight:800;color:'+(k===null?'var(--muted)':'var(--elec-ink)')+'">'+(k===null?"—":fmt(k,2))+'</td>'+
+            '</tr>'+
+            (c.note?'<tr class="noterow'+(k===null?' nomeasure':'')+'"><td colspan="6">📝 '+ESC(c.note)+'</td></tr>':'');
+          }).join("")+
+          '<tr class="msum"><td style="text-align:left">รวม / เฉลี่ย</td>'+
+            '<td>'+(gkm?fmt0(gkm):"—")+'</td><td>—</td>'+
+            '<td>'+fmt(gkwh,1)+'</td><td>'+fmt0(gb)+'</td>'+
+            '<td style="color:var(--elec-ink)">'+(gkwhM>0?fmt(gkm/gkwhM,2):"—")+'</td></tr>'+
+          '<tr class="gap"><td colspan="6"></td></tr>';
+      }).join("");
+    })()+
+    '</tbody><tfoot><tr>'+
+      '<td style="text-align:left;font-weight:800">รวม '+cs.length+' ครั้ง</td>'+
+      '<td style="font-weight:800">'+fmt0(km)+'</td><td>—</td>'+
+      '<td style="font-weight:800">'+fmt(kwhAll,1)+'</td>'+
+      '<td style="font-weight:800">'+fmt0(bahtAll)+'</td>'+
+      '<td style="font-weight:800;color:var(--elec-ink)">'+(kwhM>0?fmt(km/kwhM,2):"—")+'</td>'+
+    '</tr></tfoot></table>'+
+    '<p class="scrollhint">คำว่า <b>ประมาณ</b> ต่อท้ายหน่วยไฟ = ชาร์จที่บ้านซึ่งไม่มีมิเตอร์ ระบบคำนวณให้จาก % แบต · แถวสีจาง = ไม่มีเลข TRIP B</p>'+
+    '<button class="btn small ghost" id="toCardsE" style="margin-top:12px">✏️ แก้ไข / ลบรายการ</button>'+
+  '</div>'+
+  '<div id="elecCards"></div>';
+
+  box.querySelectorAll("[data-addtripb]").forEach(b=> b.onclick = ()=>openAddTripB(b.dataset.addtripb));
+  $("#toCardsE").onclick = ()=>{
+    $("#elecCards").innerHTML = cs.map(c=>{
+      const k = kmkwh(c);
+      return '<div class="entry"><div class="hd"><div><div class="date">'+thDate(c.date)+'</div>'+
+        '<div class="station">'+(c.place==="home"?"🏠 ที่บ้าน":"⚡ "+ESC(c.station||"ตู้สาธารณะ"))+'</div></div>'+
+        (k!==null?'<div class="kml" style="color:var(--elec-ink)">'+fmt(k,2)+'<small>กม./kWh</small></div>'
+                 :'<div class="kml" style="color:var(--muted);font-size:13.5px;font-weight:650">ไม่มี TRIP B</div>')+'</div>'+
+        '<div class="grid"><div>ระยะ TRIP B<b>'+(c.trip>0?fmt0(c.trip):"–")+'</b></div>'+
+        '<div>แบต<b>'+c.socFrom+'→'+c.socTo+'%</b></div>'+
+        '<div>หน่วยไฟ<b>'+fmt(c.kwh,2)+'</b></div>'+
+        '<div>ค่าไฟ (บาท)<b>'+fmt0(c.total)+'</b></div>'+
+        '<div>฿/kWh<b>'+fmt(c.rate,2)+'</b></div>'+
+        '<div>บาท/กม.<b>'+(c.trip>0?fmt(c.total/c.trip,2):"–")+'</b></div></div>'+
+        (c.note?'<div class="note">📝 '+ESC(c.note)+'</div>':'')+
+        '<div class="acts">'+(k===null?'<button data-atb="'+c.id+'" style="color:var(--elec-ink);border-color:var(--elec-ink)">＋ เติม TRIP B</button>':'')+
+        '<button data-cedit="'+c.id+'">แก้ไข</button><button class="del" data-cdel="'+c.id+'">ลบ</button></div></div>';
+    }).join("");
+    $("#elecCards").querySelectorAll("[data-cedit]").forEach(b=>b.onclick=()=>cEditRecord(b.dataset.cedit));
+    $("#elecCards").querySelectorAll("[data-cdel]").forEach(b=>b.onclick=()=>cDelRecord(b.dataset.cdel));
+    $("#elecCards").querySelectorAll("[data-atb]").forEach(b=>b.onclick=()=>openAddTripB(b.dataset.atb));
+    $("#toCardsE").style.display = "none";
+    $("#elecCards").scrollIntoView({behavior:"smooth", block:"start"});
+  };
+}
+
+/* ---- history: combined monthly ---- */
+function renderHistAll(){
+  const box = $("#histAll");
+  const rows = combinedMonths();
+  if(!rows.length){
+    box.innerHTML = '<div class="empty"><div class="big">📊</div><p>ยังไม่มีข้อมูล</p>'+
+      '<small>ต้องมีการเติมน้ำมันหรือชาร์จไฟอย่างน้อย 1 ครั้ง</small></div>';
+    return;
+  }
+  const tf = rows.reduce((a,b)=>a+b.fuelBaht,0), te = rows.reduce((a,b)=>a+b.elecBaht,0);
+  const B = costBasis(state.records, state.charges);
+  const fRate = B.fuelRate||0, eRate = B.elecRate||0;
+
+  box.innerHTML =
+  '<div class="card" style="padding:14px"><h2>ค่าใช้จ่ายรวมทุกเดือน</h2>'+
+    '<p class="hint">แยกน้ำมันกับไฟฟ้า แล้วรวมเป็นต้นทุนต่อกิโลเมตร</p>'+
+    '<table class="tbl"><tbody>'+
+      '<tr><td style="text-align:left;font-weight:650;color:var(--text-secondary)"><i class="dot fuel"></i>ค่าน้ำมันรวม</td><td style="font-weight:750">'+fmt0(tf)+' บาท</td></tr>'+
+      '<tr><td style="text-align:left;font-weight:650;color:var(--text-secondary)"><i class="dot elec"></i>ค่าไฟรวม</td><td style="font-weight:750">'+fmt0(te)+' บาท</td></tr>'+
+      '<tr><td style="text-align:left;font-weight:800">รวมทั้งหมด</td><td style="font-weight:800;font-size:16px">'+fmt0(tf+te)+' บาท</td></tr>'+
+      '<tr><td style="text-align:left;font-weight:650;color:var(--text-secondary)">ค่าน้ำมันต่อกิโลเมตร</td><td style="font-weight:750;color:var(--fuel-ink)">'+(fRate?fmt(fRate,2):"—")+' บาท/กม.</td></tr>'+
+      '<tr><td style="text-align:left;font-weight:650;color:var(--text-secondary)">ค่าไฟต่อกิโลเมตร</td><td style="font-weight:750;color:var(--elec-ink)">'+(eRate?fmt(eRate,2):"—")+' บาท/กม.</td></tr>'+
+      '<tr><td style="text-align:left;font-weight:800">ต้นทุนรวมต่อกิโลเมตร</td><td style="font-weight:800;font-size:18px">'+fmt(B.totalRate||0,2)+' บาท/กม.</td></tr>'+
+    '</tbody></table>'+
+    '<div class="alert info" style="margin:12px 0 0;font-size:13px"><span>ℹ️</span><span>'+
+      'ทุกอัตราข้างบนหารด้วย<b>ระยะเดียวกัน '+fmt0(B.ref)+' กม.</b> เพราะ TRIP A กับ TRIP B วัดระยะทางเดียวกัน แค่คนละช่วง '+
+      'สองบรรทัดบนจึงบวกกันได้พอดีเป็นบรรทัดล่าง และเท่ากับ เงินรวม '+fmt0(B.fBaht+B.eBaht)+' ÷ '+fmt0(B.ref)+' กม. พอดี</span></div>'+
+    coverageWarning(B)+
+  '</div>'+
+
+  '<div class="card" style="padding:14px"><h2>แยกรายเดือน</h2>'+
+    '<p class="hint">เดือนไหนจ่ายค่าอะไรไปเท่าไหร่ และตกกิโลละกี่บาท</p>'+
+    '<div class="htable"><table class="tbl grouped" style="font-size:12.5px;min-width:320px">'+
+    '<thead><tr><th style="text-align:left">เดือน</th><th>ค่าน้ำมัน<br>(บาท)</th><th>ค่าไฟ<br>(บาท)</th><th>รวม<br>(บาท)</th><th>บาท/<br>กม.</th></tr></thead><tbody>'+
+    rows.map(r=>'<tr>'+
+        '<td style="text-align:left;font-weight:750;white-space:nowrap">'+thMonth(r.ym)+
+          (r.partial?'<span style="display:block;font-size:10px;color:var(--muted);font-weight:600">ข้อมูลไม่ครบสองฝั่ง</span>':'')+'</td>'+
+        '<td style="color:var(--fuel-ink);font-weight:700">'+fmt0(r.fuelBaht)+'</td>'+
+        '<td style="color:var(--elec-ink);font-weight:700">'+fmt0(r.elecBaht)+'</td>'+
+        '<td style="font-weight:800">'+fmt0(r.fuelBaht+r.elecBaht)+'</td>'+
+        '<td style="font-weight:800">'+(r.totalRate?fmt(r.totalRate,2):"—")+'</td>'+
+      '</tr>').join("")+
+    '</tbody><tfoot><tr>'+
+      '<td style="text-align:left;font-weight:800">รวม</td>'+
+      '<td style="font-weight:800;color:var(--fuel-ink)">'+fmt0(tf)+'</td>'+
+      '<td style="font-weight:800;color:var(--elec-ink)">'+fmt0(te)+'</td>'+
+      '<td style="font-weight:800">'+fmt0(tf+te)+'</td>'+
+      '<td style="font-weight:800">'+fmt(B.totalRate||0,2)+'</td>'+
+    '</tr></tfoot></table></div>'+
+    '<p class="scrollhint">คอลัมน์ <b>บาท/กม.</b> ของแต่ละเดือนคิดจากระยะที่ฝั่งนั้นวัดได้ในเดือนนั้นเอง ส่วนแถว <b>รวม</b> ใช้ระยะอ้างอิงเดียวกันทั้งช่วง จึงไม่เท่ากับค่าเฉลี่ยของแถวข้างบน — แถวรวมคือค่าที่ถูกต้องกว่า</p></div>'+
+
+  '<div class="card" style="padding:14px"><h2>อัตราสิ้นเปลืองรายเดือน</h2>'+
+    '<p class="hint">น้ำมันและไฟฟ้าของเดือนเดียวกัน วางเทียบกัน</p>'+
+    '<div class="htable"><table class="tbl grouped" style="font-size:12.5px;min-width:320px">'+
+    '<thead><tr><th style="text-align:left">เดือน</th><th>กม./ลิตร</th><th>กม./kWh</th><th>฿/กม.<br>น้ำมัน</th><th>฿/กม.<br>ไฟฟ้า</th></tr></thead><tbody>'+
+    rows.map(r=>'<tr>'+
+      '<td style="text-align:left;font-weight:750;white-space:nowrap">'+thMonth(r.ym)+'</td>'+
+      '<td style="font-weight:800;color:var(--fuel-ink)">'+(r.kml?fmt(r.kml,2):"—")+'</td>'+
+      '<td style="font-weight:800;color:var(--elec-ink)">'+(r.kmkwh?fmt(r.kmkwh,2):"—")+'</td>'+
+      '<td>'+(r.fuelRate?fmt(r.fuelRate,2):"—")+'</td>'+
+      '<td>'+(r.elecRate?fmt(r.elecRate,2):"—")+'</td>'+
+    '</tr>').join("")+
+    '</tbody></table></div></div>';
+}
+
+/* ---- stats: electricity ---- */
+function renderStatsElec(){
+  const box = $("#statsElec");
+  const cm = cMeasured();
+  if(cm.length < 2){
+    box.innerHTML = '<div class="empty"><div class="big">🔌</div><p>ยังคำนวณสถิติไม่ได้</p>'+
+      '<small>ต้องมีการชาร์จที่มีระยะ TRIP B อย่างน้อย 2 ครั้ง<br>ตอนนี้มี '+cm.length+' ครั้ง</small></div>';
+    return;
+  }
+  const ks = cm.map(kmkwh);
+  const best = cm[ks.indexOf(Math.max(...ks))], worst = cm[ks.indexOf(Math.min(...ks))];
+  const km = cm.reduce((s,c)=>s+c.trip,0), kwh = cm.reduce((s,c)=>s+c.kwh,0), baht = cm.reduce((s,c)=>s+c.total,0);
+  const avg = km/kwh;
+  const spread = (Math.max(...ks)-Math.min(...ks))/avg*100;
+
+  box.innerHTML =
+  '<div class="card"><h2>สรุปภาพรวมไฟฟ้า</h2><p class="hint">คิดจากการชาร์จ '+cm.length+' ครั้งที่มีระยะ TRIP B</p>'+
+    '<div class="kv"><span class="k">เฉลี่ยรวม (ระยะรวม ÷ kWh รวม)</span><span class="v" style="color:var(--elec-ink)">'+fmt(avg,2)+' กม./kWh</span></div>'+
+    '<div class="kv"><span class="k">เท่ากับ</span><span class="v">'+fmt(kwh/km*100,2)+' kWh/100 กม.</span></div>'+
+    '<div class="kv"><span class="k">ค่าไฟต่อ กม. (เฉพาะช่วงที่วัดได้)</span><span class="v">'+fmt(baht/km,2)+' บาท/กม.</span></div>'+
+    '<div class="kv"><span class="k">ดีที่สุด</span><span class="v" style="color:var(--good-text)">'+fmt(kmkwh(best),2)+' กม./kWh · '+thDate(best.date)+'</span></div>'+
+    '<div class="kv"><span class="k">แย่ที่สุด</span><span class="v" style="color:var(--critical)">'+fmt(kmkwh(worst),2)+' กม./kWh · '+thDate(worst.date)+'</span></div>'+
+    '<div class="kv"><span class="k">ช่วงที่แกว่ง</span><span class="v">± '+fmt(spread/2,0)+' % จากค่าเฉลี่ย</span></div>'+
+    '<div class="kv"><span class="k">ระยะทางเฉลี่ยต่อการชาร์จ</span><span class="v">'+fmt0(km/cm.length)+' กม.</span></div>'+
+  '</div>'+
+  '<div class="alert warn" style="font-size:13px"><span>⚠️</span><span><b>กม./kWh ตรงนี้เป็นค่าผสม ไม่ใช่ไฟฟ้าล้วน</b> — TRIP B นับระยะทั้งหมดตั้งแต่ชาร์จครั้งก่อน ซึ่งบางส่วนวิ่งด้วยน้ำมัน ยิ่งขับไกลระหว่างชาร์จ ตัวเลขนี้จะยิ่งสูงเกินจริง ใช้ดูแนวโน้มได้ แต่อย่าเอาไปเทียบกับสเปกรถ · ตัวเลขที่เทียบได้จริงคือ<b>ต้นทุนรวมต่อกิโลเมตร</b>ในแท็บ 📊 รวม</span></div>'+
+  '<div class="alert info" style="font-size:13.5px"><span>🦶</span><span><b>ทำไมตัวเลขแกว่ง:</b> การเหยียบคันเร่งมีผลมากที่สุด เพราะพลังงานที่ใช้เร่งแปรผันตามความเร็ว<b>ยกกำลังสอง</b> และถ้าเหยียบเกินระดับหนึ่งเครื่องยนต์จะติดมาช่วย ทำให้ระยะทางส่วนนั้นไม่ได้มาจากไฟฟ้าล้วน — ดูเส้นแนวโน้มระยะยาวจะแม่นกว่าดูครั้งเดียว</span></div>'+
+
+  '<div class="card"><h2>แนวโน้มอัตราการใช้ไฟ</h2><p class="hint">กม./kWh ต่อการชาร์จ 1 ครั้ง — ยิ่งสูงยิ่งประหยัด · เส้นประคือค่าเฉลี่ยสะสม</p>'+
+    '<div class="chartwrap" id="cKmKwh"></div></div>'+
+
+  '<div class="card"><h2>ค่าไฟรายเดือน</h2><p class="hint">รวมค่าไฟที่จ่ายในแต่ละเดือน (บาท)</p>'+
+    '<div class="chartwrap" id="cElecMonth"></div></div>'+
+
+  '<div class="card"><h2>ตารางข้อมูลไฟฟ้า</h2><p class="hint">แยกรายเดือน พร้อมรวม/เฉลี่ยของแต่ละเดือน</p>'+
+    '<div class="htable"><table class="tbl grouped" style="font-size:12.5px;min-width:320px">'+
+    '<thead><tr><th style="text-align:left">วันที่</th><th>กม.</th><th>kWh</th><th>กม./kWh</th><th>บาท</th><th>บาท/กม.</th></tr></thead><tbody>'+
+    (()=>{
+      const by = {};
+      cm.forEach(c=>{ const k=c.date.slice(0,7); (by[k]||(by[k]=[])).push(c); });
+      return Object.keys(by).sort().reverse().map(ym=>{
+        const g = by[ym].slice().sort((a,b)=>b.date.localeCompare(a.date));
+        const gk = g.reduce((s,c)=>s+c.trip,0), gw = g.reduce((s,c)=>s+c.kwh,0), gb = g.reduce((s,c)=>s+c.total,0);
+        return '<tr class="mhead"><td colspan="6">'+thMonth(ym)+' · '+g.length+' ครั้ง</td></tr>'+
+          g.map(c=>'<tr><td style="white-space:nowrap">'+thDateMini(c.date)+'</td>'+
+            '<td>'+fmt0(c.trip)+'</td><td>'+fmt(c.kwh,2)+'</td>'+
+            '<td style="color:var(--elec-ink);font-weight:750">'+fmt(kmkwh(c),2)+'</td>'+
+            '<td>'+fmt0(c.total)+'</td>'+
+            '<td style="color:var(--series-2);font-weight:750">'+fmt(c.total/c.trip,2)+'</td></tr>').join("")+
+          '<tr class="msum"><td style="text-align:left">รวม / เฉลี่ย</td>'+
+            '<td>'+fmt0(gk)+'</td><td>'+fmt(gw,1)+'</td>'+
+            '<td style="color:var(--elec-ink)">'+fmt(gk/gw,2)+'</td>'+
+            '<td>'+fmt0(gb)+'</td>'+
+            '<td style="color:var(--series-2)">'+fmt(gb/gk,2)+'</td></tr>';
+      }).join("");
+    })()+
+    '</tbody><tfoot><tr><td style="text-align:left;font-weight:800">รวมทุกเดือน</td>'+
+      '<td style="font-weight:800">'+fmt0(km)+'</td><td style="font-weight:800">'+fmt(kwh,1)+'</td>'+
+      '<td style="font-weight:800;color:var(--elec-ink)">'+fmt(avg,2)+'</td>'+
+      '<td style="font-weight:800">'+fmt0(baht)+'</td>'+
+      '<td style="font-weight:800;color:var(--series-2)">'+fmt(baht/km,2)+'</td></tr></tfoot></table></div></div>';
+
+  /* running average shown alongside the noisy per-session value */
+  let rk=0, rw=0;
+  const run = cm.map(c=>{ rk+=c.trip; rw+=c.kwh; return rk/rw; });
+  drawLine($("#cKmKwh"), cm.map((c,i)=>({x:thDateShort(c.date), xFull:thDate(c.date), y:kmkwh(c),
+    sub:fmt0(c.trip)+" กม. · "+fmt(c.kwh,2)+" kWh"+(c.note?" · "+c.note:"")})),
+    {color:"var(--elec)", unit:"กม./kWh", zero:false, overlay:run, overlayLabel:"เฉลี่ยสะสม"});
+
+  const cmo = chargeMonths().slice().reverse();
+  drawBar($("#cElecMonth"), cmo.map(r=>({x:thMonthShort(r.ym), xFull:thMonth(r.ym), y:Math.round(r.baht)})),
+    {color:"var(--elec)", unit:"บาท", dec:0});
+}
+
+
+/* Every number on the combined tab, traced back to the raw records, so the
+   arithmetic can be checked by hand rather than trusted. */
+function auditCard(B){
+  const m = measured(), cm = cMeasured();
+  const fSkip = state.records.length - m.length, eSkip = state.charges.length - cm.length;
+  const sum = (B.fuelRate||0) + (B.elecRate||0);
+  const ok = Math.abs(sum - (B.totalRate||0)) < 0.005;
+  const r = (op,lb,vl,cls)=>'<div class="cl'+(cls||"")+'"><span class="op">'+op+'</span>'+
+    '<span class="lb">'+lb+'</span><span class="vl">'+vl+'</span></div>';
+  const warns = plausibility();
+  return '<div class="card"><h2>ตรวจสอบการคำนวณ</h2>'+
+  '<p class="hint">ทุกตัวเลขข้างบนมาจากไหน ตรวจตามได้ทีละขั้น</p>'+
+
+  '<h3 style="font-size:13.5px;margin:14px 0 6px;color:var(--fuel-ink)">① ฝั่งน้ำมัน</h3>'+
+  '<div class="calcbox" style="margin-bottom:12px">'+
+    r("", "รายการที่นำมาคิด (มี TRIP A)", fmt0(m.length)+" / "+fmt0(state.records.length)+" ครั้ง")+
+    (fSkip>0 ? r("", "ข้ามไป (ไม่มี TRIP A)", fmt0(fSkip)+" ครั้ง") : "")+
+    r("", "ระยะรวมจาก TRIP A", fmt0(B.fKm)+" กม.")+
+    r("", "เงินค่าน้ำมันรวม", fmt0(B.fBaht)+" บาท")+
+  '</div>'+
+
+  '<h3 style="font-size:13.5px;margin:14px 0 6px;color:var(--elec-ink)">② ฝั่งไฟฟ้า</h3>'+
+  '<div class="calcbox" style="margin-bottom:12px">'+
+    r("", "รายการที่นำมาคิด (มี TRIP B)", fmt0(cm.length)+" / "+fmt0(state.charges.length)+" ครั้ง")+
+    (eSkip>0 ? r("", "ข้ามไป (ไม่มี TRIP B)", fmt0(eSkip)+" ครั้ง") : "")+
+    r("", "ระยะรวมจาก TRIP B", fmt0(B.eKm)+" กม.")+
+    r("", "เงินค่าไฟรวม", fmt0(B.eBaht)+" บาท")+
+  '</div>'+
+
+  '<h3 style="font-size:13.5px;margin:14px 0 6px">③ เลือกตัวหารกลาง</h3>'+
+  '<div class="calcbox" style="margin-bottom:12px">'+
+    r("", "ระยะจากน้ำมัน", fmt0(B.fKm)+" กม.")+
+    r("", "ระยะจากไฟฟ้า", fmt0(B.eKm)+" กม.")+
+    r("=", "ใช้ค่าที่มากกว่า", fmt0(B.ref)+" กม.", " res")+
+    '<p class="note">TRIP A กับ TRIP B วัดระยะทาง<b>เดียวกัน</b> แค่คนละช่วง จึงต้องหารด้วยตัวเดียว '+
+    'เลือกค่าที่มากกว่าเพราะไม่มีฝั่งไหนนับ<b>เกิน</b>ความจริงได้ มีแต่นับ<b>ขาด</b>ถ้าลืมบันทึก'+
+    (B.cover!==null ? ' · ตอนนี้สองฝั่งตรงกัน '+fmt(B.cover*100,0)+'%' : '')+'</p>'+
+  '</div>'+
+
+  '<h3 style="font-size:13.5px;margin:14px 0 6px">④ หารและตรวจไขว้</h3>'+
+  '<div class="calcbox">'+
+    r("", "ค่าน้ำมัน "+fmt0(B.fBaht)+" ÷ "+fmt0(B.ref), fmt(B.fuelRate||0,4)+" ฿/กม.")+
+    r("+", "ค่าไฟ "+fmt0(B.eBaht)+" ÷ "+fmt0(B.ref), fmt(B.elecRate||0,4)+" ฿/กม.")+
+    r("=", "บวกกัน", fmt(sum,4)+" ฿/กม.")+
+    r("", "เงินรวม "+fmt0(B.fBaht+B.eBaht)+" ÷ "+fmt0(B.ref), fmt(B.totalRate||0,4)+" ฿/กม.")+
+    r(ok?"✓":"✗", ok?"สองวิธีตรงกัน — คำนวณถูกต้อง":"ไม่ตรงกัน — มีบางอย่างผิด",
+      fmt(B.totalRate||0,2)+" ฿/กม.", " res")+
+    '<p class="note">'+(ok
+      ? 'ถ้าตัวหารเป็นตัวเดียวกัน การบวกอัตราสองฝั่งจะได้เท่ากับเงินรวมหารระยะเสมอ นี่คือเครื่องพิสูจน์ว่าไม่ได้นับซ้ำหรือนับเกิน'
+      : 'กรุณาแจ้งผู้พัฒนา — ผลลัพธ์สองวิธีควรตรงกันเสมอ')+'</p>'+
+  '</div>'+
+  (warns.length
+    ? '<div class="alert warn" style="margin-top:14px;font-size:13px"><span>🔎</span><span><b>ข้อมูลบางจุดดูผิดปกติ:</b><br>'+warns.join("<br>")+'</span></div>'
+    : '<div class="alert info" style="margin-top:14px;font-size:13px"><span>✅</span><span>ตรวจความสมเหตุสมผลของข้อมูลแล้ว ไม่พบจุดที่ผิดปกติ</span></div>')+
+  '</div>';
+}
+
+/* physical sanity checks on the raw data — catches typos and impossible entries */
+function plausibility(){
+  const w = [];
+  const tank = state.settings.tank || 45, batt = state.settings.battery || 18.3;
+  const overTank = state.records.filter(r=>r.liters > tank + 0.5);
+  if(overTank.length) w.push('• เติมเกินความจุถัง '+tank+' ลิตร '+overTank.length+' ครั้ง (เช่น '+thDateMini(overTank[0].date)+' = '+fmt(overTank[0].liters,2)+' ล.)');
+  const badK = measured().filter(r=>{ const k=kml(r); return k<8 || k>120; });
+  if(badK.length) w.push('• กม./ลิตร ผิดปกติ '+badK.length+' ครั้ง (เช่น '+thDateMini(badK[0].date)+' = '+fmt(kml(badK[0]),1)+')');
+  const overBatt = state.charges.filter(c=>{ const g=c.socTo-c.socFrom; return g>0 && c.kwh > g/100*batt*1.6; });
+  if(overBatt.length) w.push('• หน่วยไฟสูงเกินที่แบตรับได้ '+overBatt.length+' ครั้ง — อาจกรอก % หรือ kWh ผิด');
+  const B = costBasis(state.records, state.charges);
+  if(B.cover !== null && B.cover < 0.85)
+    w.push('• ระยะสองฝั่งต่างกัน '+fmt((1-B.cover)*100,0)+'% — น่าจะมีการเติมหรือชาร์จที่ยังไม่ได้บันทึก');
+  const cm = cMeasured();
+  const evCeiling = 120 / batt;   /* pure-EV best case for this car, km per kWh */
+  const blended = cm.filter(c=>kmkwh(c) > evCeiling * 1.15);
+  if(blended.length > cm.length*0.5 && cm.length)
+    w.push('• กม./kWh ส่วนใหญ่สูงกว่าที่ไฟฟ้าล้วนทำได้ แปลว่าระหว่างชาร์จวิ่งด้วยน้ำมันเป็นหลัก (ปกติสำหรับ PHEV ที่ขับทางไกล)');
+  return w;
+}
+
+/* ---- stats: combined ---- */
+function renderStatsAll(){
+  const box = $("#statsAll");
+  const rows = combinedMonths();
+  const m = measured(), cm = cMeasured();
+  if(!m.length && !cm.length){
+    box.innerHTML = '<div class="empty"><div class="big">📊</div><p>ยังไม่มีข้อมูล</p><small>บันทึกการเติมน้ำมันหรือชาร์จไฟก่อน</small></div>';
+    return;
+  }
+  const B = costBasis(state.records, state.charges);
+  const fRate = B.fuelRate||0, eRate = B.elecRate||0, tot = B.totalRate||0;
+  const tf = state.records.reduce((s,r)=>s+(r.total||0),0);
+  const te = state.charges.reduce((s,c)=>s+(c.total||0),0);
+
+  box.innerHTML =
+  '<div class="card"><h2>ต้นทุนต่อกิโลเมตร</h2><p class="hint">เงินที่จ่ายแต่ละฝั่ง ÷ ระยะทางเดียวกัน '+fmt0(B.ref)+' กม.</p>'+
+    '<div class="costrow" style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--grid);font-size:15px">'+
+      '<span style="font-weight:650;color:var(--text-secondary)"><i class="dot fuel"></i>ค่าน้ำมัน</span>'+
+      '<b style="font-size:19px;color:var(--fuel-ink)">'+(fRate?fmt(fRate,2):"—")+'</b></div>'+
+    '<div class="costrow" style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--grid);font-size:15px">'+
+      '<span style="font-weight:650;color:var(--text-secondary)"><i class="dot elec"></i>ค่าไฟฟ้า</span>'+
+      '<b style="font-size:19px;color:var(--elec-ink)">'+(eRate?fmt(eRate,2):"—")+'</b></div>'+
+    '<div class="costrow" style="display:flex;justify-content:space-between;padding:12px 0 0;border-top:2px solid var(--axis);margin-top:3px;font-size:15px">'+
+      '<span style="font-weight:750">รวม</span><b style="font-size:26px;font-weight:800">'+fmt(tot,2)+' <small style="font-size:13px;color:var(--muted)">บาท/กม.</small></b></div>'+
+    (tot>0?'<div class="splitbar"><i class="fuel" style="width:'+(fRate/tot*100).toFixed(1)+'%"></i><i class="elec" style="width:'+(eRate/tot*100).toFixed(1)+'%"></i></div>'+
+      '<p class="hint" style="margin:8px 0 0;text-align:center">น้ำมัน <b>'+fmt(fRate/tot*100,0)+'%</b> · ไฟฟ้า <b>'+fmt(eRate/tot*100,0)+'%</b> ของต้นทุนต่อกิโลเมตร</p>':'')+
+    '<table class="tbl" style="margin-top:14px"><tbody>'+
+      '<tr><td style="text-align:left;color:var(--text-secondary);font-weight:650">เงินที่จ่ายรวม</td><td style="font-weight:750">'+fmt0(B.fBaht+B.eBaht)+' บาท</td></tr>'+
+      '<tr><td style="text-align:left;color:var(--text-secondary);font-weight:650">÷ ระยะทางอ้างอิง</td><td style="font-weight:750">'+fmt0(B.ref)+' กม.</td></tr>'+
+      '<tr><td style="text-align:left;font-weight:800">= ต้นทุนรวม</td><td style="font-weight:800">'+fmt(tot,2)+' บาท/กม.</td></tr>'+
+    '</tbody></table>'+
+    coverageWarning(B)+
+  '</div>'+
+
+  auditCard(B)+
+
+  '<div class="card"><h2>ค่าใช้จ่ายรวมสะสม</h2>'+
+    '<div class="kv"><span class="k"><i class="dot fuel"></i>ค่าน้ำมัน</span><span class="v">'+fmt0(tf)+' บาท</span></div>'+
+    '<div class="kv"><span class="k"><i class="dot elec"></i>ค่าไฟฟ้า</span><span class="v">'+fmt0(te)+' บาท</span></div>'+
+    '<div class="kv"><span class="k">รวมทั้งหมด</span><span class="v" style="font-size:17px">'+fmt0(tf+te)+' บาท</span></div>'+
+  '</div>'+
+
+  '<div class="card"><h2>ค่าน้ำมัน vs ค่าไฟ รายเดือน</h2><p class="hint">แท่งซ้าย = น้ำมัน · แท่งขวา = ไฟฟ้า (บาท)</p>'+
+    '<div class="chartwrap" id="cCompare"></div>'+
+    '<div class="legend"><span><i class="dot fuel"></i>ค่าน้ำมัน</span><span><i class="dot elec"></i>ค่าไฟฟ้า</span></div></div>'+
+
+  '<div class="card"><h2>ต้นทุนรวมต่อกิโลเมตร รายเดือน</h2><p class="hint">บาท/กม. ของน้ำมันและไฟฟ้ารวมกัน</p>'+
+    '<div class="chartwrap" id="cTotRate"></div></div>';
+
+  const asc2 = rows.slice().reverse();
+  drawGroupedBar($("#cCompare"), asc2.map(r=>({x:thMonthShort(r.ym), xFull:thMonth(r.ym),
+    a:Math.round(r.fuelBaht), b:Math.round(r.elecBaht)})),
+    {colorA:"var(--series-1)", colorB:"var(--elec)", unit:"บาท", labelA:"น้ำมัน", labelB:"ไฟฟ้า"});
+
+  const rateRows = asc2.filter(r=>r.totalRate);
+  if(rateRows.length>=2){
+    drawLine($("#cTotRate"), rateRows.map(r=>({x:thMonthShort(r.ym), xFull:thMonth(r.ym),
+      y:(r.fuelRate||0)+(r.elecRate||0),
+      sub:"น้ำมัน "+fmt(r.fuelRate||0,2)+" · ไฟ "+fmt(r.elecRate||0,2)})),
+      {color:"var(--series-2)", unit:"บาท/กม.", zero:false});
+  } else $("#cTotRate").innerHTML = '<p class="hint" style="text-align:center;padding:20px 0">ต้องมีข้อมูลอย่างน้อย 2 เดือนจึงจะวาดกราฟได้</p>';
+}
+
+/* =========================================================
+   7. CHARTS  (hand-rolled SVG, one series each -> no legend)
+   ========================================================= */
+function niceScale(min, max, zero){
+  if(zero) min = 0;
+  if(min === max){ min = zero?0:min-1; max = max+1; }
+  const pad = (max-min)*0.12;
+  let lo = zero ? 0 : Math.max(0, min-pad), hi = max+pad;
+  const step = Math.pow(10, Math.floor(Math.log10((hi-lo)/4)));
+  const s = [1,2,2.5,5,10].map(x=>x*step).find(x=>(hi-lo)/x <= 5) || step*10;
+  lo = Math.floor(lo/s)*s; hi = Math.ceil(hi/s)*s;
+  const ticks=[]; for(let v=lo; v<=hi+1e-9; v+=s) ticks.push(Math.round(v*1e6)/1e6);
+  return {lo, hi, ticks, step:s};
+}
+/* decimals needed so consecutive ticks never print the same label */
+function tickDec(step){ return step>=1 ? 0 : (step>=0.1 ? 1 : 2); }
+function svgEl(n,a){ const e=document.createElementNS("http://www.w3.org/2000/svg",n); for(const k in a) e.setAttribute(k,a[k]); return e; }
+
+function chartFrame(host, height){
+  host.innerHTML = "";
+  const W = Math.max(260, host.clientWidth || 320), H = height || 210;
+  const svg = svgEl("svg",{viewBox:"0 0 "+W+" "+H, width:"100%", height:H, role:"img"});
+  host.appendChild(svg);
+  const tt = document.createElement("div"); tt.className="tt"; host.appendChild(tt);
+  return {svg, W, H, tt};
+}
+function axes(svg, W, H, sc, pad, fmtY){
+  sc.ticks.forEach(v=>{
+    const y = pad.t + (1-(v-sc.lo)/(sc.hi-sc.lo))*(H-pad.t-pad.b);
+    svg.appendChild(svgEl("line",{x1:pad.l,x2:W-pad.r,y1:y,y2:y,stroke:"var(--grid)","stroke-width":1}));
+    const tx = svgEl("text",{x:pad.l-7,y:y+4,"text-anchor":"end","font-size":11,fill:"var(--muted)","font-weight":600});
+    tx.textContent = fmtY(v); svg.appendChild(tx);
+  });
+  svg.appendChild(svgEl("line",{x1:pad.l,x2:W-pad.r,y1:H-pad.b,y2:H-pad.b,stroke:"var(--axis)","stroke-width":1}));
+}
+function xTicks(svg, pts, X, H, pad, W){
+  const n = pts.length;
+  /* how many labels fit without collision, given the longest label */
+  const longest = Math.max(...pts.map(p=>String(p.x).length));
+  const px = longest*6.2 + 12;
+  const fit = Math.max(2, Math.floor((W-pad.l-pad.r)/px));
+  const every = Math.max(1, Math.ceil((n-1)/Math.max(1,fit-1)));
+  pts.forEach((p,i)=>{
+    if(i!==0 && i!==n-1 && (i%every!==0 || (n-1-i) < every*0.7)) return;
+    const t = svgEl("text",{x:X(i), y:H-pad.b+17, "text-anchor": i===0?"start":(i===n-1?"end":"middle"),
+      "font-size":10.5, fill:"var(--muted)","font-weight":600});
+    t.textContent = p.x; svg.appendChild(t);
+  });
+}
+
+function drawLine(host, pts, o){
+  o = o||{};
+  if(!pts.length){ host.innerHTML=""; return; }
+  const {svg,W,H,tt} = chartFrame(host, o.height||210);
+  const pad = {l:44,r:14,t:14,b:30};
+  const ys = pts.map(p=>p.y);
+  const sc = niceScale(Math.min(...ys), Math.max(...ys), !!o.zero);
+  const X = i => pts.length===1 ? (pad.l+(W-pad.l-pad.r)/2) : pad.l + i/(pts.length-1)*(W-pad.l-pad.r);
+  const Y = v => pad.t + (1-(v-sc.lo)/(sc.hi-sc.lo))*(H-pad.t-pad.b);
+  axes(svg,W,H,sc,pad, v=>fmt(v, tickDec(sc.step)));
+  xTicks(svg,pts,X,H,pad,W);
+
+  /* optional second line (e.g. running average) drawn recessive, dashed */
+  if(o.overlay && o.overlay.length===pts.length){
+    const od = o.overlay.map((v,i)=>(i?"L":"M")+X(i)+" "+Y(v)).join(" ");
+    svg.appendChild(svgEl("path",{d:od, fill:"none", stroke:"var(--muted)","stroke-width":2,
+      "stroke-dasharray":"5 4","stroke-linecap":"round"}));
+    const lt = svgEl("text",{x:X(pts.length-1), y:Y(o.overlay[o.overlay.length-1])+15,
+      "text-anchor":"end","font-size":10.5,"font-weight":700,fill:"var(--muted)"});
+    lt.textContent = (o.overlayLabel||"") + " " + fmt(o.overlay[o.overlay.length-1],2);
+    svg.appendChild(lt);
+  }
+
+  const d = pts.map((p,i)=>(i?"L":"M")+X(i)+" "+Y(p.y)).join(" ");
+  /* soft area under the line */
+  svg.appendChild(svgEl("path",{d:d+" L"+X(pts.length-1)+" "+(H-pad.b)+" L"+X(0)+" "+(H-pad.b)+" Z",
+    fill:o.color||"var(--series-1)", opacity:.09}));
+  svg.appendChild(svgEl("path",{d, fill:"none", stroke:o.color||"var(--series-1)","stroke-width":2,
+    "stroke-linejoin":"round","stroke-linecap":"round"}));
+
+  pts.forEach((p,i)=>{
+    svg.appendChild(svgEl("circle",{cx:X(i),cy:Y(p.y),r:4.5,fill:o.color||"var(--series-1)",
+      stroke:"var(--surface-1)","stroke-width":2}));
+  });
+  /* direct-label first & last only */
+  [0,pts.length-1].filter((v,i,a)=>a.indexOf(v)===i).forEach(i=>{
+    const t = svgEl("text",{x:X(i), y:Y(pts[i].y)-11, "text-anchor": i===0?"start":"end",
+      "font-size":11.5, "font-weight":700, fill:"var(--text-primary)"});
+    t.textContent = fmt(pts[i].y,2); svg.appendChild(t);
+  });
+
+  /* hover */
+  const cross = svgEl("line",{x1:0,x2:0,y1:pad.t,y2:H-pad.b,stroke:"var(--axis)","stroke-width":1,opacity:0});
+  svg.appendChild(cross);
+  const hit = svgEl("rect",{x:0,y:0,width:W,height:H,fill:"transparent"});
+  svg.appendChild(hit);
+  function move(ev){
+    const r = svg.getBoundingClientRect();
+    const cx = ((ev.touches?ev.touches[0].clientX:ev.clientX) - r.left) * (W/r.width);
+    let best=0, bd=1e9;
+    pts.forEach((p,i)=>{ const dd=Math.abs(X(i)-cx); if(dd<bd){bd=dd;best=i;} });
+    const p = pts[best];
+    cross.setAttribute("x1",X(best)); cross.setAttribute("x2",X(best)); cross.setAttribute("opacity",.6);
+    tt.innerHTML = '<span class="t">'+(p.xFull||p.x)+'</span><span class="v">'+fmt(p.y,2)+' '+(o.unit||"")+'</span>'+
+                   (p.sub?'<span class="t">'+p.sub+'</span>':'');
+    tt.style.left = (X(best)/W*100)+"%"; tt.style.top = (Y(p.y)/H*r.height)+"px"; tt.style.opacity=1;
+  }
+  hit.addEventListener("mousemove",move); hit.addEventListener("touchstart",move,{passive:true});
+  hit.addEventListener("touchmove",move,{passive:true});
+  hit.addEventListener("mouseleave",()=>{tt.style.opacity=0;cross.setAttribute("opacity",0);});
+  hit.addEventListener("touchend",()=>{setTimeout(()=>{tt.style.opacity=0;cross.setAttribute("opacity",0);},1600);});
+}
+
+function drawBar(host, pts, o){
+  o = o||{};
+  if(!pts.length){ host.innerHTML=""; return; }
+  const {svg,W,H,tt} = chartFrame(host, o.height||210);
+  const pad = {l:46,r:12,t:14,b:30};
+  const sc = niceScale(0, Math.max(...pts.map(p=>p.y)), true);
+  const iw = (W-pad.l-pad.r)/pts.length;
+  const bw = Math.max(6, Math.min(46, iw-8));
+  const X = i => pad.l + i*iw + iw/2;
+  const Y = v => pad.t + (1-(v-sc.lo)/(sc.hi-sc.lo))*(H-pad.t-pad.b);
+  axes(svg,W,H,sc,pad, v => v>=1000 ? fmt(v/1000, v%1000?1:0)+"k" : fmt(v, tickDec(sc.step)));
+  const longest = Math.max(...pts.map(p=>String(p.x).length));
+  const skip = Math.max(1, Math.ceil((longest*6.2+8)/iw));
+  pts.forEach((p,i)=>{
+    if(i%skip!==0 && i!==pts.length-1) return;
+    const t = svgEl("text",{x:X(i), y:H-pad.b+17, "text-anchor":"middle","font-size":10.5,
+      fill:"var(--muted)","font-weight":600});
+    t.textContent = p.x; svg.appendChild(t);
+  });
+  pts.forEach((p,i)=>{
+    const h = Math.max(2, (H-pad.b)-Y(p.y));
+    const r = svgEl("rect",{x:X(i)-bw/2, y:Y(p.y), width:bw, height:h, rx:4, ry:4,
+      fill:o.color||"var(--series-1)"});
+    svg.appendChild(r);
+    r.addEventListener("mouseenter",()=>{
+      tt.innerHTML='<span class="t">'+(p.xFull||p.x)+'</span><span class="v">'+fmt(p.y, o.dec===undefined?0:o.dec)+' '+(o.unit||"")+'</span>'+(p.sub?'<span class="t">'+p.sub+'</span>':'');
+      const rc=svg.getBoundingClientRect();
+      tt.style.left=(X(i)/W*100)+"%"; tt.style.top=(Y(p.y)/H*rc.height)+"px"; tt.style.opacity=1;
+    });
+    r.addEventListener("mouseleave",()=>tt.style.opacity=0);
+    r.addEventListener("click",()=>{
+      tt.innerHTML='<span class="t">'+(p.xFull||p.x)+'</span><span class="v">'+fmt(p.y, o.dec===undefined?0:o.dec)+' '+(o.unit||"")+'</span>'+(p.sub?'<span class="t">'+p.sub+'</span>':'');
+      const rc=svg.getBoundingClientRect();
+      tt.style.left=(X(i)/W*100)+"%"; tt.style.top=(Y(p.y)/H*rc.height)+"px"; tt.style.opacity=1;
+      setTimeout(()=>tt.style.opacity=0,1800);
+    });
+    if(pts.length<=6){
+      const lab=svgEl("text",{x:X(i),y:Y(p.y)-6,"text-anchor":"middle","font-size":11,"font-weight":700,fill:"var(--text-primary)"});
+      lab.textContent = fmt(p.y, o.dec===undefined?0:o.dec); svg.appendChild(lab);
+    }
+  });
+}
+
+/* two measures of the SAME unit (baht) side by side — never a dual axis */
+function drawGroupedBar(host, pts, o){
+  o = o||{};
+  if(!pts.length){ host.innerHTML=""; return; }
+  const {svg,W,H,tt} = chartFrame(host, o.height||220);
+  const pad = {l:46,r:12,t:14,b:30};
+  const sc = niceScale(0, Math.max(...pts.map(p=>Math.max(p.a,p.b))), true);
+  const iw = (W-pad.l-pad.r)/pts.length;
+  const bw = Math.max(4, Math.min(20, (iw-10)/2));
+  const X = i => pad.l + i*iw + iw/2;
+  const Y = v => pad.t + (1-(v-sc.lo)/(sc.hi-sc.lo))*(H-pad.t-pad.b);
+  axes(svg,W,H,sc,pad, v => v>=1000 ? fmt(v/1000, v%1000?1:0)+"k" : fmt(v, tickDec(sc.step)));
+  const longest = Math.max(...pts.map(p=>String(p.x).length));
+  const skip = Math.max(1, Math.ceil((longest*6.2+8)/iw));
+  pts.forEach((p,i)=>{
+    if(i%skip!==0 && i!==pts.length-1) return;
+    const t = svgEl("text",{x:X(i), y:H-pad.b+17, "text-anchor":"middle","font-size":10.5,
+      fill:"var(--muted)","font-weight":600});
+    t.textContent = p.x; svg.appendChild(t);
+  });
+  pts.forEach((p,i)=>{
+    [[p.a,o.colorA,-1,o.labelA],[p.b,o.colorB,1,o.labelB]].forEach(([v,col,side,lab])=>{
+      const h = Math.max(v>0?2:0, (H-pad.b)-Y(v));
+      if(h<=0) return;
+      /* 2px surface gap between the pair */
+      const x = X(i) + (side<0 ? -bw-1 : 1);
+      const r = svgEl("rect",{x, y:Y(v), width:bw, height:h, rx:4, ry:4, fill:col});
+      svg.appendChild(r);
+      const show = ()=>{
+        tt.innerHTML='<span class="t">'+(p.xFull||p.x)+' · '+lab+'</span><span class="v">'+fmt(v,0)+' '+(o.unit||"")+'</span>';
+        const rc=svg.getBoundingClientRect();
+        tt.style.left=((x+bw/2)/W*100)+"%"; tt.style.top=(Y(v)/H*rc.height)+"px"; tt.style.opacity=1;
+      };
+      r.addEventListener("mouseenter",show);
+      r.addEventListener("mouseleave",()=>tt.style.opacity=0);
+      r.addEventListener("click",()=>{ show(); setTimeout(()=>tt.style.opacity=0,1800); });
+    });
+  });
+}
+
+/* =========================================================
+   8. STATS
+   ========================================================= */
+/* Detail rows grouped by month, each month closed by its own average row.
+   `recs` must already be filtered to fills that have a TRIP A. */
+function monthGroups(recs){
+  const by = {};
+  recs.forEach(r=>{ const k=(r.date||"").slice(0,7); (by[k] || (by[k]=[])).push(r); });
+  return Object.keys(by).sort().reverse().map(k=>{
+    const g = by[k].slice().sort((a,b)=>b.date.localeCompare(a.date));
+    const km = g.reduce((s,r)=>s+r.trip,0);
+    const lit = g.reduce((s,r)=>s+r.liters,0);
+    const baht = g.reduce((s,r)=>s+r.total,0);
+    return '<tr class="mhead"><td colspan="6">'+thMonth(k)+' · '+g.length+' ครั้ง</td></tr>'+
+      g.map(r=>'<tr>'+
+        '<td style="white-space:nowrap">'+thDateMini(r.date)+'</td>'+
+        '<td>'+fmt0(r.trip)+'</td><td>'+fmt(r.liters,2)+'</td><td>'+fmt(kml(r),2)+'</td>'+
+        '<td>'+fmt0(r.total)+'</td>'+
+        '<td style="color:var(--series-2);font-weight:750">'+fmt(r.total/r.trip,2)+'</td>'+
+      '</tr>').join("")+
+      '<tr class="msum">'+
+        '<td style="text-align:left">รวม / เฉลี่ย</td>'+
+        '<td>'+fmt0(km)+'</td><td>'+fmt(lit,1)+'</td>'+
+        '<td style="color:var(--series-1)">'+fmt(km/lit,2)+'</td>'+
+        '<td>'+fmt0(baht)+'</td>'+
+        '<td style="color:var(--series-2)">'+fmt(baht/km,2)+'</td>'+
+      '</tr>';
+  }).join("");
+}
+
+function renderStats(){
+  $$("#statKind button").forEach(b=> b.setAttribute("aria-pressed", String(b.dataset.kind===statKind)));
+  $("#statsBody").hidden = statKind!=="fuel";
+  $("#statsElec").hidden = statKind!=="elec";
+  $("#statsAll").hidden  = statKind!=="all";
+  if(statKind==="elec"){ renderStatsElec(); return; }
+  if(statKind==="all"){ renderStatsAll(); return; }
+  const m = measured();
+  const box = $("#statsBody");
+  if(m.length < 2){
+    box.innerHTML = '<div class="empty"><div class="big">📈</div><p>ยังคำนวณสถิติไม่ได้</p>'+
+      '<small>ต้องมีข้อมูลการเติมที่มีระยะ TRIP A อย่างน้อย 2 ครั้ง<br>ตอนนี้มี '+m.length+' ครั้ง</small></div>';
+    return;
+  }
+  const ks = m.map(kml);
+  const best = m[ks.indexOf(Math.max(...ks))], worst = m[ks.indexOf(Math.min(...ks))];
+  const totKm=m.reduce((s,r)=>s+r.trip,0), totL=m.reduce((s,r)=>s+r.liters,0), totB=m.reduce((s,r)=>s+r.total,0);
+  const avg = totKm/totL;
+
+  box.innerHTML =
+  '<div class="card"><h2>สรุปภาพรวม</h2><p class="hint">คิดจากการเติม '+m.length+' ครั้งที่มีระยะ TRIP A</p>'+
+    '<div class="kv"><span class="k">เฉลี่ยรวม (ระยะรวม ÷ ลิตรรวม)</span><span class="v">'+fmt(avg,2)+' กม./ล.</span></div>'+
+    '<div class="kv"><span class="k">เท่ากับ</span><span class="v">'+fmt(100/avg,2)+' ล./100 กม.</span></div>'+
+    '<div class="kv"><span class="k">ค่าน้ำมันเฉลี่ย</span><span class="v">'+fmt(totB/totKm,2)+' บาท/กม.</span></div>'+
+    '<div class="kv"><span class="k">ดีที่สุด</span><span class="v" style="color:var(--good-text)">'+fmt(kml(best),2)+' กม./ล. · '+thDate(best.date)+'</span></div>'+
+    '<div class="kv"><span class="k">แย่ที่สุด</span><span class="v" style="color:var(--critical)">'+fmt(kml(worst),2)+' กม./ล. · '+thDate(worst.date)+'</span></div>'+
+    '<div class="kv"><span class="k">ระยะทางเฉลี่ยต่อถัง</span><span class="v">'+fmt0(totKm/m.length)+' กม.</span></div>'+
+    '<div class="kv"><span class="k">เทียบโหมดแบตหมด (26.3 กม./ล.)</span><span class="v" style="color:'+(avg>=26.3?"var(--good-text)":"var(--critical)")+'">'+(avg>=26.3?"+":"")+fmt(avg-26.3,2)+' กม./ล.</span></div>'+
+    '<p class="hint" style="margin:10px 0 0;line-height:1.55">26.3 กม./ล. คือตัวเลขตอน<b>แบตหมด</b>แล้ววิ่งด้วยน้ำมันล้วน ถ้าชาร์จไฟสม่ำเสมอควรได้<b>สูงกว่า</b>นี้มาก ถ้าได้ต่ำกว่าแปลว่าช่วงนั้นแทบไม่ได้ชาร์จ</p>'+
+  '</div>'+
+
+  '<div class="card"><h2>แนวโน้มอัตราสิ้นเปลือง</h2><p class="hint">กม./ลิตร ต่อการเติม 1 ครั้ง — ยิ่งสูงยิ่งประหยัด</p>'+
+    '<div class="chartwrap" id="cKml"></div></div>'+
+
+  '<div class="card"><h2>ค่าน้ำมันรายเดือน</h2><p class="hint">รวมยอดเงินที่จ่ายในแต่ละเดือน (บาท)</p>'+
+    '<div class="chartwrap" id="cMonth"></div></div>'+
+
+  '<div class="card"><h2>ราคาน้ำมันที่เติม</h2><p class="hint">บาทต่อลิตร ตามวันที่เติมแต่ละครั้ง</p>'+
+    '<div class="chartwrap" id="cPrice"></div></div>'+
+
+  '<div class="card"><h2>ตารางข้อมูล</h2><p class="hint">แต่ละครั้งวิ่งได้กี่กิโล จ่ายไปเท่าไหร่ และ<b>ตกกิโลเมตรละกี่บาท</b></p>'+
+    '<div class="htable"><table class="tbl grouped" style="min-width:320px"><thead><tr><th>วันที่</th><th>กม.</th><th>ลิตร</th><th>กม./ล.</th><th>บาท</th><th>บาท/กม.</th></tr></thead><tbody>'+
+    monthGroups(m)+
+    '</tbody><tfoot><tr>'+
+      '<td style="text-align:left;font-weight:800">รวมทุกเดือน</td>'+
+      '<td style="font-weight:800">'+fmt0(totKm)+'</td>'+
+      '<td style="font-weight:800">'+fmt(totL,1)+'</td>'+
+      '<td style="font-weight:800">'+fmt(avg,2)+'</td>'+
+      '<td style="font-weight:800">'+fmt0(totB)+'</td>'+
+      '<td style="font-weight:800;color:var(--series-2)">'+fmt(totB/totKm,2)+'</td>'+
+    '</tr></tfoot></table></div></div>';
+
+  drawLine($("#cKml"), m.map(r=>({x:thDateShort(r.date), xFull:thDate(r.date), y:kml(r), sub:fmt(r.trip,0)+" กม. · "+fmt(r.liters,2)+" ล."})),
+    {color:"var(--series-1)", unit:"กม./ล.", zero:false});
+
+  const byMonth = {};
+  state.records.forEach(r=>{ const k=(r.date||"").slice(0,7); if(!k) return; byMonth[k]=(byMonth[k]||0)+(r.total||0); });
+  const months = Object.keys(byMonth).sort();
+  drawBar($("#cMonth"), months.map(k=>({x:thMonthShort(k), xFull:thMonth(k), y:Math.round(byMonth[k])})),
+    {color:"var(--series-1)", unit:"บาท", dec:0});
+
+  drawLine($("#cPrice"), m.map(r=>({x:thDateShort(r.date), xFull:thDate(r.date), y:r.price, sub:(r.station||"")})),
+    {color:"var(--series-2)", unit:"บาท/ลิตร", zero:false});
+}
+
+/* =========================================================
+   9. SETTINGS / IMPORT-EXPORT
+   ========================================================= */
+function download(name, text, mime){
+  const b = new Blob([mime.indexOf("csv")>=0 ? "﻿"+text : text], {type:mime});
+  const u = URL.createObjectURL(b);
+  const a = document.createElement("a"); a.href=u; a.download=name; document.body.appendChild(a); a.click();
+  setTimeout(()=>{URL.revokeObjectURL(u); a.remove();},400);
+}
+$("#expJson").onclick = ()=>{
+  download("fuel-backup-"+todayISO()+".json", JSON.stringify(state,null,2), "application/json");
+  toast("สำรองข้อมูลแล้ว");
+};
+$("#expCsv").onclick = ()=>{
+  const head = ["วันที่","ปั๊ม / สถานที่","TRIP A (กม.)","ลิตร","ราคา/ลิตร","ยอดเงิน (บาท)","กม./ลิตร","ล./100กม.","บาท/กม.","โน้ต"];
+  const rows = asc().map(r=>{
+    const k = kml(r);
+    return [r.date, r.station||"", r.trip||"", r.liters, (Math.round(r.price*100)/100), r.total,
+      k!==null?(Math.round(k*100)/100):"", k!==null?(Math.round(100/k*100)/100):"",
+      r.trip>0?(Math.round(r.total/r.trip*100)/100):"", (r.note||"").replace(/\n/g," ")];
+  });
+  const m2 = measured();
+  const foot = ["รวม "+state.records.length+" ครั้ง","",
+    Math.round(m2.reduce((s,r)=>s+r.trip,0)),
+    Math.round(asc().reduce((s,r)=>s+r.liters,0)*100)/100, "",
+    Math.round(asc().reduce((s,r)=>s+r.total,0)*100)/100,
+    m2.length? Math.round(m2.reduce((s,r)=>s+r.trip,0)/m2.reduce((s,r)=>s+r.liters,0)*100)/100 : "", "", "", ""];
+  const mrows = [[],["สรุปรายเดือน"],["เดือน","จำนวนครั้ง","ลิตร","ยอดเงิน (บาท)","ระยะ (กม.)","กม./ลิตร เฉลี่ย"]]
+    .concat(monthlyRows().map(r=>[thMonth(r.ym), r.n, Math.round(r.liters*100)/100, Math.round(r.baht*100)/100,
+      Math.round(r.km), r.mLiters>0?Math.round(r.km/r.mLiters*100)/100:""]));
+  const crows = [[],["ประวัติการชาร์จไฟ"],
+    ["วันที่","ที่ชาร์จ","TRIP B (กม.)","% ก่อน","% หลัง","kWh","วัดจริง/ประมาณ","ราคา/kWh","ค่าไฟ (บาท)","กม./kWh","บาท/กม.","โน้ต"]]
+    .concat(cAsc().map(c=>{
+      const k = kmkwh(c);
+      return [c.date, c.station||"", c.trip||"", c.socFrom, c.socTo, Math.round(c.kwh*1000)/1000,
+        c.metered?"วัดจริง":"ประมาณ", Math.round(c.rate*100)/100, c.total,
+        k!==null?Math.round(k*100)/100:"", c.trip>0?Math.round(c.total/c.trip*100)/100:"", (c.note||"").replace(/\n/g," ")];
+    }));
+  const combo = [[],["สรุปรวมรายเดือน (น้ำมัน + ไฟฟ้า)"],
+    ["เดือน","ค่าน้ำมัน (บาท)","ค่าไฟ (บาท)","รวม (บาท)","กม./ลิตร","กม./kWh","฿/กม. น้ำมัน","฿/กม. ไฟฟ้า","฿/กม. รวม"]]
+    .concat(combinedMonths().map(r=>[thMonth(r.ym), Math.round(r.fuelBaht*100)/100, Math.round(r.elecBaht*100)/100,
+      Math.round((r.fuelBaht+r.elecBaht)*100)/100,
+      r.kml?Math.round(r.kml*100)/100:"", r.kmkwh?Math.round(r.kmkwh*100)/100:"",
+      r.fuelRate?Math.round(r.fuelRate*100)/100:"", r.elecRate?Math.round(r.elecRate*100)/100:"",
+      r.totalRate ? Math.round(r.totalRate*100)/100 : ""]));
+  const csv = [head, ...rows, foot, ...mrows, ...crows, ...combo].map(a=>a.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\n");
+  download("fuel-log-"+todayISO()+".csv", csv, "text/csv;charset=utf-8");
+  toast("ดาวน์โหลด CSV แล้ว");
+};
+$("#impBtn").onclick = ()=> $("#impFile").click();
+$("#impFile").onchange = e=>{
+  const f = e.target.files[0]; if(!f) return;
+  const fr = new FileReader();
+  fr.onload = ()=>{
+    try{
+      const d = JSON.parse(fr.result);
+      const recs = Array.isArray(d.records) ? d.records : (Array.isArray(d) ? d : null);
+      const chs  = Array.isArray(d.charges) ? d.charges : [];
+      if(!recs) throw new Error("รูปแบบไฟล์ไม่ถูกต้อง");
+      const mode = (state.records.length || state.charges.length)
+        ? confirm("มีข้อมูลอยู่แล้ว "+state.records.length+" การเติมน้ำมัน และ "+state.charges.length+" การชาร์จไฟ\n\n"+
+                  "กด OK = รวมข้อมูลเข้าด้วยกัน\nกด Cancel = แทนที่ทั้งหมด (ข้อมูลเดิมทั้งสองแบบจะหาย)")
+        : true;
+      if(mode){
+        const ids = new Set(state.records.map(r=>r.id));
+        recs.forEach(r=>{ if(!ids.has(r.id)) state.records.push(r); });
+        const cids = new Set(state.charges.map(c=>c.id));
+        chs.forEach(c=>{ if(!cids.has(c.id)) state.charges.push(c); });
+      } else { state.records = recs; state.charges = chs; }
+      if(d.settings) state.settings = Object.assign({}, DEFAULTS, d.settings);
+      save(); syncSettingsUI(); renderHome(); renderHistory();
+      toast("กู้คืนแล้ว — น้ำมัน "+state.records.length+" · ไฟฟ้า "+state.charges.length+" รายการ");
+      go("history");
+    }catch(err){ alert("อ่านไฟล์ไม่สำเร็จ: "+err.message); }
+  };
+  fr.readAsText(f); e.target.value="";
+};
+function openReset(){
+  if(!state.records.length && !state.charges.length){ toast("ยังไม่มีข้อมูลให้ลบ"); return; }
+  const m = measured();
+  $("#resetMsg").innerHTML = "กำลังจะลบข้อมูลทั้งหมด <b>"+state.records.length+" การเติมน้ำมัน</b> และ <b>"+state.charges.length+" การชาร์จไฟ</b><br>"+
+    "(น้ำมัน "+fmt(state.records.reduce((s,r)=>s+r.liters,0),2)+" ลิตร · ไฟ "+fmt(state.charges.reduce((s,c)=>s+c.kwh,0),2)+" kWh · รวม "+
+    fmt0(state.records.reduce((s,r)=>s+r.total,0)+state.charges.reduce((s,c)=>s+c.total,0))+" บาท)";
+  $("#mAgree").checked = false; $("#mConfirm").disabled = true;
+  $("#resetModal").hidden = false;
+}
+function closeReset(){ $("#resetModal").hidden = true; }
+$("#resetBtn").onclick = openReset;
+$("#clearBtn").onclick = openReset;
+$("#backupFirst").onclick = ()=> $("#expJson").click();
+$("#mBackup").onclick = ()=> $("#expJson").click();
+$("#mAgree").onchange = ()=> $("#mConfirm").disabled = !$("#mAgree").checked;
+$("#mCancel").onclick = closeReset;
+$("#resetModal").onclick = e =>{ if(e.target.id==="resetModal") closeReset(); };
+$("#mConfirm").onclick = ()=>{
+  const n = state.records.length + state.charges.length;
+  state.records = []; state.charges = []; setNowTrips({});
+  $("#nowA").value=""; $("#nowB").value=""; save(); closeReset();
+  renderHome(); renderHistory(); if($("#view-stats").classList.contains("active")) renderStats();
+  toast("ลบข้อมูลทั้งหมด "+n+" รายการแล้ว");
+};
+$("#demoBtn").onclick = ()=>{
+  if((state.records.length||state.charges.length) && !confirm("จะเพิ่มข้อมูลตัวอย่างเข้าไปในข้อมูลที่มีอยู่ ต้องการทำต่อ?")) return;
+  /* A physically consistent plug-in-hybrid picture: the car is charged about
+     twice a week, so electricity covers most short trips and the 45 L tank
+     lasts months. TRIP B windows tile the SAME distance the TRIP A windows do,
+     which is what makes the combined cost per km meaningful. */
+  const DAY = 86400000;
+  const t0 = Date.parse("2026-03-01T00:00:00Z");
+  const iso = d => new Date(t0 + d*DAY).toISOString().slice(0,10);
+  const seed = (n)=>{ const x = Math.sin(n*127.1)*43758.5453; return x - Math.floor(x); };
+
+  const charges = [];
+  let day = 0, k = 0, drivenSinceFill = 0, fuelUsed = 0, fills = [];
+  const PUBLIC = [["PTT Station บางนา",8.00],["EA Anywhere เซ็นทรัล",7.50],["MG Super Charge",7.90]];
+
+  while(day < 168){                      // ~5.5 months
+    const gap = 3 + Math.round(seed(k)*2);          // charge every 3–5 days
+    day += gap;
+    const socFrom = 12 + Math.round(seed(k+50)*28); // arrives home fairly low
+    const socTo   = seed(k+90) > 0.25 ? 100 : 88;
+    const gain = socTo - socFrom;
+    const isPublic = seed(k+140) > 0.72;
+    const trip = Math.round(gap * (48 + seed(k+200)*36));  // km driven in that gap
+    drivenSinceFill += trip;
+    /* petrol is only burned on the part of each window the battery could not cover */
+    fuelUsed += trip / (30 + seed(k+400)*12);
+    let kwh, rate, metered, station;
+    if(isPublic){
+      const st = PUBLIC[k % PUBLIC.length];
+      kwh = Math.round(gain * 0.2085 * 100)/100;   // real metered draw
+      rate = st[1]; metered = true; station = st[0];
+    } else {
+      kwh = Math.round(gain * kwhPerPct().value * 1000)/1000;
+      rate = state.settings.homeRate; metered = false; station = "ที่บ้าน";
+    }
+    charges.push({ id:"cdemo"+k+Date.now().toString(36), date:iso(day), trip,
+      socFrom, socTo, place:isPublic?"public":"home", metered,
+      kwh:Math.round(kwh*1000)/1000, rate:Math.round(rate*10000)/10000,
+      total:Math.round(kwh*rate*100)/100, station,
+      note: seed(k+300)>0.85 ? "เหยียบแรง ขึ้นทางด่วน" : (seed(k+300)<0.12 ? "รถติดมาก เปิดแอร์ตลอด" : "") });
+
+    /* fill only when the tank is genuinely near empty — never more than it holds */
+    if(fuelUsed >= 40){
+      fills.push([iso(day), drivenSinceFill, Math.round(Math.min(fuelUsed, 44.5)*100)/100]);
+      drivenSinceFill = 0; fuelUsed = 0;
+    }
+    k++;
+  }
+
+  const prices = [35.44,36.14,35.24,37.04,36.54,35.84,36.24];
+  const stations = ["ปตท. บางนา","บางจาก ศรีนครินทร์","เชลล์ อ่อนนุช"];
+  fills.forEach((f,i)=>{
+    const price = prices[i % prices.length];
+    state.records.push({ id:"demo"+i+Date.now().toString(36), date:f[0], trip:f[1],
+      liters:f[2], price, total:Math.round(f[2]*price*100)/100,
+      station:stations[i % stations.length], note:"", carAvg:null, odo:null });
+  });
+  charges.forEach(c=>state.charges.push(c));
+
+  save(); renderHome(); renderHistory();
+  toast("ใส่ข้อมูลตัวอย่างแล้ว — น้ำมัน "+fills.length+" · ชาร์จ "+charges.length);
+  go("home");
+};
+function syncSettingsUI(){
+  $("#sCarName").value = state.settings.car;
+  $("#sTank").value = state.settings.tank;
+  $("#sBattery").value = state.settings.battery;
+  $("#sHomeRate").value = state.settings.homeRate;
+  $("#sKwhPct").value = state.settings.kwhPct || "";
+  $("#sBaseUnits").value = state.settings.baseUnits || "";
+  $("#sFt").value = state.settings.ft;
+  const hk = homeKwhPerMonth();
+  if(!$("#sEvUnits").value && hk) $("#sEvUnits").value = Math.round(hk);
+  renderTariffCalc();
+  const f = kwhPerPct(), eff = chargeEff();
+  $("#kwhPctHelp").innerHTML = f.source==="learned"
+    ? 'ตอนนี้ใช้ <b>'+fmt(f.value,3)+'</b> kWh/% ที่เรียนรู้จากครั้งที่วัดหน่วยจริง '+f.n+' ครั้ง (ประสิทธิภาพ '+fmt(eff*100,1)+'%) — เว้นว่างไว้จะแม่นขึ้นเรื่อย ๆ เอง'
+    : f.source==="manual"
+      ? 'กำลังใช้ค่าที่ตั้งเอง — ลบออกเพื่อให้ระบบกลับไปเรียนรู้จากใบเสร็จตู้สาธารณะ'
+      : 'ยังไม่มีข้อมูลตู้สาธารณะ จึงใช้ค่าตามป้าย <b>'+fmt(f.value,3)+'</b> kWh/% ไปก่อน';
+}
+/* home-charged kWh per calendar month, so the right bill can be matched */
+function renderHomeMonths(){
+  const box = $("#homeMonths"); if(!box) return;
+  const by = {};
+  state.charges.filter(c=>c.place==="home").forEach(c=>{
+    const k=(c.date||"").slice(0,7); if(!k) return; by[k]=(by[k]||0)+(c.kwh||0);
+  });
+  const ks = Object.keys(by).sort().reverse().slice(0,6);
+  if(!ks.length){ box.innerHTML=""; return; }
+  box.innerHTML = '<p class="help" style="margin:-6px 0 8px">แตะเดือนเพื่อใส่ค่าอัตโนมัติ:</p>'+
+    '<div class="chips">'+ks.map(k=>'<button type="button" class="chip" data-m="'+k+'" data-v="'+Math.round(by[k])+'">'+
+      thMonth(k)+' · '+fmt0(by[k])+' หน่วย</button>').join("")+'</div>';
+  box.querySelectorAll(".chip").forEach(b=> b.onclick = ()=>{
+    $("#sEvUnits").value = b.dataset.v; renderTariffCalc();
+    box.querySelectorAll(".chip").forEach(x=>x.classList.toggle("on", x===b));
+  });
+}
+
+function renderTariffCalc(){
+  const base = num($("#sBaseUnits").value);
+  const ev   = num($("#sEvUnits").value);
+  const ft   = num($("#sFt").value);
+  const box  = $("#tariffCalc");
+  const hk = homeKwhPerMonth();
+  $("#evUnitsHelp").innerHTML = hk
+    ? 'ระบบประมาณจาก % แบตที่ชาร์จเข้าไป — เฉลี่ยเดือนละ <b>'+fmt(hk,0)+'</b> หน่วย · เลือกเดือนให้ตรงกับบิลได้ด้านล่าง'
+    : 'ยังไม่มีข้อมูลการชาร์จที่บ้าน ใส่ประมาณการไปก่อนได้ เช่น 60';
+  renderHomeMonths();
+  if(!(base>0) || !(ev>0) || ft===null){
+    delete box.dataset.rate;
+    box.innerHTML = '<p class="note" style="margin:0">กรอกหน่วยไฟบ้านต่อเดือนและหน่วยที่ชาร์จรถ เพื่อคำนวณอัตราจริง</p>'+
+      '<table><tr><td>ขั้น 1–150 หน่วย</td><td>3.2484 ฿</td></tr>'+
+      '<tr><td>ขั้น 151–400 หน่วย</td><td>4.2218 ฿</td></tr>'+
+      '<tr><td>ขั้น 401 หน่วยขึ้นไป</td><td>4.4217 ฿</td></tr>'+
+      '<tr><td>ค่าบริการ + VAT 7%</td><td>24.62 ฿/เดือน</td></tr></table>';
+    return;
+  }
+  if(ev >= base){
+    delete box.dataset.rate;
+    box.innerHTML = '<p class="note" style="margin:0">หน่วยที่ชาร์จรถ ('+fmt0(ev)+') ต้องน้อยกว่าหน่วยรวมทั้งบิล ('+fmt0(base)+') — ลองตรวจตัวเลขอีกครั้ง</p>';
+    return;
+  }
+  /* base is now the WHOLE bill, so the counterfactual is the bill minus the car */
+  const houseOnly = base - ev;
+  const actual = billTotal(base, ft), without = billTotal(houseOnly, ft);
+  const rate = (actual - without) / ev;
+  box.innerHTML =
+    '<div class="cl"><span class="op"></span><span class="lb">บิลจริงเดือนนั้น ('+fmt0(base)+' หน่วย)</span><span class="vl">'+fmt(actual,2)+' ฿</span></div>'+
+    '<div class="cl"><span class="op">−</span><span class="lb">ถ้าไม่ได้ชาร์จรถ ('+fmt0(houseOnly)+' หน่วย)</span><span class="vl">'+fmt(without,2)+' ฿</span></div>'+
+    '<div class="cl"><span class="op">=</span><span class="lb">ค่าไฟส่วนที่เป็นของรถ</span><span class="vl">'+fmt(actual-without,2)+' ฿</span></div>'+
+    '<div class="cl"><span class="op">÷</span><span class="lb">หน่วยที่ชาร์จรถ</span><span class="vl">'+fmt0(ev)+' หน่วย</span></div>'+
+    '<div class="cl res"><span class="op">=</span><span class="lb">อัตราจริงของไฟที่ชาร์จรถ</span><span class="vl">'+fmt(rate,2)+' ฿/หน่วย</span></div>'+
+    '<p class="note">คิดขั้นบันไดจริง รวม Ft '+fmt(ft,4)+' ค่าบริการ 24.62 และ VAT 7% แล้ว · '+
+    'สูงกว่าค่าเฉลี่ยทั้งบิล ('+fmt(actual/base,2)+' ฿/หน่วย) เพราะไฟของรถเป็นหน่วย<b>ท้ายสุด</b> จึงตกขั้นแพงที่สุดเสมอ · '+
+    'บ้านล้วนเดือนนั้นราว '+fmt0(houseOnly)+' หน่วย</p>';
+  box.dataset.rate = rate.toFixed(4);
+}
+["sBaseUnits","sEvUnits","sFt"].forEach(id=>{
+  $("#"+id).addEventListener("input", ()=>{
+    if(id==="sBaseUnits") state.settings.baseUnits = num($("#sBaseUnits").value); /* whole-bill units */
+    if(id==="sFt") state.settings.ft = num($("#sFt").value);
+    save(); renderTariffCalc();
+  });
+});
+$("#useRateBtn").onclick = ()=>{
+  const r = parseFloat($("#tariffCalc").dataset.rate || "");
+  if(!(r>0)){ toast("กรอกข้อมูลให้ครบก่อน"); return; }
+  state.settings.homeRate = Math.round(r*100)/100;
+  save(); syncSettingsUI(); $("#cHomeRate").value = state.settings.homeRate;
+  updateCPreview(); renderHome();
+  toast("ตั้งค่าไฟบ้านเป็น "+fmt(state.settings.homeRate,2)+" บาท/หน่วย");
+};
+
+["sBattery","sHomeRate","sKwhPct"].forEach(id=>{
+  $("#"+id).addEventListener("change", ()=>{
+    const v = num($("#"+id).value);
+    if(id==="sBattery") state.settings.battery = v || 18.3;
+    if(id==="sHomeRate") state.settings.homeRate = v || 4.9;
+    if(id==="sKwhPct") state.settings.kwhPct = (v>0 ? v : null);
+    save(); syncSettingsUI(); updateCPreview(); renderHome();
+  });
+});
+$("#sCarName").addEventListener("change", ()=>{ state.settings.car = $("#sCarName").value.trim() || DEFAULTS.car; save(); $("#hdSub").textContent = state.settings.car; });
+$("#sTank").addEventListener("change", ()=>{ state.settings.tank = num($("#sTank").value) || 45; save(); updatePreview(); });
+
+/* =========================================================
+   10. BOOT
+   ========================================================= */
+load();
+applyTheme(localStorage.getItem(KEY+".theme") || (window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
+resetForm();
+cResetForm();
+syncSettingsUI();
+(function(){ const n = nowTrips();
+  if(n.a>=0) $("#nowA").value = n.a;
+  if(n.b>=0) $("#nowB").value = n.b;
+})();
+renderHome();
+/* Offline support. Registered only on a real origin — opening the file
+   directly from disk has no service-worker support and that is fine. */
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+  window.addEventListener("load", ()=>{
+    navigator.serviceWorker.register("sw.js").then(reg=>{
+      reg.addEventListener("updatefound", ()=>{
+        const w = reg.installing;
+        w && w.addEventListener("statechange", ()=>{
+          if(w.state === "installed" && navigator.serviceWorker.controller) showUpdate();
+        });
+      });
+    }).catch(()=>{});
+  });
+}
+function showUpdate(){
+  if($("#updateBar")) return;
+  const bar = document.createElement("div");
+  bar.id = "updateBar"; bar.className = "updatebar";
+  bar.innerHTML = '<span>มีเวอร์ชันใหม่พร้อมใช้งาน</span><button id="doUpdate">อัปเดตเลย</button>';
+  document.body.appendChild(bar);
+  $("#doUpdate").onclick = ()=> location.reload();
+}
+
+let rt; window.addEventListener("resize", ()=>{ clearTimeout(rt); rt=setTimeout(()=>{
+  if($("#view-stats").classList.contains("active")) renderStats();
+  if($("#view-home").classList.contains("active")) renderHome();
+},220); });
+</script>
+</body>
+</html>
