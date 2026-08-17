@@ -684,9 +684,9 @@ nav.tabbar button[aria-current="page"] .ic{
   <div class="card costcard" id="costCard">
     <h2>ต้นทุนต่อกิโลเมตร</h2>
     <p class="hint">เฉลี่ยสะสมจากข้อมูลทั้งหมด</p>
-    <div class="costrow"><span class="k"><i class="dot fuel"></i>ค่าน้ำมัน</span><b id="cFuel">–</b></div>
-    <div class="costrow"><span class="k"><i class="dot elec"></i>ค่าไฟฟ้า</span><b id="cElec">–</b></div>
-    <div class="costrow grand"><span class="k">รวมทั้งสองอย่าง</span><b id="cAll">–</b></div>
+    <div class="costrow"><span class="k"><i class="dot fuel"></i>ตอนวิ่งด้วยน้ำมัน</span><b id="cFuel">–</b></div>
+    <div class="costrow"><span class="k"><i class="dot elec"></i>ตอนวิ่งด้วยไฟฟ้า</span><b id="cElec">–</b></div>
+    <div class="costrow grand"><span class="k">เฉลี่ยทุกกิโลเมตร</span><b id="cAll">–</b></div>
     <div class="splitbar" id="cSplit"></div>
     <p class="hint" id="cSplitLbl" style="margin:8px 0 0;text-align:center"></p>
     <div id="coverWarn"></div>
@@ -1060,7 +1060,7 @@ nav.tabbar button[aria-current="page"] .ic{
         <p class="hint" style="line-height:1.7;margin:0">
           <b>ต้องรู้ไหมว่าเหลือน้ำมันกี่ลิตร?</b> ไม่ต้อง เพราะวัดที่จุด “เต็มถัง” ทั้งสองครั้ง<br><br>
           <b>ทำไมต้องเติมเต็มถังทุกครั้ง?</b> ถ้าเติมไม่เต็มจะไม่รู้ว่าใช้ไปเท่าไหร่จริง ตัวเลขจะเพี้ยนทันที<br><br>
-          <b>ทำไม กม./kWh ดูสูงผิดปกติ?</b> เพราะ TRIP B นับระยะทั้งหมดตั้งแต่ชาร์จครั้งก่อน ซึ่งบางส่วนวิ่งด้วยน้ำมัน เป็นค่าผสม — ตัวที่เชื่อได้จริงคือ <b>ต้นทุนรวมต่อกิโลเมตร</b><br><br>
+          <b>ทำไมค่าไฟต่อ กม. กับค่าน้ำมันต่อ กม. บวกกันแล้วไม่เท่าช่องรวม?</b> เพราะเป็นคนละกิโลเมตรกัน TRIP A นับเฉพาะที่วิ่งด้วยน้ำมัน TRIP B นับเฉพาะที่วิ่งด้วยไฟ ช่องรวมคือเงินทั้งหมด ÷ ระยะทั้งหมด ค่าจึงอยู่<b>ระหว่าง</b>สองตัวบน<br><br>
           <b>ตู้ชาร์จคิดหน่วยเกิน ตู้โกงหรือเปล่า?</b> ไม่โกง พลังงานหายไปกับความร้อนตอนแปลงไฟและระบบระบายความร้อนแบต ปกติเกินราว 12–15%<br><br>
           <b>ได้ต่ำกว่า 26.3 กม./ล. แปลว่ารถมีปัญหาไหม?</b> ไม่ใช่ 26.3 คือตัวเลขตอนแบตหมด ถ้าชาร์จสม่ำเสมอควรได้สูงกว่ามาก
         </p>
@@ -1386,13 +1386,13 @@ function homeKwhPerMonth(){
   return hs.reduce((s,c)=>s+c.kwh,0) / months;
 }
 
-/* ---------- combined cost, over one shared denominator ----------
-   TRIP A windows and TRIP B windows both tile the SAME odometer distance, so
-   their two baht/km rates only add up if they cover the same kilometres. When
-   coverage differs (a charge went unlogged, or charging started later), adding
-   the raw rates invents cost that was never spent. Everything below therefore
-   divides by ONE reference distance: whichever log covers more ground, since
-   neither can overcount. */
+/* ---------- combined cost ----------
+   The driver switches trip meters by drive mode: TRIP B counts the kilometres
+   run on electricity, TRIP A counts the kilometres run on petrol. The two
+   NEVER overlap — they are different kilometres — so total distance driven is
+   simply fKm + eKm, and each side's true cost per kilometre is its own money
+   divided by its own distance. The blended figure is the distance-weighted
+   average, i.e. all money over all kilometres, NOT the sum of the two rates. */
 function costBasis(records, charges){
   const fm = records.filter(r=>r.trip>0 && r.liters>0);
   const cm = charges.filter(c=>c.trip>0 && c.kwh>0);
@@ -1400,24 +1400,29 @@ function costBasis(records, charges){
   const eKm = cm.reduce((s,c)=>s+c.trip,0);
   const fBaht = fm.reduce((s,r)=>s+r.total,0);
   const eBaht = cm.reduce((s,c)=>s+c.total,0);
-  const ref = Math.max(fKm, eKm);
-  const cover = (fKm>0 && eKm>0) ? Math.min(fKm,eKm)/Math.max(fKm,eKm) : null;
+  const ref = fKm + eKm;                       /* total distance driven */
+  const evShare = ref>0 ? eKm/ref : null;      /* how much of the driving was electric */
   return {
-    fKm, eKm, fBaht, eBaht, ref, cover,
+    fKm, eKm, fBaht, eBaht, ref, evShare,
     /* null, not 0, when that side has no measured distance — 0 would read as
-       "this costs nothing per km" instead of "not enough data yet" */
-    fuelRate: (ref>0 && fKm>0) ? fBaht/ref : null,
-    elecRate: (ref>0 && eKm>0) ? eBaht/ref : null,
+       "this costs nothing per km" instead of "not enough data yet".
+       fuelRate/elecRate are each side's OWN cost per kilometre: the honest
+       answer to "what does a kilometre cost when running on this energy". */
+    fuelRate: fKm>0 ? fBaht/fKm : null,
+    elecRate: eKm>0 ? eBaht/eKm : null,
     totalRate: ref>0 ? (fBaht+eBaht)/ref : null,
+    /* contribution of each side to the blended rate — these DO add to totalRate */
+    fuelShareRate: ref>0 ? fBaht/ref : 0,
+    elecShareRate: ref>0 ? eBaht/ref : 0,
     /* money recorded on a side that has no measured distance at all */
     fuelOrphan: (fKm<=0 && records.some(r=>r.total>0)) ? records.reduce((s,r)=>s+(r.total||0),0) : 0,
     elecOrphan: (eKm<=0 && charges.some(c=>c.total>0)) ? charges.reduce((s,c)=>s+(c.total||0),0) : 0,
-    /* cost per km measured only across the kilometres each log actually covers */
+    /* kept as aliases so older call sites stay correct */
     fuelOwnRate: fKm>0 ? fBaht/fKm : null,
     elecOwnRate: eKm>0 ? eBaht/eKm : null
   };
 }
-/* one warning string when the two logs disagree about how far the car went */
+/* warn only about money that has no distance attached to it at all */
 function coverageWarning(b){
   if(b.fuelOrphan > 0 || b.elecOrphan > 0){
     const side = b.fuelOrphan > 0 ? "น้ำมัน" : "ไฟฟ้า";
@@ -1426,12 +1431,7 @@ function coverageWarning(b){
       'มีค่า'+side+' <b>'+fmt0(amt)+' บาท</b> ที่ยังไม่มีระยะทางกำกับ (ไม่ได้กรอก TRIP) '+
       'จึงยังคิดเป็นบาท/กม. ไม่ได้ และยัง<b>ไม่ถูกนับ</b>ในต้นทุนรวม — เติมเลข TRIP ย้อนหลังได้ในแท็บประวัติ</span></div>';
   }
-  if(b.cover === null || b.cover >= 0.85) return "";
-  const low = b.fKm < b.eKm ? "น้ำมัน" : "ไฟฟ้า";
-  return '<div class="alert warn" style="margin:12px 0 0;font-size:13px"><span>⚠️</span><span>'+
-    'ระยะจากบันทึกน้ำมัน <b>'+fmt0(b.fKm)+' กม.</b> แต่จากบันทึกไฟฟ้า <b>'+fmt0(b.eKm)+' กม.</b> — '+
-    'ทั้งสองควรใกล้เคียงกันเพราะวัดระยะทางเดียวกัน ส่วนต่างแปลว่าฝั่ง<b>'+low+'</b>ยังบันทึกไม่ครบ '+
-    'ต้นทุนรวมจึงคิดจากระยะที่ยาวกว่า ('+fmt0(b.ref)+' กม.) และอาจ<b>ต่ำกว่าความจริง</b>จนกว่าจะบันทึกครบ</span></div>';
+  return "";
 }
 
 /* charging efficiency implied by the learned ratio */
@@ -2017,21 +2017,21 @@ function renderHome(){
     .reduce((s,c)=>s+(c.total||0),0)) + '<small>บาท</small>';
 
   /* ---------- combined cost per km ----------
-     Fuel km and electricity km are two windowed views of the SAME odometer
-     distance, so they must never be added. Each side's baht/km is already a
-     rate on its own measured distance — adding the two RATES is what gives
-     the true total cost per kilometre. */
+     TRIP A kilometres (petrol) and TRIP B kilometres (electric) are different
+     kilometres, so each rate stands on its own distance and the combined
+     figure is all money over all distance — a weighted average, never a sum. */
   const B = costBasis(state.records, state.charges);
   const fRate = B.fuelRate, eRate = B.elecRate, both = B.totalRate || 0;
   $("#cFuel").innerHTML = fRate!==null ? fmt(fRate,2)+' <small style="font-size:12px;color:var(--muted)">บาท/กม.</small>' : "–";
   $("#cElec").innerHTML = eRate!==null ? fmt(eRate,2)+' <small style="font-size:12px;color:var(--muted)">บาท/กม.</small>' : "–";
   $("#cAll").innerHTML = both>0 ? fmt(both,2)+' <small style="font-size:13px;color:var(--muted)">บาท/กม.</small>' : "–";
   $("#costCard").style.display = both>0 ? "" : "none";
-  if(both>0){
-    const fp = (fRate||0)/both*100;
-    $("#cSplit").innerHTML = '<i class="fuel" style="width:'+fp.toFixed(1)+'%"></i><i class="elec" style="width:'+(100-fp).toFixed(1)+'%"></i>';
-    $("#cSplitLbl").innerHTML = 'ต้นทุนมาจากน้ำมัน <b>'+fmt(fp,0)+'%</b> · ไฟฟ้า <b>'+fmt(100-fp,0)+'%</b>'+
-      '<br><span style="font-size:12px">คิดจากเงินรวม '+fmt0(B.fBaht+B.eBaht)+' บาท ÷ ระยะ '+fmt0(B.ref)+' กม.</span>';
+  if(both>0 && B.ref>0){
+    const ep = B.evShare*100, fp = 100-ep;
+    $("#cSplit").innerHTML = '<i class="fuel" style="width:'+fp.toFixed(1)+'%"></i><i class="elec" style="width:'+ep.toFixed(1)+'%"></i>';
+    $("#cSplitLbl").innerHTML = 'ระยะทางวิ่งด้วยน้ำมัน <b>'+fmt(fp,0)+'%</b> · ไฟฟ้า <b>'+fmt(ep,0)+'%</b>'+
+      '<br><span style="font-size:12px">ช่องรวม = เงินทั้งหมด '+fmt0(B.fBaht+B.eBaht)+' บาท ÷ ระยะทั้งหมด '+fmt0(B.ref)+' กม. '+
+      '(ไม่ใช่สองบรรทัดบนบวกกัน)</span>';
   } else { $("#cSplit").innerHTML=""; $("#cSplitLbl").textContent=""; }
   $("#coverWarn").innerHTML = coverageWarning(B);
 
@@ -2354,17 +2354,17 @@ function combinedMonths(){
     const fm = fr.filter(r=>r.trip>0 && r.liters>0);
     const cm = cr.filter(c=>c.trip>0 && c.kwh>0);
     const b = costBasis(fr, cr);
-    /* Within a single month the two logs do NOT tile the same distance — a tank
-       lasts months while charges are weekly — so each side is divided by the
-       distance it actually measured, and the combined rate is only offered when
-       both sides have data. */
+    /* Each side is divided by the distance it actually measured; the month's
+       blended rate is all money that month over all kilometres that month.
+       A month with only one side logged still has a valid blended rate — it
+       just equals that side's own rate — so flag it rather than blanking it. */
     const combinable = b.fKm>0 && b.eKm>0;
     return {
       ym,
       fuelBaht: fr.reduce((s,r)=>s+(r.total||0),0),
       elecBaht: cr.reduce((s,c)=>s+(c.total||0),0),
       fuelRate: b.fuelOwnRate, elecRate: b.elecOwnRate,
-      totalRate: combinable ? b.fuelOwnRate + b.elecOwnRate : null,
+      totalRate: b.totalRate,
       partial: !combinable,
       kml: fm.length ? b.fKm/fm.reduce((s,r)=>s+r.liters,0) : null,
       kmkwh: cm.length ? b.eKm/cm.reduce((s,c)=>s+c.kwh,0) : null,
@@ -2507,13 +2507,14 @@ function renderHistAll(){
       '<tr><td style="text-align:left;font-weight:650;color:var(--text-secondary)"><i class="dot fuel"></i>ค่าน้ำมันรวม</td><td style="font-weight:750">'+fmt0(tf)+' บาท</td></tr>'+
       '<tr><td style="text-align:left;font-weight:650;color:var(--text-secondary)"><i class="dot elec"></i>ค่าไฟรวม</td><td style="font-weight:750">'+fmt0(te)+' บาท</td></tr>'+
       '<tr><td style="text-align:left;font-weight:800">รวมทั้งหมด</td><td style="font-weight:800;font-size:16px">'+fmt0(tf+te)+' บาท</td></tr>'+
-      '<tr><td style="text-align:left;font-weight:650;color:var(--text-secondary)">ค่าน้ำมันต่อกิโลเมตร</td><td style="font-weight:750;color:var(--fuel-ink)">'+(fRate?fmt(fRate,2):"—")+' บาท/กม.</td></tr>'+
-      '<tr><td style="text-align:left;font-weight:650;color:var(--text-secondary)">ค่าไฟต่อกิโลเมตร</td><td style="font-weight:750;color:var(--elec-ink)">'+(eRate?fmt(eRate,2):"—")+' บาท/กม.</td></tr>'+
-      '<tr><td style="text-align:left;font-weight:800">ต้นทุนรวมต่อกิโลเมตร</td><td style="font-weight:800;font-size:18px">'+fmt(B.totalRate||0,2)+' บาท/กม.</td></tr>'+
+      '<tr><td style="text-align:left;font-weight:650;color:var(--text-secondary)">ค่าน้ำมันต่อ กม. <small style="color:var(--muted)">(÷ '+fmt0(B.fKm)+' กม.)</small></td><td style="font-weight:750;color:var(--fuel-ink)">'+(fRate?fmt(fRate,2):"—")+' บาท/กม.</td></tr>'+
+      '<tr><td style="text-align:left;font-weight:650;color:var(--text-secondary)">ค่าไฟต่อ กม. <small style="color:var(--muted)">(÷ '+fmt0(B.eKm)+' กม.)</small></td><td style="font-weight:750;color:var(--elec-ink)">'+(eRate?fmt(eRate,2):"—")+' บาท/กม.</td></tr>'+
+      '<tr><td style="text-align:left;font-weight:800">เฉลี่ยทุกกิโลเมตร</td><td style="font-weight:800;font-size:18px">'+fmt(B.totalRate||0,2)+' บาท/กม.</td></tr>'+
     '</tbody></table>'+
     '<div class="alert info" style="margin:12px 0 0;font-size:13px"><span>ℹ️</span><span>'+
-      'ทุกอัตราข้างบนหารด้วย<b>ระยะเดียวกัน '+fmt0(B.ref)+' กม.</b> เพราะ TRIP A กับ TRIP B วัดระยะทางเดียวกัน แค่คนละช่วง '+
-      'สองบรรทัดบนจึงบวกกันได้พอดีเป็นบรรทัดล่าง และเท่ากับ เงินรวม '+fmt0(B.fBaht+B.eBaht)+' ÷ '+fmt0(B.ref)+' กม. พอดี</span></div>'+
+      'TRIP A นับเฉพาะกิโลเมตรที่วิ่งด้วย<b>น้ำมัน</b> TRIP B นับเฉพาะกิโลเมตรที่วิ่งด้วย<b>ไฟฟ้า</b> — เป็นคนละกิโลเมตรกัน '+
+      'แต่ละฝั่งจึงหารด้วยระยะของตัวเอง และบรรทัดล่าง<b>ไม่ใช่</b>สองบรรทัดบนบวกกัน แต่คือ เงินรวม '+
+      fmt0(B.fBaht+B.eBaht)+' บาท ÷ ระยะรวม '+fmt0(B.ref)+' กม. = '+fmt(B.totalRate||0,2)+' บาท/กม.</span></div>'+
     coverageWarning(B)+
   '</div>'+
 
@@ -2536,7 +2537,7 @@ function renderHistAll(){
       '<td style="font-weight:800">'+fmt0(tf+te)+'</td>'+
       '<td style="font-weight:800">'+fmt(B.totalRate||0,2)+'</td>'+
     '</tr></tfoot></table></div>'+
-    '<p class="scrollhint">คอลัมน์ <b>บาท/กม.</b> ของแต่ละเดือนคิดจากระยะที่ฝั่งนั้นวัดได้ในเดือนนั้นเอง ส่วนแถว <b>รวม</b> ใช้ระยะอ้างอิงเดียวกันทั้งช่วง จึงไม่เท่ากับค่าเฉลี่ยของแถวข้างบน — แถวรวมคือค่าที่ถูกต้องกว่า</p></div>'+
+    '<p class="scrollhint">คอลัมน์ <b>บาท/กม.</b> คือเงินที่จ่ายในเดือนนั้น ÷ ระยะทางทั้งหมดของเดือนนั้น (น้ำมัน + ไฟฟ้า) ส่วนแถว <b>รวม</b> คิดจากทั้งช่วงพร้อมกัน จึงไม่เท่ากับค่าเฉลี่ยของแถวข้างบน เพราะแต่ละเดือนวิ่งไม่เท่ากัน</p></div>'+
 
   '<div class="card" style="padding:14px"><h2>อัตราสิ้นเปลืองรายเดือน</h2>'+
     '<p class="hint">น้ำมันและไฟฟ้าของเดือนเดียวกัน วางเทียบกัน</p>'+
@@ -2577,7 +2578,7 @@ function renderStatsElec(){
     '<div class="kv"><span class="k">ช่วงที่แกว่ง</span><span class="v">± '+fmt(spread/2,0)+' % จากค่าเฉลี่ย</span></div>'+
     '<div class="kv"><span class="k">ระยะทางเฉลี่ยต่อการชาร์จ</span><span class="v">'+fmt0(km/cm.length)+' กม.</span></div>'+
   '</div>'+
-  '<div class="alert warn" style="font-size:13px"><span>⚠️</span><span><b>กม./kWh ตรงนี้เป็นค่าผสม ไม่ใช่ไฟฟ้าล้วน</b> — TRIP B นับระยะทั้งหมดตั้งแต่ชาร์จครั้งก่อน ซึ่งบางส่วนวิ่งด้วยน้ำมัน ยิ่งขับไกลระหว่างชาร์จ ตัวเลขนี้จะยิ่งสูงเกินจริง ใช้ดูแนวโน้มได้ แต่อย่าเอาไปเทียบกับสเปกรถ · ตัวเลขที่เทียบได้จริงคือ<b>ต้นทุนรวมต่อกิโลเมตร</b>ในแท็บ 📊 รวม</span></div>'+
+  '<div class="alert info" style="font-size:13px"><span>🔋</span><span><b>กม./kWh ตรงนี้คือไฟฟ้าล้วน</b> เพราะ TRIP B นับเฉพาะช่วงที่วิ่งด้วยไฟฟ้า เทียบกับสเปกรถได้ตรง ๆ · หน่วย kWh ที่กรอกเป็นไฟที่<b>จ่ายเงินซื้อ</b> ซึ่งรวมการสูญเสียตอนชาร์จราว 12–15% แล้ว ตัวเลขนี้จึงต่ำกว่าค่าที่จอรถแสดงเล็กน้อยเป็นเรื่องปกติ</span></div>'+
   '<div class="alert info" style="font-size:13.5px"><span>🦶</span><span><b>ทำไมตัวเลขแกว่ง:</b> การเหยียบคันเร่งมีผลมากที่สุด เพราะพลังงานที่ใช้เร่งแปรผันตามความเร็ว<b>ยกกำลังสอง</b> และถ้าเหยียบเกินระดับหนึ่งเครื่องยนต์จะติดมาช่วย ทำให้ระยะทางส่วนนั้นไม่ได้มาจากไฟฟ้าล้วน — ดูเส้นแนวโน้มระยะยาวจะแม่นกว่าดูครั้งเดียว</span></div>'+
 
   '<div class="card"><h2>แนวโน้มอัตราการใช้ไฟ</h2><p class="hint">กม./kWh ต่อการชาร์จ 1 ครั้ง — ยิ่งสูงยิ่งประหยัด · เส้นประคือค่าเฉลี่ยสะสม</p>'+
@@ -2632,8 +2633,11 @@ function renderStatsElec(){
 function auditCard(B){
   const m = measured(), cm = cMeasured();
   const fSkip = state.records.length - m.length, eSkip = state.charges.length - cm.length;
-  const sum = (B.fuelRate||0) + (B.elecRate||0);
-  const ok = Math.abs(sum - (B.totalRate||0)) < 0.005;
+  /* cross-check: rebuilding the money from each side's own rate must return
+     the money actually spent. This is the identity that holds when TRIP A and
+     TRIP B measure DIFFERENT kilometres. */
+  const rebuilt = (B.fuelRate||0)*B.fKm + (B.elecRate||0)*B.eKm;
+  const ok = Math.abs(rebuilt - (B.fBaht+B.eBaht)) < 0.5;
   const r = (op,lb,vl,cls)=>'<div class="cl'+(cls||"")+'"><span class="op">'+op+'</span>'+
     '<span class="lb">'+lb+'</span><span class="vl">'+vl+'</span></div>';
   const warns = plausibility();
@@ -2656,26 +2660,32 @@ function auditCard(B){
     r("", "เงินค่าไฟรวม", fmt0(B.eBaht)+" บาท")+
   '</div>'+
 
-  '<h3 style="font-size:13.5px;margin:14px 0 6px">③ เลือกตัวหารกลาง</h3>'+
+  '<h3 style="font-size:13.5px;margin:14px 0 6px">③ ระยะทางรวม</h3>'+
   '<div class="calcbox" style="margin-bottom:12px">'+
-    r("", "ระยะจากน้ำมัน", fmt0(B.fKm)+" กม.")+
-    r("", "ระยะจากไฟฟ้า", fmt0(B.eKm)+" กม.")+
-    r("=", "ใช้ค่าที่มากกว่า", fmt0(B.ref)+" กม.", " res")+
-    '<p class="note">TRIP A กับ TRIP B วัดระยะทาง<b>เดียวกัน</b> แค่คนละช่วง จึงต้องหารด้วยตัวเดียว '+
-    'เลือกค่าที่มากกว่าเพราะไม่มีฝั่งไหนนับ<b>เกิน</b>ความจริงได้ มีแต่นับ<b>ขาด</b>ถ้าลืมบันทึก'+
-    (B.cover!==null ? ' · ตอนนี้สองฝั่งตรงกัน '+fmt(B.cover*100,0)+'%' : '')+'</p>'+
+    r("", "ระยะที่วิ่งด้วยน้ำมัน (TRIP A)", fmt0(B.fKm)+" กม.")+
+    r("+", "ระยะที่วิ่งด้วยไฟฟ้า (TRIP B)", fmt0(B.eKm)+" กม.")+
+    r("=", "ระยะทางทั้งหมด", fmt0(B.ref)+" กม.", " res")+
+    '<p class="note">คนขับสลับมิเตอร์ตามระบบที่ใช้ TRIP A กับ TRIP B จึงเป็น<b>คนละกิโลเมตรกัน</b> '+
+    'ระยะทางรวมคือเอามาบวกกัน ไม่ใช่เลือกตัวใดตัวหนึ่ง'+
+    (B.evShare!==null ? ' · วิ่งด้วยไฟฟ้า '+fmt(B.evShare*100,0)+'% ของระยะทางทั้งหมด' : '')+'</p>'+
   '</div>'+
 
   '<h3 style="font-size:13.5px;margin:14px 0 6px">④ หารและตรวจไขว้</h3>'+
   '<div class="calcbox">'+
-    r("", "ค่าน้ำมัน "+fmt0(B.fBaht)+" ÷ "+fmt0(B.ref), fmt(B.fuelRate||0,4)+" ฿/กม.")+
-    r("+", "ค่าไฟ "+fmt0(B.eBaht)+" ÷ "+fmt0(B.ref), fmt(B.elecRate||0,4)+" ฿/กม.")+
-    r("=", "บวกกัน", fmt(sum,4)+" ฿/กม.")+
-    r("", "เงินรวม "+fmt0(B.fBaht+B.eBaht)+" ÷ "+fmt0(B.ref), fmt(B.totalRate||0,4)+" ฿/กม.")+
-    r(ok?"✓":"✗", ok?"สองวิธีตรงกัน — คำนวณถูกต้อง":"ไม่ตรงกัน — มีบางอย่างผิด",
+    r("", "ค่าน้ำมัน "+fmt0(B.fBaht)+" ÷ "+fmt0(B.fKm)+" กม.", fmt(B.fuelRate||0,4)+" ฿/กม.")+
+    r("", "ค่าไฟ "+fmt0(B.eBaht)+" ÷ "+fmt0(B.eKm)+" กม.", fmt(B.elecRate||0,4)+" ฿/กม.")+
+    r("=", "เงินรวม "+fmt0(B.fBaht+B.eBaht)+" ÷ ระยะรวม "+fmt0(B.ref), fmt(B.totalRate||0,4)+" ฿/กม.", " res")+
+    '<p class="note">ช่องรวมเป็น<b>ค่าเฉลี่ยถ่วงน้ำหนัก</b>ด้วยระยะทาง จึงอยู่ระหว่างสองค่าบนเสมอ '+
+    'ไม่ใช่ผลบวก — ถ้าเอามาบวกกันจะได้ต้นทุนที่ไม่มีใครจ่ายจริง</p>'+
+  '</div>'+
+  '<div class="calcbox" style="margin-top:10px">'+
+    r("", "ตรวจย้อน: "+fmt(B.fuelRate||0,2)+"×"+fmt0(B.fKm)+" + "+fmt(B.elecRate||0,2)+"×"+fmt0(B.eKm),
+      fmt0(rebuilt)+" บาท")+
+    r("", "เงินที่จ่ายจริง", fmt0(B.fBaht+B.eBaht)+" บาท")+
+    r(ok?"✓":"✗", ok?"ตรงกัน — คำนวณถูกต้อง":"ไม่ตรงกัน — มีบางอย่างผิด",
       fmt(B.totalRate||0,2)+" ฿/กม.", " res")+
     '<p class="note">'+(ok
-      ? 'ถ้าตัวหารเป็นตัวเดียวกัน การบวกอัตราสองฝั่งจะได้เท่ากับเงินรวมหารระยะเสมอ นี่คือเครื่องพิสูจน์ว่าไม่ได้นับซ้ำหรือนับเกิน'
+      ? 'ถ้าเอาอัตราของแต่ละฝั่งคูณกลับด้วยระยะของฝั่งนั้น ต้องได้เงินเท่าที่จ่ายจริงเสมอ นี่คือเครื่องพิสูจน์ว่าไม่มีกิโลเมตรไหนถูกนับซ้ำหรือตกหล่น'
       : 'กรุณาแจ้งผู้พัฒนา — ผลลัพธ์สองวิธีควรตรงกันเสมอ')+'</p>'+
   '</div>'+
   (warns.length
@@ -2694,14 +2704,18 @@ function plausibility(){
   if(badK.length) w.push('• กม./ลิตร ผิดปกติ '+badK.length+' ครั้ง (เช่น '+thDateMini(badK[0].date)+' = '+fmt(kml(badK[0]),1)+')');
   const overBatt = state.charges.filter(c=>{ const g=c.socTo-c.socFrom; return g>0 && c.kwh > g/100*batt*1.6; });
   if(overBatt.length) w.push('• หน่วยไฟสูงเกินที่แบตรับได้ '+overBatt.length+' ครั้ง — อาจกรอก % หรือ kWh ผิด');
-  const B = costBasis(state.records, state.charges);
-  if(B.cover !== null && B.cover < 0.85)
-    w.push('• ระยะสองฝั่งต่างกัน '+fmt((1-B.cover)*100,0)+'% — น่าจะมีการเติมหรือชาร์จที่ยังไม่ได้บันทึก');
   const cm = cMeasured();
-  const evCeiling = 120 / batt;   /* pure-EV best case for this car, km per kWh */
-  const blended = cm.filter(c=>kmkwh(c) > evCeiling * 1.15);
-  if(blended.length > cm.length*0.5 && cm.length)
-    w.push('• กม./kWh ส่วนใหญ่สูงกว่าที่ไฟฟ้าล้วนทำได้ แปลว่าระหว่างชาร์จวิ่งด้วยน้ำมันเป็นหลัก (ปกติสำหรับ PHEV ที่ขับทางไกล)');
+  /* TRIP B is pure-EV distance, so a km/kWh far above what the battery can
+     physically deliver now means a typo (or a TRIP B left running through a
+     petrol stretch), not a blended average. */
+  /* nameplate is ~6.6 km/kWh; gentle city driving really can beat it, and the
+     metered kWh already carries charging losses, so only flag a figure far
+     beyond anything the battery could deliver — otherwise good driving reads
+     as an error. */
+  const evCeiling = (state.settings.evRange || 120) / batt;
+  const impossible = cm.filter(c=>kmkwh(c) > evCeiling * 1.4);
+  if(impossible.length)
+    w.push('• กม./kWh สูงเกินที่ไฟฟ้าล้วนทำได้ '+impossible.length+' ครั้ง (เช่น '+thDateMini(impossible[0].date)+' = '+fmt(kmkwh(impossible[0]),1)+') — เช็กว่า TRIP B ถูกรีเซ็ตตอนสลับมาใช้น้ำมันหรือเปล่า');
   return w;
 }
 
@@ -2720,21 +2734,24 @@ function renderStatsAll(){
   const te = state.charges.reduce((s,c)=>s+(c.total||0),0);
 
   box.innerHTML =
-  '<div class="card"><h2>ต้นทุนต่อกิโลเมตร</h2><p class="hint">เงินที่จ่ายแต่ละฝั่ง ÷ ระยะทางเดียวกัน '+fmt0(B.ref)+' กม.</p>'+
+  '<div class="card"><h2>ต้นทุนต่อกิโลเมตร</h2><p class="hint">แต่ละระบบ ÷ ระยะทางของระบบนั้นเอง</p>'+
     '<div class="costrow" style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--grid);font-size:15px">'+
-      '<span style="font-weight:650;color:var(--text-secondary)"><i class="dot fuel"></i>ค่าน้ำมัน</span>'+
+      '<span style="font-weight:650;color:var(--text-secondary)"><i class="dot fuel"></i>ตอนวิ่งด้วยน้ำมัน<br><small style="font-weight:600;color:var(--muted)">'+fmt0(B.fKm)+' กม.</small></span>'+
       '<b style="font-size:19px;color:var(--fuel-ink)">'+(fRate?fmt(fRate,2):"—")+'</b></div>'+
     '<div class="costrow" style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--grid);font-size:15px">'+
-      '<span style="font-weight:650;color:var(--text-secondary)"><i class="dot elec"></i>ค่าไฟฟ้า</span>'+
+      '<span style="font-weight:650;color:var(--text-secondary)"><i class="dot elec"></i>ตอนวิ่งด้วยไฟฟ้า<br><small style="font-weight:600;color:var(--muted)">'+fmt0(B.eKm)+' กม.</small></span>'+
       '<b style="font-size:19px;color:var(--elec-ink)">'+(eRate?fmt(eRate,2):"—")+'</b></div>'+
     '<div class="costrow" style="display:flex;justify-content:space-between;padding:12px 0 0;border-top:2px solid var(--axis);margin-top:3px;font-size:15px">'+
-      '<span style="font-weight:750">รวม</span><b style="font-size:26px;font-weight:800">'+fmt(tot,2)+' <small style="font-size:13px;color:var(--muted)">บาท/กม.</small></b></div>'+
-    (tot>0?'<div class="splitbar"><i class="fuel" style="width:'+(fRate/tot*100).toFixed(1)+'%"></i><i class="elec" style="width:'+(eRate/tot*100).toFixed(1)+'%"></i></div>'+
-      '<p class="hint" style="margin:8px 0 0;text-align:center">น้ำมัน <b>'+fmt(fRate/tot*100,0)+'%</b> · ไฟฟ้า <b>'+fmt(eRate/tot*100,0)+'%</b> ของต้นทุนต่อกิโลเมตร</p>':'')+
+      '<span style="font-weight:750">เฉลี่ยทุกกิโลเมตร</span><b style="font-size:26px;font-weight:800">'+fmt(tot,2)+' <small style="font-size:13px;color:var(--muted)">บาท/กม.</small></b></div>'+
+    (B.ref>0?'<div class="splitbar"><i class="fuel" style="width:'+((1-B.evShare)*100).toFixed(1)+'%"></i><i class="elec" style="width:'+(B.evShare*100).toFixed(1)+'%"></i></div>'+
+      '<p class="hint" style="margin:8px 0 0;text-align:center">สัดส่วน<b>ระยะทาง</b> — น้ำมัน <b>'+fmt((1-B.evShare)*100,0)+'%</b> · ไฟฟ้า <b>'+fmt(B.evShare*100,0)+'%</b></p>':'')+
+    (fRate&&eRate?'<div class="alert '+(eRate<fRate?'ok':'warn')+'" style="margin:12px 0 0;font-size:13px"><span>'+(eRate<fRate?'💡':'⚠️')+'</span><span>'+
+      'วิ่งด้วยไฟฟ้า<b>'+(eRate<fRate?'ถูกกว่า':'แพงกว่า')+'</b>น้ำมัน '+fmt(Math.abs(1-eRate/fRate)*100,0)+'% ต่อกิโลเมตร'+
+      (eRate<fRate?' — ยิ่งเพิ่มสัดส่วนการวิ่งด้วยไฟ ค่าเฉลี่ยรวมจะยิ่งลดลง':'')+'</span></div>':'')+
     '<table class="tbl" style="margin-top:14px"><tbody>'+
       '<tr><td style="text-align:left;color:var(--text-secondary);font-weight:650">เงินที่จ่ายรวม</td><td style="font-weight:750">'+fmt0(B.fBaht+B.eBaht)+' บาท</td></tr>'+
-      '<tr><td style="text-align:left;color:var(--text-secondary);font-weight:650">÷ ระยะทางอ้างอิง</td><td style="font-weight:750">'+fmt0(B.ref)+' กม.</td></tr>'+
-      '<tr><td style="text-align:left;font-weight:800">= ต้นทุนรวม</td><td style="font-weight:800">'+fmt(tot,2)+' บาท/กม.</td></tr>'+
+      '<tr><td style="text-align:left;color:var(--text-secondary);font-weight:650">÷ ระยะทางรวม (A+B)</td><td style="font-weight:750">'+fmt0(B.ref)+' กม.</td></tr>'+
+      '<tr><td style="text-align:left;font-weight:800">= เฉลี่ยทุกกิโลเมตร</td><td style="font-weight:800">'+fmt(tot,2)+' บาท/กม.</td></tr>'+
     '</tbody></table>'+
     coverageWarning(B)+
   '</div>'+
@@ -2751,7 +2768,7 @@ function renderStatsAll(){
     '<div class="chartwrap" id="cCompare"></div>'+
     '<div class="legend"><span><i class="dot fuel"></i>ค่าน้ำมัน</span><span><i class="dot elec"></i>ค่าไฟฟ้า</span></div></div>'+
 
-  '<div class="card"><h2>ต้นทุนรวมต่อกิโลเมตร รายเดือน</h2><p class="hint">บาท/กม. ของน้ำมันและไฟฟ้ารวมกัน</p>'+
+  '<div class="card"><h2>ต้นทุนรวมต่อกิโลเมตร รายเดือน</h2><p class="hint">เงินทั้งหมดของเดือนนั้น ÷ ระยะทางทั้งหมดของเดือนนั้น</p>'+
     '<div class="chartwrap" id="cTotRate"></div></div>';
 
   const asc2 = rows.slice().reverse();
@@ -2762,8 +2779,8 @@ function renderStatsAll(){
   const rateRows = asc2.filter(r=>r.totalRate);
   if(rateRows.length>=2){
     drawLine($("#cTotRate"), rateRows.map(r=>({x:thMonthShort(r.ym), xFull:thMonth(r.ym),
-      y:(r.fuelRate||0)+(r.elecRate||0),
-      sub:"น้ำมัน "+fmt(r.fuelRate||0,2)+" · ไฟ "+fmt(r.elecRate||0,2)})),
+      y:r.totalRate,
+      sub:"น้ำมัน "+(r.fuelRate?fmt(r.fuelRate,2):"—")+" · ไฟ "+(r.elecRate?fmt(r.elecRate,2):"—")})),
       {color:"var(--series-2)", unit:"บาท/กม.", zero:false});
   } else $("#cTotRate").innerHTML = '<p class="hint" style="text-align:center;padding:20px 0">ต้องมีข้อมูลอย่างน้อย 2 เดือนจึงจะวาดกราฟได้</p>';
 }
