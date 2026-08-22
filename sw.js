@@ -1,7 +1,7 @@
 /* Offline-first service worker.
    The app is one HTML file plus icons, so the whole shell is precached.
    Bump CACHE when index.html changes — that is what makes an update reach the phone. */
-const CACHE = 'fuel-log-v18';
+const CACHE = 'fuel-log-v19';
 const SHELL = [
   './',
   './index.html',

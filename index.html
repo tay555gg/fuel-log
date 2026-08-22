@@ -160,6 +160,14 @@ main{padding:16px 16px 24px}
 .btn.danger{background:transparent;color:var(--critical);border:1px solid var(--critical);font-size:16px;padding:13px}
 .btn.small{padding:11px;font-size:15px;border-radius:11px}
 .btnrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.carrycard .crow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--grid);font-size:14.5px;font-weight:650}
+.carrycard .crow:last-of-type{border-bottom:0}
+.carrycard .crow .k{display:flex;align-items:center;gap:8px;color:var(--text-secondary)}
+.carrycard .crow b{font-variant-numeric:tabular-nums;font-size:18px;font-weight:800}
+.carrylist{margin-top:4px}
+.carrylist .ci{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);font-weight:600;padding:7px 0;border-top:1px solid var(--grid)}
+.carrylist .x{border:0;background:transparent;color:var(--muted);font-size:15px;cursor:pointer;padding:2px 6px;line-height:1}
+.carrylist .x:hover{color:var(--critical)}
 
 /* ============ form ============ */
 .field{margin-bottom:16px}
@@ -699,6 +707,16 @@ nav.tabbar button[aria-current="page"] .ic{
     <div class="tile"><div class="t">ค่าไฟเดือนนี้</div><div class="v" id="eMonth">–<small>บาท</small></div></div>
   </div>
 
+  <div class="card carrycard" id="carryCard">
+    <h2>ยอดทดค้างอยู่</h2>
+    <p class="hint">ระยะที่วิ่งไปแล้ว แต่ยังไม่ถึงคิวเติม/ชาร์จ — จะบวกให้อัตโนมัติตอนบันทึกครั้งถัดไป</p>
+    <div class="crow"><span class="k"><i class="dot fuel"></i>วิ่งด้วยน้ำมัน (TRIP A)</span><b id="carryFuel">0.0 กม.</b></div>
+    <div class="crow"><span class="k"><i class="dot elec"></i>วิ่งด้วยไฟฟ้า (TRIP B)</span><b id="carryElec">0.0 กม.</b></div>
+    <div class="carrylist" id="carryList"></div>
+  </div>
+
+  <button class="btn ghost" id="goSwitch" style="width:100%;font-size:16px;padding:15px 8px;margin-bottom:10px">🔄 สลับระบบ — ทดเลข TRIP ไว้ก่อนรีเซ็ต</button>
+
   <div class="btnrow" style="margin-bottom:14px">
     <button class="btn" id="goAdd" style="font-size:16px;padding:15px 8px">⛽<br>เติมน้ำมัน</button>
     <button class="btn elecbtn" id="goAddElec" style="font-size:16px;padding:15px 8px">🔌<br>ชาร์จไฟ</button>
@@ -716,7 +734,8 @@ nav.tabbar button[aria-current="page"] .ic{
       1. เติมน้ำมัน<b>เต็มถัง</b>ทุกครั้ง<br>
       2. ก่อนออกจากปั๊ม จดตัวเลข <b>TRIP A</b> ที่หน้าจอรถ แล้วกดรีเซ็ต TRIP A เป็น 0<br>
       3. เปิดเว็บนี้ กรอก TRIP A + จำนวนลิตร + ราคา แล้วกดบันทึก<br>
-      4. ระบบคำนวณ กม./ลิตร และค่าน้ำมันต่อกิโลเมตรให้ทันที
+      4. ระบบคำนวณ กม./ลิตร และค่าน้ำมันต่อกิโลเมตรให้ทันที<br><br>
+      <b>สลับระบบกลางคัน?</b> กดปุ่ม <b>🔄 สลับระบบ</b> จดเลข TRIP ไว้ก่อนรีเซ็ต ระบบจะทดไว้ให้ แล้วบวกเข้ากับครั้งถัดไปเอง
     </p>
     <details class="more" style="margin-bottom:0">
       <summary>ทำไมไม่ต้องรู้ว่าเหลือน้ำมันในถังเท่าไหร่?</summary>
@@ -759,6 +778,7 @@ nav.tabbar button[aria-current="page"] .ic{
       <div class="suffix"><input type="number" id="fTrip" inputmode="decimal" step="0.1" min="0" placeholder="เช่น 720.5"><span class="u">กม.</span></div>
       <div class="help">อ่านจากหน้าจอรถ <b>ก่อน</b>กดรีเซ็ต TRIP A เป็น 0</div>
     </div>
+    <div class="calcbox" id="fCarryBox" hidden></div>
     <input type="hidden" id="fFirst">
 
     <div class="field">
@@ -846,6 +866,7 @@ nav.tabbar button[aria-current="page"] .ic{
       <div class="suffix"><input type="number" id="cTrip" inputmode="decimal" step="0.1" min="0" placeholder="เช่น 96.4"><span class="u">กม.</span></div>
       <div class="help">ระยะที่วิ่งตั้งแต่ชาร์จครั้งก่อน — อ่านจากหน้าจอรถ <b>ก่อน</b>กดรีเซ็ต TRIP B</div>
     </div>
+    <div class="calcbox" id="cCarryBox" hidden></div>
 
     <div class="inline2">
       <div class="field">
@@ -1234,6 +1255,38 @@ nav.tabbar button[aria-current="page"] .ic{
   </div>
 </div>
 
+<!-- ============ SWITCH / CARRY MODAL ============ -->
+<div class="modal" id="switchModal" hidden>
+  <div class="sheet">
+    <div class="sheeticon">🔄</div>
+    <h3>ทดเลข TRIP ไว้ก่อน</h3>
+    <p>ใช้ตอนสลับระบบกลางคัน ที่ยัง<b>ไม่ถึงคิว</b>เติมน้ำมันหรือชาร์จไฟ</p>
+    <div class="field" style="text-align:left;margin-bottom:12px">
+      <label>เมื่อกี้วิ่งด้วยอะไรมา</label>
+      <div class="seg" id="swSeg" style="margin-bottom:6px">
+        <button type="button" data-mode="fuel" aria-pressed="true">⛽ น้ำมัน</button>
+        <button type="button" data-mode="ev" aria-pressed="false">🔌 ไฟฟ้า</button>
+      </div>
+      <div class="help" id="swHelp"></div>
+    </div>
+    <div class="field" style="text-align:left">
+      <label for="swKm" id="swKmLabel">เลข TRIP A ที่อ่านได้ตอนนี้</label>
+      <div class="suffix"><input type="number" id="swKm" inputmode="decimal" step="0.1" min="0" placeholder="เช่น 120.5"><span class="u">กม.</span></div>
+      <div class="help" id="swPreview"></div>
+    </div>
+    <div class="field" style="text-align:left">
+      <label for="swDate">วันที่</label>
+      <input type="date" id="swDate">
+    </div>
+    <div class="alert info" style="text-align:left;margin:0 0 16px">
+      <span>💡</span><span>จดที่นี่<b>ก่อน</b> แล้วค่อยไปกดรีเซ็ต TRIP ที่รถ — เลขจะไม่หายอีก</span>
+    </div>
+    <button class="btn" id="swSave">จดไว้ — แล้วค่อยรีเซ็ต TRIP</button>
+    <div style="height:10px"></div>
+    <button class="btn ghost" id="swCancel">ยกเลิก</button>
+  </div>
+</div>
+
 <!-- ============ RESET MODAL ============ -->
 <div class="modal" id="resetModal" hidden>
   <div class="sheet">
@@ -1259,7 +1312,7 @@ nav.tabbar button[aria-current="page"] .ic{
    ========================================================= */
 const KEY = "bydFuelLog.v1";
 const DEFAULTS = { car: "BYD Seal 5 DM-i Premium", tank: 45, battery: 18.3, homeRate: 4.90, kwhPct: null, baseUnits: null, ft: 0.1623, evRange: 120 };
-let state = { records: [], charges: [], settings: { ...DEFAULTS } };
+let state = { records: [], charges: [], carries: [], settings: { ...DEFAULTS } };
 let editingId = null, cEditingId = null;
 
 function load(){
@@ -1269,6 +1322,7 @@ function load(){
       const d = JSON.parse(raw);
       state.records = Array.isArray(d.records) ? d.records : [];
       state.charges = Array.isArray(d.charges) ? d.charges : [];
+      state.carries = Array.isArray(d.carries) ? d.carries : [];
       state.settings = Object.assign({}, DEFAULTS, d.settings || {});
     }
   }catch(e){ console.warn("load failed", e); }
@@ -1276,6 +1330,36 @@ function load(){
 function save(){
   try{ localStorage.setItem(KEY, JSON.stringify(state)); }
   catch(e){ toast("บันทึกลงเครื่องไม่สำเร็จ — กรุณาสำรองข้อมูลเป็นไฟล์"); }
+}
+
+/* =========================================================
+   1b. ยอดทด (CARRY)
+   เวลาสลับระบบกลางคัน ระยะที่วิ่งมายังไม่ถึงคิวเติม/ชาร์จ จึงยัง
+   บันทึกเป็นรายการไม่ได้ — เก็บพักไว้ที่นี่ก่อน แล้วบวกเข้ากับ
+   รายการถัดไปของระบบนั้นโดยอัตโนมัติ
+   mode: "fuel" = วิ่งด้วยน้ำมัน (TRIP A) · "ev" = วิ่งด้วยไฟฟ้า (TRIP B)
+   usedBy: null = ยังค้างอยู่ · <id> = ถูกใช้ไปกับรายการนั้นแล้ว
+   ========================================================= */
+function pendingCarries(mode){
+  return state.carries.filter(c => c.mode === mode && !c.usedBy);
+}
+function carrySum(mode){
+  return Math.round(pendingCarries(mode).reduce((s,c)=>s+(c.km||0),0)*10)/10;
+}
+function consumeCarries(mode, recId){
+  const p = pendingCarries(mode);
+  p.forEach(c => { c.usedBy = recId; });
+  return Math.round(p.reduce((s,c)=>s+(c.km||0),0)*10)/10;
+}
+/* ลบรายการทิ้ง = ปล่อยยอดทดที่ผูกไว้กลับมาค้างเหมือนเดิม ไม่ให้ระยะทางหาย */
+function releaseCarries(recId){
+  state.carries.forEach(c => { if(c.usedBy === recId) c.usedBy = null; });
+}
+let fEditCarry = 0, cEditCarry = 0;
+/* ตอนแก้ไขรายการเก่า ให้ใช้ยอดทดที่ผูกกับรายการนั้น ไม่ใช่ยอดที่ค้างอยู่ตอนนี้ */
+function activeCarry(mode){
+  if(mode === "fuel") return editingId ? (fEditCarry||0) : carrySum("fuel");
+  return cEditingId ? (cEditCarry||0) : carrySum("ev");
 }
 
 /* =========================================================
@@ -1523,7 +1607,11 @@ $(F.date).addEventListener("input", ()=>{
 });
 
 function updatePreview(){
-  const trip = num($(F.trip).value), l = num($(F.liters).value);
+  const tripTyped = num($(F.trip).value);
+  const fCarry = activeCarry("fuel");
+  renderCarryBox("fuel", tripTyped, fCarry);
+  const trip = (tripTyped === null && !(fCarry>0)) ? null : (tripTyped||0) + fCarry;
+  const l = num($(F.liters).value);
   const p = num($(F.price).value), t = num($(F.total).value);
   const tank = state.settings.tank || 45;
 
@@ -1553,7 +1641,7 @@ function updatePreview(){
 }
 
 function resetForm(){
-  editingId = null;
+  editingId = null; fEditCarry = 0;
   $("#editBanner").innerHTML = "";
   $(F.date).value = todayISO();
   ["trip","liters","price","total","station","carAvg","odo","note"].forEach(k=>{ $(F[k]).value=""; $(F[k]).classList.remove("calc"); });
@@ -1578,7 +1666,7 @@ $("#cancelBtn").onclick = ()=>{ resetForm(); go("home"); };
    figure — and it always costs a deliberate confirmation, so it cannot happen
    by a stray tap the way a checkbox could. */
 $("#saveBtn").onclick = ()=>{
-  const trip = num($(F.trip).value) || 0;
+  const trip = (num($(F.trip).value) || 0) + activeCarry("fuel");
   const liters = num($(F.liters).value) || 0;
   if(liters <= 0){ toast("กรุณากรอกจำนวนลิตรที่เติม"); $(F.liters).focus(); return; }
   if(trip <= 0){ $("#noTripModal").hidden = false; return; }
@@ -1590,7 +1678,7 @@ $("#noTripModal").onclick = e =>{ if(e.target.id==="noTripModal") $("#noTripModa
 
 function commitSave(){
   const date = $(F.date).value || todayISO();
-  const trip = num($(F.trip).value) || 0;
+  const tripTyped = num($(F.trip).value) || 0;
   const liters = num($(F.liters).value) || 0;
   let price = num($(F.price).value) || 0;
   let total = num($(F.total).value) || 0;
@@ -1599,9 +1687,14 @@ function commitSave(){
   if(price<=0 && total>0) price = total/liters;
   if(total<=0 && price>0) total = liters*price;
 
+  const recId = editingId || (Date.now().toString(36)+Math.random().toString(36).slice(2,7));
+  /* ยอดทดที่ค้างอยู่ถูกผูกเข้ากับรายการนี้ แล้วบวกเข้ากับระยะทางเลย
+     — ตัวเลข trip จึงเป็น "ระยะจริงของถังนี้" เสมอ ส่วนที่เหลือของแอปไม่ต้องรู้เรื่องยอดทด */
+  const carry = editingId ? (fEditCarry||0) : consumeCarries("fuel", recId);
+  const trip = Math.round((tripTyped + carry)*10)/10;
   const rec = {
-    id: editingId || (Date.now().toString(36)+Math.random().toString(36).slice(2,7)),
-    date, trip, liters,
+    id: recId,
+    date, trip, tripTyped, carry, liters,
     price: Math.round(price*10000)/10000,
     total: Math.max(Math.round(total*100)/100, total>0 ? 0.01 : 0),
     station: $(F.station).value.trim(),
@@ -1615,7 +1708,9 @@ function commitSave(){
     toast("แก้ไขเรียบร้อย");
   } else {
     state.records.push(rec);
-    toast(trip>0 ? "บันทึกแล้ว — "+fmt(trip/liters,2)+" กม./ลิตร" : "บันทึกแล้ว (ไม่มี TRIP A)");
+    toast(trip>0
+      ? "บันทึกแล้ว — "+fmt(trip/liters,2)+" กม./ลิตร"+(carry>0 ? " (รวมยอดทด "+fmt(carry,1)+" กม.)" : "")
+      : "บันทึกแล้ว (ไม่มี TRIP A)");
   }
   save(); resetForm(); go("home");
 }
@@ -1625,7 +1720,9 @@ function editRecord(id){
   editingId = id;
   $("#editBanner").innerHTML = '<div class="alert info"><span>✏️</span><span>กำลังแก้ไขรายการวันที่ <b>'+thDate(r.date)+'</b></span></div>';
   $(F.date).value = r.date;
-  $(F.trip).value = r.trip>0 ? r.trip : "";
+  fEditCarry = r.carry || 0;
+  const tTyped = (r.tripTyped === undefined || r.tripTyped === null) ? (r.trip||0) : r.tripTyped;
+  $(F.trip).value = tTyped>0 ? tTyped : "";
   $(F.liters).value = r.liters || "";
   $(F.price).value = r.price ? Math.round(r.price*100)/100 : "";
   $(F.total).value = r.total || "";
@@ -1655,8 +1752,10 @@ function openAddTrip(id){
 $("#atInput").addEventListener("input", ()=>{
   const r = state.records.find(x=>x.id===addTripId);
   const t = num($("#atInput").value);
-  $("#atPreview").innerHTML = (r && t>0)
-    ? "จะได้ <b>"+fmt(t/r.liters,2)+" กม./ลิตร</b> · "+fmt(r.total/t,2)+" บาท/กม."
+  const tt = (r && t>0) ? Math.round((t + (r.carry||0))*10)/10 : null;
+  $("#atPreview").innerHTML = (r && tt>0)
+    ? "จะได้ <b>"+fmt(tt/r.liters,2)+" กม./ลิตร</b> · "+fmt(r.total/tt,2)+" บาท/กม."
+      + ((r.carry>0) ? "<br>(รวมยอดทด "+fmt(r.carry,1)+" กม. แล้ว)" : "")
     : "";
 });
 $("#atCancel").onclick = ()=>{ $("#addTripModal").hidden = true; addTripId = null; };
@@ -1666,15 +1765,18 @@ $("#atSave").onclick = ()=>{
   const t = num($("#atInput").value);
   if(!r) return;
   if(!(t>0)){ toast("กรุณากรอกระยะทาง"); $("#atInput").focus(); return; }
-  r.trip = t; save();
+  r.tripTyped = t;
+  r.trip = Math.round((t + (r.carry||0))*10)/10;
+  save();
   $("#addTripModal").hidden = true; addTripId = null;
   renderHistory(); renderHome(); if($("#view-stats").classList.contains("active")) renderStats();
-  toast("คำนวณใหม่แล้ว — "+fmt(t/r.liters,2)+" กม./ลิตร");
+  toast("คำนวณใหม่แล้ว — "+fmt(r.trip/r.liters,2)+" กม./ลิตร");
 };
 
 function delRecord(id){
   const r = state.records.find(x=>x.id===id); if(!r) return;
   if(!confirm("ลบรายการวันที่ "+thDate(r.date)+" ?")) return;
+  releaseCarries(id);
   state.records = state.records.filter(x=>x.id!==id);
   save(); renderHistory(); renderHome(); toast("ลบแล้ว");
 }
@@ -1745,7 +1847,9 @@ $("#cDate").addEventListener("input", ()=>{
 
 /* what this session would record, given whatever is filled in so far */
 function draftCharge(){
-  const trip = num($("#cTrip").value) || 0;
+  const tripTyped = num($("#cTrip").value) || 0;
+  const carry = activeCarry("ev");
+  const trip = Math.round((tripTyped + carry)*10)/10;
   const from = num($("#cSocFrom").value);
   const to   = num($("#cSocTo").value);
   const gain = (from!==null && to!==null && to>from) ? to-from : null;
@@ -1766,11 +1870,12 @@ function draftCharge(){
     }
     if(kwh>0) total = kwh * rate;
   }
-  return { trip, from, to, gain, kwh, total, rate, metered, src: cPlace==="home" ? cSrc : "receipt" };
+  return { trip, tripTyped, carry, from, to, gain, kwh, total, rate, metered, src: cPlace==="home" ? cSrc : "receipt" };
 }
 
 function updateCPreview(){
   const d = draftCharge();
+  renderCarryBox("ev", num($("#cTrip").value), d.carry);
   const batt = state.settings.battery || 18.3;
 
   const g = $("#socWrap");
@@ -1836,7 +1941,7 @@ function updateCPreview(){
 }
 
 function cResetForm(){
-  cEditingId = null;
+  cEditingId = null; cEditCarry = 0;
   $("#cEditBanner").innerHTML = "";
   $("#cDate").value = todayISO();
   $("#cDateTh").textContent = "= " + thDate(todayISO());
@@ -1872,10 +1977,14 @@ $("#noTripBModal").onclick = e =>{ if(e.target.id==="noTripBModal") $("#noTripBM
 
 function cCommit(){
   const d = draftCharge();
+  const recId = cEditingId || ("c"+Date.now().toString(36)+Math.random().toString(36).slice(2,7));
+  const carry = cEditingId ? (cEditCarry||0) : consumeCarries("ev", recId);
   const rec = {
-    id: cEditingId || ("c"+Date.now().toString(36)+Math.random().toString(36).slice(2,7)),
+    id: recId,
     date: $("#cDate").value || todayISO(),
     trip: d.trip || 0,
+    tripTyped: d.tripTyped || 0,
+    carry: carry,
     socFrom: d.from, socTo: d.to,
     place: cPlace,
     metered: !!d.metered,
@@ -1892,7 +2001,9 @@ function cCommit(){
     toast("แก้ไขเรียบร้อย");
   } else {
     state.charges.push(rec);
-    toast(rec.trip>0 ? "บันทึกแล้ว — "+fmt(rec.trip/rec.kwh,2)+" กม./kWh" : "บันทึกแล้ว (ไม่มี TRIP B)");
+    toast(rec.trip>0
+      ? "บันทึกแล้ว — "+fmt(rec.trip/rec.kwh,2)+" กม./kWh"+(carry>0 ? " (รวมยอดทด "+fmt(carry,1)+" กม.)" : "")
+      : "บันทึกแล้ว (ไม่มี TRIP B)");
   }
   save(); cResetForm(); go("home");
 }
@@ -1902,7 +2013,9 @@ function cEditRecord(id){
   cEditingId = id;
   $("#cEditBanner").innerHTML = '<div class="alert info"><span>✏️</span><span>กำลังแก้ไขการชาร์จวันที่ <b>'+thDate(c.date)+'</b></span></div>';
   $("#cDate").value = c.date; $("#cDateTh").textContent = "= " + thDate(c.date);
-  $("#cTrip").value = c.trip>0 ? c.trip : "";
+  cEditCarry = c.carry || 0;
+  const cTyped = (c.tripTyped === undefined || c.tripTyped === null) ? (c.trip||0) : c.tripTyped;
+  $("#cTrip").value = cTyped>0 ? cTyped : "";
   $("#cSocFrom").value = c.socFrom; $("#cSocTo").value = c.socTo;
   $('#placeSeg button[data-place="'+(c.place||"home")+'"]').click();
   if(c.place!=="public"){
@@ -1926,6 +2039,7 @@ function cEditRecord(id){
 function cDelRecord(id){
   const c = state.charges.find(x=>x.id===id); if(!c) return;
   if(!confirm("ลบการชาร์จวันที่ "+thDate(c.date)+" ?")) return;
+  releaseCarries(id);
   state.charges = state.charges.filter(x=>x.id!==id);
   save(); renderHistory(); renderHome(); toast("ลบแล้ว");
 }
@@ -1941,7 +2055,11 @@ function openAddTripB(id){
 }
 $("#atbInput").addEventListener("input", ()=>{
   const c = state.charges.find(x=>x.id===addTripBId), t = num($("#atbInput").value);
-  $("#atbPreview").innerHTML = (c && t>0) ? "จะได้ <b>"+fmt(t/c.kwh,2)+" กม./kWh</b> · "+fmt(c.total/t,2)+" บาท/กม." : "";
+  const tt = (c && t>0) ? Math.round((t + (c.carry||0))*10)/10 : null;
+  $("#atbPreview").innerHTML = (c && tt>0)
+    ? "จะได้ <b>"+fmt(tt/c.kwh,2)+" กม./kWh</b> · "+fmt(c.total/tt,2)+" บาท/กม."
+      + ((c.carry>0) ? "<br>(รวมยอดทด "+fmt(c.carry,1)+" กม. แล้ว)" : "")
+    : "";
 });
 $("#atbCancel").onclick = ()=>{ $("#addTripBModal").hidden = true; addTripBId=null; };
 $("#addTripBModal").onclick = e =>{ if(e.target.id==="addTripBModal") $("#atbCancel").click(); };
@@ -1949,14 +2067,17 @@ $("#atbSave").onclick = ()=>{
   const c = state.charges.find(x=>x.id===addTripBId), t = num($("#atbInput").value);
   if(!c) return;
   if(!(t>0)){ toast("กรุณากรอกระยะทาง"); $("#atbInput").focus(); return; }
-  c.trip = t; save(); $("#addTripBModal").hidden = true; addTripBId=null;
-  renderHistory(); renderHome(); toast("คำนวณใหม่แล้ว — "+fmt(t/c.kwh,2)+" กม./kWh");
+  c.tripTyped = t;
+  c.trip = Math.round((t + (c.carry||0))*10)/10;
+  save(); $("#addTripBModal").hidden = true; addTripBId=null;
+  renderHistory(); renderHome(); toast("คำนวณใหม่แล้ว — "+fmt(c.trip/c.kwh,2)+" กม./kWh");
 };
 
 /* =========================================================
    5. HOME
    ========================================================= */
 function renderHome(){
+  renderCarry();
   const m = measured();
   const all = state.records;
   if(m.length){
@@ -3134,6 +3255,7 @@ $("#impFile").onchange = e=>{
       const d = JSON.parse(fr.result);
       const recs = Array.isArray(d.records) ? d.records : (Array.isArray(d) ? d : null);
       const chs  = Array.isArray(d.charges) ? d.charges : [];
+      const cys  = Array.isArray(d.carries) ? d.carries : [];
       if(!recs) throw new Error("รูปแบบไฟล์ไม่ถูกต้อง");
       const mode = (state.records.length || state.charges.length)
         ? confirm("มีข้อมูลอยู่แล้ว "+state.records.length+" การเติมน้ำมัน และ "+state.charges.length+" การชาร์จไฟ\n\n"+
@@ -3144,7 +3266,9 @@ $("#impFile").onchange = e=>{
         recs.forEach(r=>{ if(!ids.has(r.id)) state.records.push(r); });
         const cids = new Set(state.charges.map(c=>c.id));
         chs.forEach(c=>{ if(!cids.has(c.id)) state.charges.push(c); });
-      } else { state.records = recs; state.charges = chs; }
+        const yids = new Set(state.carries.map(y=>y.id));
+        cys.forEach(y=>{ if(!yids.has(y.id)) state.carries.push(y); });
+      } else { state.records = recs; state.charges = chs; state.carries = cys; }
       if(d.settings) state.settings = Object.assign({}, DEFAULTS, d.settings);
       save(); syncSettingsUI(); renderHome(); renderHistory();
       toast("กู้คืนแล้ว — น้ำมัน "+state.records.length+" · ไฟฟ้า "+state.charges.length+" รายการ");
@@ -3172,7 +3296,7 @@ $("#mCancel").onclick = closeReset;
 $("#resetModal").onclick = e =>{ if(e.target.id==="resetModal") closeReset(); };
 $("#mConfirm").onclick = ()=>{
   const n = state.records.length + state.charges.length;
-  state.records = []; state.charges = []; setNowTrips({});
+  state.records = []; state.charges = []; state.carries = []; setNowTrips({});
   $("#nowA").value=""; $("#nowB").value=""; save(); closeReset();
   renderHome(); renderHistory(); if($("#view-stats").classList.contains("active")) renderStats();
   toast("ลบข้อมูลทั้งหมด "+n+" รายการแล้ว");
@@ -3342,6 +3466,94 @@ $("#useRateBtn").onclick = ()=>{
 });
 $("#sCarName").addEventListener("change", ()=>{ state.settings.car = $("#sCarName").value.trim() || DEFAULTS.car; save(); $("#hdSub").textContent = state.settings.car; });
 $("#sTank").addEventListener("change", ()=>{ state.settings.tank = num($("#sTank").value) || 45; save(); updatePreview(); });
+
+/* =========================================================
+   9b. ยอดทด — การ์ดหน้าแรก, กล่องสรุปในฟอร์ม, และหน้าต่างสลับระบบ
+   ========================================================= */
+/* กล่อง "TRIP ที่กรอก + ยอดทด = รวม" ใต้ช่องกรอก TRIP ของทั้งสองฟอร์ม */
+function renderCarryBox(mode, typed, carry){
+  const box = $(mode === "fuel" ? "#fCarryBox" : "#cCarryBox");
+  if(!box) return;
+  if(!(carry > 0)){ box.hidden = true; box.innerHTML = ""; return; }
+  const nm = mode === "fuel" ? "TRIP A" : "TRIP B";
+  const total = Math.round(((typed||0) + carry)*10)/10;
+  box.hidden = false;
+  box.innerHTML =
+    '<div class="cl"><span class="op"></span><span class="lb">'+nm+' ที่กรอก</span>'+
+      '<span class="vl">'+(typed>0 ? fmt(typed,1)+" กม." : "— กม.")+'</span></div>'+
+    '<div class="cl"><span class="op">+</span><span class="lb">ยอดทดที่จดไว้</span>'+
+      '<span class="vl">'+fmt(carry,1)+' กม.</span></div>'+
+    '<div class="cl res"><span class="op">=</span><span class="lb">ระยะทางรวมที่จะบันทึก</span>'+
+      '<span class="vl">'+fmt(total,1)+' กม.</span></div>'+
+    '<p class="note">ยอดทดนี้จะถูกใช้ไปกับรายการนี้ และเคลียร์เป็น 0 หลังกดบันทึก</p>';
+}
+
+/* การ์ดยอดทดค้างอยู่ บนหน้าแรก */
+function renderCarry(){
+  if(!$("#carryFuel")) return;
+  $("#carryFuel").textContent = fmt(carrySum("fuel"),1)+" กม.";
+  $("#carryElec").textContent = fmt(carrySum("ev"),1)+" กม.";
+  const list = pendingCarries("fuel").concat(pendingCarries("ev"))
+    .sort((a,b)=> a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
+  $("#carryList").innerHTML = list.length
+    ? list.map(c=>'<div class="ci"><span>'+(c.mode==="fuel" ? "⛽" : "\uD83D\uDD0C")+' '+
+        thDateMini(c.date)+' · '+fmt(c.km,1)+' กม.</span>'+
+        '<button class="x" type="button" data-carry="'+c.id+'" aria-label="ลบยอดทดนี้">✕</button></div>').join("")
+    : '<p class="hint" style="margin:10px 0 0">ยังไม่มียอดทดค้างอยู่ — ตอนสลับระบบกลางคัน กดปุ่มด้านล่างเพื่อจดเลขไว้ก่อนรีเซ็ต</p>';
+  $$("#carryList .x").forEach(b=> b.onclick = ()=> delCarry(b.dataset.carry));
+}
+function delCarry(id){
+  const c = state.carries.find(x=>x.id===id); if(!c) return;
+  if(!confirm("ลบยอดทด "+fmt(c.km,1)+" กม. ("+(c.mode==="fuel" ? "น้ำมัน" : "ไฟฟ้า")+") ?\n\nระยะทางส่วนนี้จะไม่ถูกนำไปคำนวณ")) return;
+  state.carries = state.carries.filter(x=>x.id!==id);
+  save(); renderCarry(); updatePreview(); updateCPreview(); toast("ลบยอดทดแล้ว");
+}
+
+/* ---- หน้าต่างสลับระบบ ---- */
+let swMode = "fuel";
+function swSync(){
+  $$("#swSeg button").forEach(b=> b.setAttribute("aria-pressed", String(b.dataset.mode === swMode)));
+  $("#swKmLabel").textContent = "เลข TRIP "+(swMode==="fuel" ? "A" : "B")+" ที่อ่านได้ตอนนี้";
+  $("#swHelp").innerHTML = swMode === "fuel"
+    ? "= กำลังจะเปลี่ยนไปใช้<b>ไฟฟ้า</b> → อ่านเลข <b>TRIP A</b> ก่อนกดรีเซ็ต"
+    : "= กำลังจะเปลี่ยนไปใช้<b>น้ำมัน</b> → อ่านเลข <b>TRIP B</b> ก่อนกดรีเซ็ต";
+  swPrev();
+}
+function swPrev(){
+  const t = num($("#swKm").value), cur = carrySum(swMode);
+  $("#swPreview").innerHTML = (t>0)
+    ? "ทดไว้แล้ว "+fmt(cur,1)+" + "+fmt(t,1)+" = <b>"+fmt(Math.round((cur+t)*10)/10,1)+" กม.</b>"
+    : (cur>0 ? "ตอนนี้ทดไว้ "+fmt(cur,1)+" กม." : "");
+}
+function openSwitch(){
+  swMode = "fuel";
+  $("#swKm").value = "";
+  $("#swDate").value = todayISO();
+  swSync();
+  $("#switchModal").hidden = false;
+  setTimeout(()=>$("#swKm").focus(), 120);
+}
+$("#goSwitch").onclick = openSwitch;
+$$("#swSeg button").forEach(b=> b.onclick = ()=>{ swMode = b.dataset.mode; swSync(); });
+$("#swKm").addEventListener("input", swPrev);
+$("#swCancel").onclick = ()=>{ $("#switchModal").hidden = true; };
+$("#switchModal").onclick = e =>{ if(e.target.id === "switchModal") $("#switchModal").hidden = true; };
+$("#swSave").onclick = ()=>{
+  const t = num($("#swKm").value);
+  if(!(t>0)){ toast("กรุณากรอกเลข TRIP ที่อ่านได้"); $("#swKm").focus(); return; }
+  if(t > 2000 && !confirm("ระยะ "+fmt(t,1)+" กม. ดูสูงผิดปกติ — ยืนยันหรือไม่?")) return;
+  state.carries.push({
+    id: "s"+Date.now().toString(36)+Math.random().toString(36).slice(2,7),
+    date: $("#swDate").value || todayISO(),
+    mode: swMode,
+    km: Math.round(t*10)/10,
+    usedBy: null
+  });
+  save();
+  $("#switchModal").hidden = true;
+  renderCarry(); updatePreview(); updateCPreview();
+  toast("จดไว้แล้ว "+fmt(t,1)+" กม. — รีเซ็ต TRIP "+(swMode==="fuel" ? "A" : "B")+" ที่รถได้เลย");
+};
 
 /* =========================================================
    10. BOOT
