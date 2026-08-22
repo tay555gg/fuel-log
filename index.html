@@ -42,6 +42,7 @@
   --elec-strong:rgba(27,175,122,.20);
   --elec-line:rgba(15,125,85,.5);
   --fuel-ink:#1c5cab;
+  --switch:#b8480c;
 }
 :root[data-theme="dark"]{
   color-scheme: dark;
@@ -71,6 +72,7 @@
   --elec-strong:rgba(25,158,112,.28);
   --elec-line:rgba(47,191,140,.6);
   --fuel-ink:#6da7ec;
+  --switch:#c85311;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 [hidden]{display:none !important}
@@ -157,6 +159,7 @@ main{padding:16px 16px 24px}
 }
 .btn:active{opacity:.85}
 .btn.ghost{background:transparent;color:var(--text-primary);border:1px solid var(--border);font-size:16px;padding:13px}
+.btn.switchbtn{background:var(--switch);color:#fff;border:0;font-size:17px;line-height:1.35;padding:17px 12px;box-shadow:0 2px 10px rgba(184,72,12,.30)}
 .btn.danger{background:transparent;color:var(--critical);border:1px solid var(--critical);font-size:16px;padding:13px}
 .btn.small{padding:11px;font-size:15px;border-radius:11px}
 .btnrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -715,7 +718,7 @@ nav.tabbar button[aria-current="page"] .ic{
     <div class="carrylist" id="carryList"></div>
   </div>
 
-  <button class="btn ghost" id="goSwitch" style="width:100%;font-size:16px;padding:15px 8px;margin-bottom:10px">🔄 สลับระบบ — ทดเลข TRIP ไว้ก่อนรีเซ็ต</button>
+  <button class="btn switchbtn" id="goSwitch" style="margin-bottom:10px">🔄 สลับระบบ<br><span style="font-size:14px;font-weight:600;opacity:.92">ทดเลข TRIP ไว้ก่อนรีเซ็ต</span></button>
 
   <div class="btnrow" style="margin-bottom:14px">
     <button class="btn" id="goAdd" style="font-size:16px;padding:15px 8px">⛽<br>เติมน้ำมัน</button>
