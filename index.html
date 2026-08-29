@@ -356,10 +356,10 @@ table.tbl.warm tr.msum td:first-child{
 }
 table.tbl.warm tr.msum td:last-child{border-radius:0 0 9px 0;padding-right:8px}
 /* body rows sit inside the capsule, held by the same left rule */
-table.tbl.warm tbody tr:not(.mhead):not(.msum) td:first-child{
+table.tbl.warm tbody tr:not(.mhead):not(.msum):not(.gap) td:first-child{
   border-left:4px solid var(--band-line);padding-left:10px;
 }
-table.tbl.warm tbody tr:not(.mhead):not(.msum) td{border-bottom:1px solid var(--grid)}
+table.tbl.warm tbody tr:not(.mhead):not(.msum):not(.gap) td{border-bottom:1px solid var(--grid)}
 table.tbl.warm tr.msum+tr.mhead td{padding-top:9px}
 table.tbl.warm tr.msum td.spacer{background:transparent;border:0}
 tr.gap td{height:16px;background:transparent;border:0;padding:0}
@@ -401,7 +401,7 @@ table.tbl.dense tr.noterow td{border-bottom:1px solid var(--grid);padding:0 0 8p
 table.tbl.elecband tr.mhead td{background:var(--elec-strong);color:var(--elec-ink);border-left-color:var(--elec-line)}
 table.tbl.elecband tr.msum td{background:var(--elec-soft);border-top-color:var(--elec-line)}
 table.tbl.elecband tr.msum td:first-child{border-left-color:var(--elec-line);color:var(--elec-ink)}
-table.tbl.elecband tbody tr:not(.mhead):not(.msum) td:first-child{border-left-color:var(--elec-line)}
+table.tbl.elecband tbody tr:not(.mhead):not(.msum):not(.gap) td:first-child{border-left-color:var(--elec-line)}
 button.addtrip.elec{border-color:var(--elec-ink);color:var(--elec-ink)}
 /* the charge table carries an extra SOC column — give it its own widths */
 table.tbl.dense.elecband th:first-child,table.tbl.dense.elecband td:first-child{width:28%}
@@ -697,6 +697,189 @@ nav.tabbar button{font-weight:600;letter-spacing:.01em}
 .tripnow{border-radius:4px}
 
 
+
+/* =========================================================================
+   การเคลื่อนไหว — 4 อย่างที่เลือกไว้
+   1) ยอดทดเด้งเมื่อบวกเข้า  2) ปุ่มยุบตอนกด
+   3) เกจไหลตามเลขที่กรอก    4) แถบสัดส่วนวิ่งเข้า
+   ทุกอย่างปิดตัวเองถ้าเครื่องตั้ง "ลดการเคลื่อนไหว" ไว้
+   ========================================================================= */
+
+/* 2 · กดแล้วยุบลงนิดเดียว บอกว่ากดติดแล้ว */
+.btn{transition:transform .1s ease, filter .1s ease}
+.btn:active{transform:scale(.96);filter:brightness(.88);opacity:1}
+.iconbtn{transition:transform .1s ease}
+.iconbtn:active{transform:scale(.93)}
+nav.tabbar button{transition:transform .1s ease}
+nav.tabbar button:active{transform:scale(.94)}
+.seg button{transition:transform .1s ease}
+.seg button:active{transform:scale(.97)}
+.carrylist .x{transition:transform .1s ease}
+.carrylist .x:active{transform:scale(.85)}
+
+/* 3 · เกจไหลตามเลขที่กรอก */
+.gauge .fill{transition:width .45s cubic-bezier(.22,.8,.28,1), background .2s ease}
+.lvlbar i{transition:width .55s cubic-bezier(.22,.8,.28,1)}
+
+/* 4 · แถบสัดส่วนวิ่งเข้าจากศูนย์ */
+.splitbar i{transition:width .8s cubic-bezier(.22,.8,.28,1)}
+.splitbar i.elec{transition-delay:.08s}
+
+/* 1 · ยอดทดเด้งเมื่อบวกเข้า */
+.carrycard .crow{position:relative}
+.carrycard .crow b{display:inline-block;transform-origin:right center}
+.carrycard .crow b.pop{animation:carryPop .5s cubic-bezier(.3,1.4,.5,1)}
+@keyframes carryPop{
+  0%{transform:scale(1)}
+  40%{transform:scale(1.17);color:var(--switch)}
+  100%{transform:scale(1)}
+}
+.carryfly{
+  position:absolute;right:0;top:-2px;z-index:2;pointer-events:none;
+  background:var(--switch);color:#fff;font-size:13px;font-weight:700;
+  border-radius:99px;padding:3px 11px;
+  animation:carryFly .95s cubic-bezier(.3,.9,.3,1) forwards;
+}
+@keyframes carryFly{
+  0%{opacity:0;transform:translateY(-24px) scale(.9)}
+  30%{opacity:1;transform:translateY(0) scale(1)}
+  70%{opacity:1;transform:translateY(0) scale(1)}
+  100%{opacity:0;transform:translateY(7px) scale(.96)}
+}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms !important;animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;scroll-behavior:auto !important;
+  }
+}
+
+
+/* =========================================================================
+   จังหวะแบบ Material 3 Expressive
+   สปริง: ของที่ขยับ/เปลี่ยนขนาด/เปลี่ยนรูป จะเลยเป้าหมายนิดหนึ่งแล้วตกกลับ
+          ส่วนสีกับความจางห้ามเด้ง ไม่งั้นสีจะวูบเกินแล้ววิ่งย้อน
+   ========================================================================= */
+:root{
+  --sp-fast:cubic-bezier(.42,1.67,.21,.9);
+  --sp-def:cubic-bezier(.38,1.21,.22,1);
+  --sp-slow:cubic-bezier(.39,1.29,.35,.98);
+  --t-fast:.35s; --t-def:.5s; --t-slow:.65s;
+  --ef-fast:cubic-bezier(.31,.94,.34,1);
+  --ef-def:cubic-bezier(.34,.8,.34,1);
+  --te-fast:.15s; --te-def:.2s;
+}
+
+/* ---- ปุ่มกด: ยุบแล้วดีดกลับแบบสปริง ---- */
+.btn{transition:transform var(--t-fast) var(--sp-fast), filter var(--te-fast) var(--ef-fast)}
+.btn:active{transform:scale(.95);filter:brightness(.88);opacity:1}
+.iconbtn{transition:transform var(--t-fast) var(--sp-fast)}
+.iconbtn:active{transform:scale(.9)}
+.carrylist .x{transition:transform var(--t-fast) var(--sp-fast)}
+.carrylist .x:active{transform:scale(.8)}
+
+/* ---- ปุ่มบันทึกกลายเป็นเครื่องหมายถูก ---- */
+.btn.saved{background:var(--elec-ink) !important;transform:scale(1.012)}
+
+/* ---- แถบ/เกจ ใช้สปริง ---- */
+.gauge .fill{transition:width var(--t-def) var(--sp-def), background var(--te-def) var(--ef-def)}
+.lvlbar i{transition:width var(--t-slow) var(--sp-slow)}
+.splitbar i{transition:width var(--t-slow) var(--sp-slow)}
+.splitbar i.elec{transition-delay:.08s}
+
+/* ---- แถบเลือก (น้ำมัน/ไฟฟ้า ฯลฯ): อันที่เลือกโตขึ้นและมนขึ้น ---- */
+.seg button{
+  transition:transform var(--t-def) var(--sp-def), border-radius var(--t-def) var(--sp-def),
+             background var(--te-def) var(--ef-def), color var(--te-def) var(--ef-def),
+             box-shadow var(--te-def) var(--ef-def);
+}
+/* ไม่ขยายปุ่มแล้ว เพราะจะล้นออกนอกกรอบ — ใช้การเปลี่ยนความมนของมุมแทน
+   ได้ความรู้สึก "เปลี่ยนรูป" เหมือนเดิมแต่อยู่ในกรอบพอดี */
+.seg button[aria-pressed="true"]{border-radius:14px}
+.seg button:active{transform:scale(.96)}
+
+/* ---- ขีดใต้แท็บไถลตาม ---- */
+nav.tabbar{position:fixed}
+/* ไฮไลต์หลังไอคอนแท็บ — เป็นก้อนที่เปลี่ยนร่างไปเรื่อย ๆ
+   ไถลไปหาแท็บที่กดแบบสปริง แล้วเปลี่ยนร่างแรงขึ้นหนึ่งจังหวะ */
+nav.tabbar .tabink{
+  position:absolute;top:5px;left:0;width:46px;height:36px;
+  background:var(--series-1);opacity:.16;pointer-events:none;z-index:0;
+  border-radius:42% 58% 47% 53% / 45% 40% 60% 55%;
+  transition:transform var(--t-def) var(--sp-def), width var(--t-def) var(--sp-def);
+  animation:inkIdle 12s ease-in-out infinite;
+}
+@keyframes inkIdle{
+  0%,100%{border-radius:42% 58% 47% 53% / 45% 40% 60% 55%}
+  33%{border-radius:62% 38% 34% 66% / 38% 62% 38% 62%}
+  66%{border-radius:35% 65% 58% 42% / 60% 36% 64% 40%}
+}
+nav.tabbar .tabink.morph{animation:inkTap .85s var(--sp-def)}
+@keyframes inkTap{
+  0%{border-radius:42% 58% 47% 53% / 45% 40% 60% 55%}
+  30%{border-radius:70% 30% 28% 72% / 30% 70% 30% 70%}
+  60%{border-radius:30% 70% 66% 34% / 68% 30% 70% 32%}
+  100%{border-radius:42% 58% 47% 53% / 45% 40% 60% 55%}
+}
+nav.tabbar button{position:relative;z-index:1}
+nav.tabbar button{transition:transform var(--t-fast) var(--sp-fast), color var(--te-def) var(--ef-def)}
+nav.tabbar button:active{transform:scale(.9)}
+
+/* ---- รถวิ่งเข้าจอ ล้อหมุน (เล่นครั้งเดียวตอนเปิดแอป) ---- */
+.carart{transform:translateX(-118%);opacity:0}
+.carart.drive{animation:driveIn 1.05s var(--sp-def) forwards}
+@keyframes driveIn{to{transform:none;opacity:1}}
+.carart .wheel{transform-box:fill-box;transform-origin:center}
+.carart.drive .wheel{animation:rollIn 1.05s linear}
+@keyframes rollIn{to{transform:rotate(720deg)}}
+
+/* ---- ตัวเลขพลิกแบบมาตรวัดรถ ---- */
+.odo{display:inline-flex;align-items:baseline;justify-content:center}
+.odo .dg{display:inline-block;overflow:hidden;height:1.02em;width:.58em}
+.odo .dg .st{display:block;transition:transform var(--t-slow) var(--sp-slow)}
+.odo .dg .st u{display:block;height:1.02em;line-height:1.02em;text-decoration:none;text-align:center}
+.odo .sy{display:inline-block;text-align:center;width:.3em}
+
+/* ---- ตัวเลขวาบเขียวเมื่อดีขึ้น ---- */
+.hero .val.better{animation:better 1.1s var(--ef-def)}
+@keyframes better{0%{filter:none}20%{filter:brightness(1.05) hue-rotate(0deg);transform:scale(1.05)}100%{filter:none;transform:none}}
+
+
+/* ---- ช่องกรอกสั่นเมื่อใส่เลขผิด ---- */
+.shake{animation:shakeX .42s cubic-bezier(.36,.07,.19,.97)}
+@keyframes shakeX{
+  10%,90%{transform:translateX(-2px)} 20%,80%{transform:translateX(4px)}
+  30%,50%,70%{transform:translateX(-7px)} 40%,60%{transform:translateX(7px)}
+}
+
+/* ---- แถวประวัติไล่กันปรากฏ ---- */
+.rowsIn > *{opacity:0;transform:translateY(9px);animation:rowIn .38s var(--sp-def) forwards}
+.rowsIn > *:nth-child(1){animation-delay:0s}
+.rowsIn > *:nth-child(2){animation-delay:.04s}
+.rowsIn > *:nth-child(3){animation-delay:.08s}
+.rowsIn > *:nth-child(4){animation-delay:.12s}
+.rowsIn > *:nth-child(5){animation-delay:.16s}
+.rowsIn > *:nth-child(6){animation-delay:.2s}
+.rowsIn > *:nth-child(n+7){animation-delay:.24s}
+@keyframes rowIn{to{opacity:1;transform:none}}
+
+/* ---- ยอดทดเด้ง (ปรับมาใช้จังหวะสปริง) ---- */
+.carrycard .crow b.pop{animation:carryPop .5s var(--sp-fast)}
+.carryfly{animation:carryFly .9s var(--sp-def) forwards}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms !important;animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;scroll-behavior:auto !important;
+  }
+  .carart{transform:none;opacity:1}
+  .blob{animation:none}
+}
+
+/* แถวเว้นวรรคระหว่างกลุ่มเดือน ต้องไม่มีเส้นใด ๆ ทั้งสิ้น
+   (วางไว้ท้ายสุดเพื่อให้ชนะกฎเส้นประของธีมที่ประกาศไว้ก่อนหน้า) */
+table.tbl tr.gap td{border:0 !important;background:transparent !important;padding:0;height:16px}
+
 </style>
 </head>
 <body>
@@ -766,10 +949,10 @@ nav.tabbar button{font-weight:600;letter-spacing:.01em}
       <rect x="382" y="86" width="17" height="7" rx="3.5" fill="var(--car-lamp-r)"
             stroke="var(--car-line)" stroke-width=".8"/>
 
-      <g><circle cx="122" cy="114" r="25" fill="var(--car-tyre)"/>
+      <g class="wheel"><circle cx="122" cy="114" r="25" fill="var(--car-tyre)"/>
         <circle cx="122" cy="114" r="13" fill="var(--car-rim)" stroke="var(--car-line)" stroke-width="1"/>
         <circle cx="122" cy="114" r="4.5" fill="var(--car-tyre)"/></g>
-      <g><circle cx="312" cy="114" r="25" fill="var(--car-tyre)"/>
+      <g class="wheel"><circle cx="312" cy="114" r="25" fill="var(--car-tyre)"/>
         <circle cx="312" cy="114" r="13" fill="var(--car-rim)" stroke="var(--car-line)" stroke-width="1"/>
         <circle cx="312" cy="114" r="4.5" fill="var(--car-tyre)"/></g>
 
@@ -1318,6 +1501,7 @@ nav.tabbar button{font-weight:600;letter-spacing:.01em}
   <button data-view="history"><span class="ic">📋</span>ประวัติ</button>
   <button data-view="stats"><span class="ic">📈</span>สถิติ</button>
   <button data-view="settings"><span class="ic">⚙️</span>ตั้งค่า</button>
+  <i class="tabink" aria-hidden="true"></i>
 </nav>
 </div>
 <div class="toast" id="toast"></div>
@@ -1676,6 +1860,7 @@ function go(view){
   });
   const t = TITLES[view]; $("#hdTitle").textContent = t[0]; $("#hdSub").textContent = t[1]();
   window.scrollTo(0,0);
+  moveTabInk(true);
   if(view==="home") renderHome();
   if(view==="history") renderHistory();
   if(view==="stats") renderStats();
@@ -1737,6 +1922,7 @@ $(F.date).addEventListener("input", ()=>{
   $("#fDateTh").textContent = $(F.date).value ? "= " + thDate($(F.date).value) : "";
 });
 
+let overTank = false;
 function updatePreview(){
   const tripTyped = num($(F.trip).value);
   const fCarry = activeCarry("fuel");
@@ -1758,7 +1944,10 @@ function updatePreview(){
 
   /* alerts */
   const al=[];
-  if(l>0 && l > tank + 0.5) al.push(["bad","⚠️","เติม "+fmt(l,2)+" ลิตร มากกว่าความจุถัง ("+tank+" ลิตร) — ลองตรวจตัวเลขอีกครั้ง"]);
+  if(l>0 && l > tank + 0.5){
+    al.push(["bad","⚠️","เติม "+fmt(l,2)+" ลิตร มากกว่าความจุถัง ("+tank+" ลิตร) — ลองตรวจตัวเลขอีกครั้ง"]);
+    if(!overTank){ overTank = true; shake($(F.liters)); }
+  } else if(!(l > tank + 0.5)) overTank = false;
   const k = (trip>0 && l>0) ? trip/l : null;
   if(k !== null && (k < 8 || k > 60)) al.push(["warn","🤔","ได้ "+fmt(k,2)+" กม./ลิตร ซึ่งผิดปกติไปหน่อย — ลองเช็ก TRIP A กับจำนวนลิตรอีกที"]);
   if(p>0 && (p<20 || p>60)) al.push(["warn","🤔","ราคา "+fmt(p,2)+" บาท/ลิตร ดูผิดปกติ — ลองเช็กอีกที"]);
@@ -1799,7 +1988,7 @@ $("#cancelBtn").onclick = ()=>{ resetForm(); go("home"); };
 $("#saveBtn").onclick = ()=>{
   const trip = (num($(F.trip).value) || 0) + activeCarry("fuel");
   const liters = num($(F.liters).value) || 0;
-  if(liters <= 0){ toast("กรุณากรอกจำนวนลิตรที่เติม"); $(F.liters).focus(); return; }
+  if(liters <= 0){ toast("กรุณากรอกจำนวนลิตรที่เติม"); shake($(F.liters)); $(F.liters).focus(); return; }
   if(trip <= 0){ $("#noTripModal").hidden = false; return; }
   commitSave(0);
 };
@@ -1814,7 +2003,7 @@ function commitSave(){
   let price = num($(F.price).value) || 0;
   let total = num($(F.total).value) || 0;
 
-  if(price<=0 && total<=0){ toast("กรุณากรอกราคาต่อลิตร หรือยอดเงินรวม"); $(F.price).focus(); return; }
+  if(price<=0 && total<=0){ toast("กรุณากรอกราคาต่อลิตร หรือยอดเงินรวม"); shake($(F.price)); $(F.price).focus(); return; }
   if(price<=0 && total>0) price = total/liters;
   if(total<=0 && price>0) total = liters*price;
 
@@ -1843,7 +2032,9 @@ function commitSave(){
       ? "บันทึกแล้ว — "+fmt(trip/liters,2)+" กม./ลิตร"+(carry>0 ? " (รวมยอดทด "+fmt(carry,1)+" กม.)" : "")
       : "บันทึกแล้ว (ไม่มี TRIP A)");
   }
-  save(); resetForm(); go("home");
+  save();
+  renderHome(); renderHistory();
+  savedTick($("#saveBtn"), "บันทึกแล้ว", ()=>{ resetForm(); go("home"); });
 }
 
 function editRecord(id){
@@ -1895,7 +2086,7 @@ $("#atSave").onclick = ()=>{
   const r = state.records.find(x=>x.id===addTripId);
   const t = num($("#atInput").value);
   if(!r) return;
-  if(!(t>0)){ toast("กรุณากรอกระยะทาง"); $("#atInput").focus(); return; }
+  if(!(t>0)){ toast("กรุณากรอกระยะทาง"); shake($("#atInput")); $("#atInput").focus(); return; }
   r.tripTyped = t;
   r.trip = Math.round((t + (r.carry||0))*10)/10;
   save();
@@ -2136,7 +2327,9 @@ function cCommit(){
       ? "บันทึกแล้ว — "+fmt(rec.trip/rec.kwh,2)+" กม./kWh"+(carry>0 ? " (รวมยอดทด "+fmt(carry,1)+" กม.)" : "")
       : "บันทึกแล้ว (ไม่มี TRIP B)");
   }
-  save(); cResetForm(); go("home");
+  save();
+  renderHome(); renderHistory();
+  savedTick($("#cSaveBtn"), "บันทึกแล้ว", ()=>{ cResetForm(); go("home"); });
 }
 
 function cEditRecord(id){
@@ -2207,6 +2400,101 @@ $("#atbSave").onclick = ()=>{
 /* =========================================================
    5. HOME
    ========================================================= */
+/* แถบสัดส่วน: วาดที่ 0 ก่อน แล้วค่อยขยายในเฟรมถัดไป เพื่อให้เห็นการวิ่ง
+   ถ้าค่าเท่าเดิมจะไม่เล่นซ้ำ — กันไม่ให้ขยับทุกครั้งที่สลับแท็บกลับมา */
+function setSplit(el, fp, ep){
+  if(!el) return;
+  const key = fp.toFixed(1)+"/"+ep.toFixed(1);
+  if(el.dataset.k === key) return;
+  el.dataset.k = key;
+  el.innerHTML = '<i class="fuel" style="width:0"></i><i class="elec" style="width:0"></i>';
+  const a = el.children[0], b = el.children[1];
+  const grow = ()=> requestAnimationFrame(()=> requestAnimationFrame(()=>{
+    a.style.width = fp.toFixed(1)+"%";
+    b.style.width = ep.toFixed(1)+"%";
+  }));
+  /* การ์ดนี้อยู่ต่ำกว่าหน้าจอแรก ถ้าเล่นตอนโหลดจะจบไปก่อนที่ตาจะเลื่อนมาถึง
+     จึงรอให้เลื่อนมาเห็นก่อนค่อยเริ่มวิ่ง */
+  if(typeof IntersectionObserver === "function"){
+    const io = new IntersectionObserver((es, ob)=>{
+      es.forEach(en=>{ if(en.isIntersecting){ grow(); ob.disconnect(); } });
+    }, { threshold: .35 });
+    io.observe(el);
+  } else grow();
+}
+
+/* ยอดทดเด้ง + ป้าย "+ 88.4" ลอยลงมารวม ให้เห็นว่าเลขเข้าระบบแล้วจริง */
+function flashCarry(mode, added){
+  const b = $(mode === "fuel" ? "#carryFuel" : "#carryElec");
+  if(!b) return;
+  b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop");
+  const row = b.parentElement;
+  if(!row) return;
+  row.querySelectorAll(".carryfly").forEach(n=>n.remove());
+  const fly = document.createElement("span");
+  fly.className = "carryfly";
+  fly.textContent = "+ " + fmt(added,1);
+  row.appendChild(fly);
+  setTimeout(()=> fly.remove(), 1000);
+}
+
+/* ตัวเลขพลิกทีละหลักแบบมาตรวัดรถ — เก็บค่าจริงไว้ใน data-value ด้วย
+   เพื่อให้ยังอ่านค่าออกได้จากโค้ดและเครื่องอ่านหน้าจอ */
+function setOdo(el, txt){
+  if(!el) return;
+  el.setAttribute("data-value", txt);
+  if(el.dataset.shown === txt) return;
+  el.dataset.shown = txt;
+  if(!/[0-9]/.test(txt)){ el.className = el.className.replace(/\bodo\b/,"").trim(); el.textContent = txt; return; }
+  if(el.className.indexOf("odo") < 0) el.className = (el.className+" odo").trim();
+  let html = "";
+  for(const ch of txt){
+    if(ch >= "0" && ch <= "9"){
+      let strip = "";
+      for(let i=0;i<=9;i++) strip += "<u>"+i+"</u>";
+      html += '<span class="dg"><span class="st" data-t="'+ch+'">'+strip+'</span></span>';
+    } else html += '<span class="sy">'+ch+'</span>';
+  }
+  el.innerHTML = html;
+  const st = el.querySelectorAll(".st");
+  requestAnimationFrame(()=> requestAnimationFrame(()=>{
+    st.forEach((x,i)=>{
+      x.style.transitionDelay = (i*0.07)+"s";
+      x.style.transform = "translateY(-"+(parseInt(x.dataset.t,10)*1.02)+"em)";
+    });
+  }));
+}
+
+/* ขีดใต้แท็บไถลไปหาแท็บที่เลือก */
+function moveTabInk(burst){
+  const nav = document.querySelector("nav.tabbar");
+  const ink = nav && nav.querySelector(".tabink");
+  const on  = nav && nav.querySelector('button[aria-current="page"]');
+  if(!ink || !on) return;
+  const w = 46;
+  ink.style.width = w + "px";
+  ink.style.transform = "translateX(" + (on.offsetLeft + on.offsetWidth/2 - w/2) + "px)";
+  if(burst){
+    ink.classList.remove("morph"); void ink.offsetWidth; ink.classList.add("morph");
+    setTimeout(()=> ink.classList.remove("morph"), 880);
+  }
+}
+
+/* สั่นเพื่อบอกว่าตรงนี้ผิด */
+function shake(el){
+  if(!el) return;
+  el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake");
+  setTimeout(()=> el.classList.remove("shake"), 500);
+}
+
+/* ปุ่มบันทึกกลายเป็นเครื่องหมายถูกสักครู่ก่อนกลับหน้าหลัก */
+function savedTick(btn, label, then){
+  if(!btn){ then && then(); return; }
+  const old = btn.textContent;
+  btn.classList.add("saved"); btn.textContent = "✓ " + label;
+  setTimeout(()=>{ btn.classList.remove("saved"); btn.textContent = old; then && then(); }, 520);
+}
+
 function renderHome(){
   renderCarry();
   const m = measured();
@@ -2214,7 +2502,7 @@ function renderHome(){
   if(m.length){
     const last = m[m.length-1];
     const k = kml(last);
-    $("#hLast").textContent = fmt(k,2);
+    setOdo($("#hLast"), fmt(k,2));
     $("#hMeta").textContent = thDate(last.date) + " · " + fmt(last.trip,1) + " กม. · " + fmt(last.liters,2) + " ลิตร · " + fmt0(last.total) + " บาท";
     const d = $("#hDelta");
     if(m.length>1){
@@ -2227,7 +2515,7 @@ function renderHome(){
         : (diff>0?"▲ ดีขึ้น ":"▼ ลดลง ") + fmt(Math.abs(diff),2)+" กม./ล. ("+fmt(Math.abs(pct),1)+"%) จากครั้งก่อน";
     } else d.textContent = "";
   } else {
-    $("#hLast").textContent = "–"; $("#hDelta").textContent = "";
+    setOdo($("#hLast"), "–"); $("#hDelta").textContent = "";
     $("#hMeta").textContent = all.length ? "ยังต้องเติมอีก 1 ครั้งจึงจะคำนวณได้" : "ยังไม่มีข้อมูล";
   }
 
@@ -2245,7 +2533,7 @@ function renderHome(){
   heroE.style.display = state.charges.length ? "" : "none";
   if(cm.length){
     const last = cm[cm.length-1], k = kmkwh(last);
-    $("#eLast").textContent = fmt(k,2);
+    setOdo($("#eLast"), fmt(k,2));
     $("#eMeta").textContent = thDate(last.date) + " · " + fmt(last.trip,0) + " กม. · " +
       fmt(last.kwh,2) + " kWh · " + fmt0(last.total) + " บาท" + (last.metered ? "" : " (ประมาณ)");
     const d = $("#eDelta");
@@ -2257,7 +2545,7 @@ function renderHome(){
         : (diff>0?"▲ ดีขึ้น ":"▼ ลดลง ") + fmt(Math.abs(diff),2)+" กม./kWh ("+fmt(Math.abs(pct),1)+"%) จากครั้งก่อน";
     } else d.textContent = "";
   } else if(state.charges.length){
-    $("#eLast").textContent = "–"; $("#eDelta").textContent = "";
+    setOdo($("#eLast"), "–"); $("#eDelta").textContent = "";
     $("#eMeta").textContent = "ยังต้องชาร์จอีก 1 ครั้งจึงจะคำนวณได้";
   }
   const eKm = cm.reduce((s,c)=>s+c.trip,0);
@@ -2280,11 +2568,11 @@ function renderHome(){
   $("#costCard").style.display = both>0 ? "" : "none";
   if(both>0 && B.ref>0){
     const ep = B.evShare*100, fp = 100-ep;
-    $("#cSplit").innerHTML = '<i class="fuel" style="width:'+fp.toFixed(1)+'%"></i><i class="elec" style="width:'+ep.toFixed(1)+'%"></i>';
+    setSplit($("#cSplit"), fp, ep);
     $("#cSplitLbl").innerHTML = 'ระยะทางวิ่งด้วยน้ำมัน <b>'+fmt(fp,0)+'%</b> · ไฟฟ้า <b>'+fmt(ep,0)+'%</b>'+
       '<br><span style="font-size:12px">ช่องรวม = เงินทั้งหมด '+fmt0(B.fBaht+B.eBaht)+' บาท ÷ ระยะทั้งหมด '+fmt0(B.ref)+' กม. '+
       '(ไม่ใช่สองบรรทัดบนบวกกัน)</span>';
-  } else { $("#cSplit").innerHTML=""; $("#cSplitLbl").textContent=""; }
+  } else { $("#cSplit").innerHTML=""; delete $("#cSplit").dataset.k; $("#cSplitLbl").textContent=""; }
   $("#coverWarn").innerHTML = coverageWarning(B);
 
   renderDash();
@@ -3671,7 +3959,7 @@ $("#swCancel").onclick = ()=>{ $("#switchModal").hidden = true; };
 $("#switchModal").onclick = e =>{ if(e.target.id === "switchModal") $("#switchModal").hidden = true; };
 $("#swSave").onclick = ()=>{
   const t = num($("#swKm").value);
-  if(!(t>0)){ toast("กรุณากรอกเลข TRIP ที่อ่านได้"); $("#swKm").focus(); return; }
+  if(!(t>0)){ toast("กรุณากรอกเลข TRIP ที่อ่านได้"); shake($("#swKm")); $("#swKm").focus(); return; }
   if(t > 2000 && !confirm("ระยะ "+fmt(t,1)+" กม. ดูสูงผิดปกติ — ยืนยันหรือไม่?")) return;
   state.carries.push({
     id: "s"+Date.now().toString(36)+Math.random().toString(36).slice(2,7),
@@ -3683,12 +3971,17 @@ $("#swSave").onclick = ()=>{
   save();
   $("#switchModal").hidden = true;
   renderCarry(); updatePreview(); updateCPreview();
+  go("home");
+  flashCarry(swMode, Math.round(t*10)/10);
   toast("จดไว้แล้ว "+fmt(t,1)+" กม. — รีเซ็ต TRIP "+(swMode==="fuel" ? "A" : "B")+" ที่รถได้เลย");
 };
 
 /* =========================================================
    10. BOOT
    ========================================================= */
+/* Safari บน iPhone จะไม่ทำงานกับ :active ถ้าไม่มีตัวรับ touch อยู่เลย
+   ตัวเปล่านี้ทำให้ปุ่ม "ยุบตอนกด" ทำงานบน iPhone ด้วย */
+document.addEventListener("touchstart", function(){}, { passive: true });
 load();
 applyTheme(localStorage.getItem(KEY+".theme") || (window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
 resetForm();
@@ -3699,6 +3992,13 @@ syncSettingsUI();
   if(n.b>=0) $("#nowB").value = n.b;
 })();
 renderHome();
+/* รถวิ่งเข้าจอครั้งเดียวตอนเปิดแอป และวางขีดใต้แท็บให้ตรงปุ่มแรก */
+requestAnimationFrame(()=>{
+  const car = document.querySelector(".carart");
+  if(car) car.classList.add("drive");
+  moveTabInk();
+});
+window.addEventListener("resize", moveTabInk);
 /* Offline support. Registered only on a real origin — opening the file
    directly from disk has no service-worker support and that is fine. */
 if("serviceWorker" in navigator && location.protocol.startsWith("http")){
