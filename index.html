@@ -4299,9 +4299,11 @@ async function onSignedIn(){
     if(syncOn) startSync();
     if(!state.cars.length) openOnboard();
     renderAll();
+    renderAccount();   /* v32: วาดการ์ดบัญชีใหม่ หลังรู้สถานะ syncOn จริง */
   }catch(e){
     console.warn("sign-in sync failed", e);
     toast("ล็อกอินแล้ว แต่ยังดึงข้อมูลจากคลาวด์ไม่ได้");
+    renderAccount();   /* v32: อัปเดตการ์ดแม้ดึงคลาวด์ไม่สำเร็จ */
   }
 }
 
