@@ -4183,7 +4183,9 @@ let cloudErr = "";
 let unsubs = [];            /* ตัวยกเลิก onSnapshot */
 let applyingSnap = false;   /* กันไม่ให้ snapshot ที่รับมา วนกลับไปเขียนขึ้นคลาวด์ */
 let pushTimer = null;
-let pushed = { fills:{}, charges:{}, carries:{}, cars:{} };  /* id -> JSON ที่ส่งขึ้นไปแล้ว */
+let pushed = { fills:{}, charges:{}, carries:{}, cars:{} };  /* id -> JSON ที่คลาวด์มีอยู่ */
+let syncOn = false;         /* ผู้ใช้อนุญาตให้ซิงค์คันนี้แล้วหรือยัง */
+function clearPushed(){ pushed.fills={}; pushed.charges={}; pushed.carries={}; }
 
 /* ---------- โหลด SDK แบบไม่บล็อกแอป ---------- */
 async function initCloud(){
@@ -4222,7 +4224,7 @@ async function initCloud(){
     FB.onAuthStateChanged(FB.auth, u => {
       fbUser = u || null;
       if(u){ cloudState = "signedin"; onSignedIn(); }
-      else { cloudState = "ready"; stopSync(); }
+      else { cloudState = "ready"; syncOn = false; clearPushed(); stopSync(); }
       renderAccount();
     });
     if(cloudState === "loading") cloudState = "ready";
@@ -4271,8 +4273,11 @@ async function onSignedIn(){
         "พบข้อมูลเดิมในเครื่องนี้ " + localCount + " รายการ\n\n" +
         "ต้องการอัปโหลดขึ้นบัญชี " + (fbUser.email || "") + " ไหม?\n\n" +
         "ข้อมูลในเครื่องจะยังอยู่เหมือนเดิม ไม่ถูกลบ");
-      if(ok){ await migrateUp(); toast("อัปโหลดข้อมูลขึ้นบัญชีแล้ว"); }
-      else { toast("เข้าสู่ระบบแล้ว (ยังไม่ได้อัปโหลดข้อมูลเดิม)"); }
+      if(ok){ await migrateUp(); syncOn = true; toast("อัปโหลดข้อมูลขึ้นบัญชีแล้ว"); }
+      else {
+        syncOn = false;
+        toast("เข้าสู่ระบบแล้ว — ยังไม่ได้ซิงค์ข้อมูล");
+      }
     } else if(cloudCars.length){
       /* บัญชีมีข้อมูลอยู่แล้ว — ใช้ของบนบัญชีเป็นหลัก */
       state.cars = cloudCars.slice();
@@ -4284,9 +4289,14 @@ async function onSignedIn(){
       state.cars.forEach(c=>{ if(!state.byCar[c.id]) state.byCar[c.id] = blankBucket(); });
       useCar(want);
       state.cars.forEach(c=> pushed.cars[c.id] = JSON.stringify(c));
+      clearPushed();
+      syncOn = true;
       saveLocalOnly();
+    } else {
+      /* บัญชีว่างและเครื่องก็ว่าง — เริ่มซิงค์ได้เลย ไม่มีอะไรให้ทับ */
+      syncOn = true;
     }
-    startSync();
+    if(syncOn) startSync();
     if(!state.cars.length) openOnboard();
     renderAll();
   }catch(e){
@@ -4356,12 +4366,19 @@ function startSync(){
     const ref = FB.collection(FB.db, "users", uid, "cars", carId, name);
     unsubs.push(FB.onSnapshot(ref, snap => {
       const items = []; snap.forEach(d=> items.push(d.data()));
+      const cloudIds = {}; items.forEach(o=>{ if(o && o.id) cloudIds[o.id] = 1; });
+      /* รายการในเครื่องที่ "ยังไม่เคยขึ้นคลาวด์" ต้องเก็บไว้เสมอ
+         ห้ามให้ snapshot ที่ยังว่าง (หรือมาจาก cache) มาลบข้อมูลของผู้ใช้ทิ้ง */
+      const keep = arr.filter(o => o && o.id && !cloudIds[o.id] && !pushed[name][o.id]);
       applyingSnap = true;
-      fillFrom(arr, items);
+      fillFrom(arr, items.concat(keep));
       applyingSnap = false;
-      markPushed();
+      /* pushed = สิ่งที่คลาวด์มีจริง ๆ ไม่ใช่สิ่งที่อยู่ในเครื่อง */
+      items.forEach(o=>{ if(o && o.id) pushed[name][o.id] = JSON.stringify(o); });
+      Object.keys(pushed[name]).forEach(id=>{ if(!cloudIds[id]) delete pushed[name][id]; });
       saveLocalOnly();
       renderAll();
+      if(keep.length) cloudQueue();   /* ของที่ยังไม่ขึ้น ส่งตามขึ้นไปให้ครบ */
     }, err => console.warn("snapshot", name, err)));
   };
   listen("fills", state.records);
@@ -4372,7 +4389,7 @@ function stopSync(){ unsubs.forEach(u=>{ try{ u(); }catch(e){} }); unsubs = []; 
 
 /* ---------- ส่งการเปลี่ยนแปลงขึ้นคลาวด์ (หน่วง 1.2 วินาที รวบให้ครั้งเดียว) ---------- */
 function cloudQueue(){
-  if(applyingSnap || !FB || !fbUser || !state.activeCarId) return;
+  if(applyingSnap || !syncOn || !FB || !fbUser || !state.activeCarId) return;
   clearTimeout(pushTimer);
   pushTimer = setTimeout(pushDirty, 1200);
 }
@@ -4457,12 +4474,24 @@ function renderAccount(){
         '<span class="nm"><b>'+esc(fbUser.displayName||"เข้าสู่ระบบแล้ว")+'</b>'+
         '<i>'+esc(fbUser.email||"")+'</i></span></div>'+
         '<p class="hint" style="margin:10px 0 12px">ข้อมูลซิงค์ขึ้นบัญชีนี้อัตโนมัติ เปลี่ยนเครื่องแล้วล็อกอินก็เจอครบ</p>'+
+        (syncOn ? '' :
+          '<div class="alert warn" style="margin:0 0 12px"><span>⚠️</span><span>ยังไม่ได้ซิงค์ข้อมูลของเครื่องนี้ขึ้นบัญชี</span></div>'+
+          '<button class="btn" id="btnUploadNow" style="margin-bottom:10px">⬆︎ อัปโหลดข้อมูลขึ้นบัญชีตอนนี้</button>')+
         '<button class="btn small ghost" id="btnSignOut">ออกจากระบบ</button>'+
         '<div style="height:8px"></div>'+
         '<button class="btn small danger" id="btnWipeCloud">ลบข้อมูลทั้งหมดออกจากคลาวด์</button>'+
       '</div>';
     $("#btnSignOut").onclick = signOutNow;
     $("#btnWipeCloud").onclick = wipeCloud;
+    const up = $("#btnUploadNow");
+    if(up) up.onclick = async ()=>{
+      up.disabled = true; up.textContent = "กำลังอัปโหลด…";
+      try{
+        await migrateUp(); syncOn = true; startSync();
+        toast("อัปโหลดข้อมูลขึ้นบัญชีแล้ว");
+      }catch(e){ toast("อัปโหลดไม่สำเร็จ ลองใหม่อีกครั้ง"); }
+      renderAccount();
+    };
   } else if(cloudState === "error"){
     box.innerHTML = '<div class="alert warn"><span>⚠️</span><span>ยังเชื่อมต่อระบบบัญชีไม่ได้ — ใช้แอปแบบเก็บข้อมูลในเครื่องได้ตามปกติ ลองใหม่เมื่อมีเน็ต</span></div>'+
       '<button class="btn small ghost" id="btnRetryCloud">ลองเชื่อมต่ออีกครั้ง</button>';
@@ -4495,8 +4524,8 @@ function renderCars(){
 function switchCar(id){
   if(id === state.activeCarId) return;
   useCar(id); saveLocalOnly();
-  if(fbUser) startSync();
-  markPushed();
+  clearPushed();
+  if(fbUser && syncOn) startSync();
   renderAll(); syncSettingsUI(); renderCars();
   toast("สลับไปที่ " + carLabel(activeCar()));
 }
@@ -4539,8 +4568,9 @@ function saveOnboard(){
   state.cars.push(car);
   state.byCar[car.id] = blankBucket();
   useCar(car.id);
-  markPushed();
+  clearPushed();
   save();
+  if(fbUser && syncOn) startSync();
   $("#onboardModal").hidden = true;
   syncSettingsUI(); renderCars(); renderAll();
   toast(onboardExtra ? "เพิ่มรถแล้ว" : "เริ่มใช้งานได้เลย");
