@@ -880,6 +880,55 @@ nav.tabbar button:active{transform:scale(.9)}
    (วางไว้ท้ายสุดเพื่อให้ชนะกฎเส้นประของธีมที่ประกาศไว้ก่อนหน้า) */
 table.tbl tr.gap td{border:0 !important;background:transparent !important;padding:0;height:16px}
 
+/* ---------- บัญชี / รถ / แบบสอบถาม ---------- */
+.gbtn{background:#fff;color:#1f1f1f;border:1px solid var(--axis);font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px}
+.gbtn::before{content:"G";display:grid;place-items:center;width:22px;height:22px;border-radius:50%;
+  background:conic-gradient(#ea4335 0 25%,#fbbc05 0 50%,#34a853 0 75%,#4285f4 0);color:#fff;font-size:13px;font-weight:800}
+:root[data-theme="dark"] .gbtn{background:#f3f3f1;color:#1f1f1f}
+
+.acct .who{display:flex;align-items:center;gap:12px}
+.acct .av{width:42px;height:42px;flex:0 0 42px;border-radius:50%;background:var(--bar);color:#fff;
+  display:grid;place-items:center;font-size:19px;font-weight:700;font-family:var(--serif)}
+.acct .nm{display:flex;flex-direction:column;min-width:0}
+.acct .nm b{font-size:15.5px;font-weight:600}
+.acct .nm i{font-style:normal;font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.carrow{display:flex;width:100%;align-items:center;justify-content:space-between;gap:10px;
+  font-family:inherit;text-align:left;cursor:pointer;background:var(--surface-1);
+  border:1px solid var(--grid);border-radius:4px;padding:12px 13px;margin-bottom:8px;color:var(--text-primary);
+  transition:transform var(--t-fast) var(--sp-fast), border-color var(--te-def) var(--ef-def)}
+.carrow:active{transform:scale(.98)}
+.carrow.on{border-color:var(--series-1);background:var(--accent-soft)}
+.carrow .ci{display:flex;flex-direction:column;min-width:0}
+.carrow .ci b{font-size:15px;font-weight:600}
+.carrow .ci i{font-style:normal;font-size:12px;color:var(--muted)}
+.carrow .tick{color:var(--series-1);font-weight:800;font-size:17px}
+
+.obseg button{font-size:13.5px;padding:11px 3px}
+#onboardModal .sheet{text-align:left}
+#onboardModal h3,#onboardModal > .sheet > p,#onboardModal .sheeticon{text-align:center}
+
+/* ---------- ซ่อนส่วนที่รถคันนี้ไม่มี ---------- */
+body.no-ev #heroElec,
+body.no-ev #goAddElec,
+body.no-ev #addSeg button[data-kind="elec"],
+body.no-ev #histKind button[data-kind="elec"],
+body.no-ev #histKind button[data-kind="all"],
+body.no-ev #statKind button[data-kind="elec"],
+body.no-ev #statKind button[data-kind="all"],
+body.no-ev #lvlBatt,
+body.no-ev .costcard .costrow:nth-child(4),
+body.no-ev .carrycard .crow:nth-of-type(2){display:none !important}
+body.no-ev .btnrow{grid-template-columns:1fr}
+
+body.no-fuel #goAdd,
+body.no-fuel #addSeg button[data-kind="fuel"],
+body.no-fuel #histKind button[data-kind="fuel"],
+body.no-fuel #statKind button[data-kind="fuel"],
+body.no-fuel #lvlFuel,
+body.no-fuel .costcard .costrow:nth-child(3),
+body.no-fuel .carrycard .crow:nth-of-type(1){display:none !important}
+body.no-fuel .btnrow{grid-template-columns:1fr}
 </style>
 </head>
 <body>
@@ -1322,6 +1371,17 @@ table.tbl tr.gap td{border:0 !important;background:transparent !important;paddin
 
 <!-- ============ SETTINGS ============ -->
 <section class="view" id="view-settings">
+  <div class="card" id="accountCard">
+    <h2>บัญชีและการสำรองข้อมูล</h2>
+    <div id="accountBox"></div>
+  </div>
+
+  <div class="card" id="carsCard">
+    <h2>รถของฉัน</h2>
+    <p class="hint">แตะเพื่อสลับคัน — สถิติและประวัติจะแยกกันคนละคัน</p>
+    <div id="carsBox"></div>
+  </div>
+
   <div class="card" id="howtoCard">
     <h2>📖 วิธีใช้งาน</h2>
     <p class="hint">อ่านครั้งเดียวก็พอ · แตะหัวข้อเพื่อเปิดอ่าน</p>
@@ -1570,6 +1630,48 @@ table.tbl tr.gap td{border:0 !important;background:transparent !important;paddin
   </div>
 </div>
 
+<!-- ============ ONBOARD (รถคันแรก) MODAL ============ -->
+<div class="modal" id="onboardModal" hidden>
+  <div class="sheet">
+    <div class="sheeticon">🚗</div>
+    <h3 id="obTitle">รถของคุณคันไหน</h3>
+    <p>กรอกครั้งเดียว แล้วแอปจะปรับหน้าจอให้ตรงกับรถของคุณ</p>
+
+    <div class="field" style="text-align:left">
+      <label for="obBrand">ยี่ห้อ</label>
+      <input id="obBrand" placeholder="เช่น BYD / Toyota / Honda" autocomplete="off">
+    </div>
+    <div class="field" style="text-align:left">
+      <label for="obModel">รุ่น</label>
+      <input id="obModel" placeholder="เช่น Seal 5 DM-i Premium" autocomplete="off">
+    </div>
+
+    <div class="field" style="text-align:left">
+      <label>ระบบขับเคลื่อน</label>
+      <div class="seg obseg" id="obDrive" style="margin-bottom:6px">
+        <button type="button" data-d="fuel" aria-pressed="false">⛽ น้ำมัน</button>
+        <button type="button" data-d="phev" aria-pressed="true">🔋 ไฮบริด</button>
+        <button type="button" data-d="ev" aria-pressed="false">⚡ ไฟฟ้า</button>
+      </div>
+      <div class="help" id="obHint"></div>
+    </div>
+
+    <div class="field" id="obFuelField" style="text-align:left">
+      <label for="obTank">ขนาดถังน้ำมัน</label>
+      <div class="suffix"><input type="number" id="obTank" inputmode="decimal" step="0.1" min="1" placeholder="เช่น 45"><span class="u">ลิตร</span></div>
+    </div>
+    <div class="field" id="obBattField" style="text-align:left">
+      <label for="obBatt">ขนาดแบตเตอรี่ (ถ้าทราบ)</label>
+      <div class="suffix"><input type="number" id="obBatt" inputmode="decimal" step="0.1" min="0" placeholder="เช่น 18.3"><span class="u">kWh</span></div>
+      <div class="help">ไม่ทราบก็เว้นว่างได้ ใส่ทีหลังในหน้าตั้งค่าได้</div>
+    </div>
+
+    <button class="btn" id="obSave">เริ่มใช้งาน</button>
+    <div style="height:10px"></div>
+    <button class="btn ghost" id="obCancel" hidden>ยกเลิก</button>
+  </div>
+</div>
+
 <!-- ============ SWITCH / CARRY MODAL ============ -->
 <div class="modal" id="switchModal" hidden>
   <div class="sheet">
@@ -1627,24 +1729,104 @@ table.tbl tr.gap td{border:0 !important;background:transparent !important;paddin
    ========================================================= */
 const KEY = "bydFuelLog.v1";
 const DEFAULTS = { car: "BYD Seal 5 DM-i Premium", tank: 45, battery: 18.3, homeRate: 4.90, kwhPct: null, baseUnits: null, ft: 0.1623, evRange: 120 };
-let state = { records: [], charges: [], carries: [], settings: { ...DEFAULTS } };
+
+/* โครงข้อมูลรองรับหลายคัน
+   byCar[carId] = { records, charges, carries }   ← ข้อมูลของแต่ละคัน
+   state.records / charges / carries              ← ชี้ไปที่อาร์เรย์ของคันที่เลือกอยู่
+   ทั้งแอปยังเรียก state.records เหมือนเดิม จึงไม่ต้องแก้โค้ดส่วนคำนวณเลย */
+let state = {
+  cars: [], activeCarId: null, byCar: {},
+  records: [], charges: [], carries: [],
+  settings: { ...DEFAULTS }
+};
 let editingId = null, cEditingId = null;
+
+function newId(p){ return (p||"") + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function blankBucket(){ return { records: [], charges: [], carries: [] }; }
+function bucket(carId){ return state.byCar[carId] || (state.byCar[carId] = blankBucket()); }
+function activeCar(){ return state.cars.find(c => c.id === state.activeCarId) || null; }
+
+/* สลับคัน: ผูก state.records ให้ชี้ไปที่อาร์เรย์ของคันนั้นโดยตรง (อ้างอิงเดียวกัน) */
+function useCar(carId){
+  if(!carId) return;
+  state.activeCarId = carId;
+  const b = bucket(carId);
+  state.records = b.records; state.charges = b.charges; state.carries = b.carries;
+  const c = activeCar();
+  if(c){
+    if(c.tank > 0) state.settings.tank = c.tank;
+    if(c.battery > 0) state.settings.battery = c.battery;
+    state.settings.car = carLabel(c);
+  }
+}
+function carLabel(c){
+  if(!c) return DEFAULTS.car;
+  return [c.brand, c.model].filter(Boolean).join(" ").trim() || c.name || "รถของฉัน";
+}
+/* รถคันนี้มีระบบไฟฟ้าไหม — ใช้ซ่อนแท็บ/ปุ่มชาร์จไฟถ้าเป็นรถน้ำมันล้วน */
+function hasEV(){ const c = activeCar(); return !c || c.drivetrain !== "fuel"; }
+function hasFuel(){ const c = activeCar(); return !c || c.drivetrain !== "ev"; }
+
+/* ลบสมาชิกออกจากอาร์เรย์แบบไม่เปลี่ยน reference (สำคัญ เพราะ state.records ผูกกับ byCar อยู่) */
+function dropFrom(arr, pred){ for(let i=arr.length-1;i>=0;i--) if(pred(arr[i])) arr.splice(i,1); }
+function fillFrom(arr, items){ arr.length = 0; (items||[]).forEach(x=>arr.push(x)); }
 
 function load(){
   try{
     const raw = localStorage.getItem(KEY);
-    if(raw){
-      const d = JSON.parse(raw);
-      state.records = Array.isArray(d.records) ? d.records : [];
-      state.charges = Array.isArray(d.charges) ? d.charges : [];
-      state.carries = Array.isArray(d.carries) ? d.carries : [];
-      state.settings = Object.assign({}, DEFAULTS, d.settings || {});
+    if(!raw) return;
+    const d = JSON.parse(raw);
+    state.settings = Object.assign({}, DEFAULTS, d.settings || {});
+
+    if(Array.isArray(d.cars) && d.cars.length){
+      state.cars = d.cars;
+      state.byCar = {};
+      Object.keys(d.byCar || {}).forEach(k=>{
+        const b = d.byCar[k] || {};
+        state.byCar[k] = {
+          records: Array.isArray(b.records) ? b.records : [],
+          charges: Array.isArray(b.charges) ? b.charges : [],
+          carries: Array.isArray(b.carries) ? b.carries : []
+        };
+      });
+      useCar(d.activeCarId && state.byCar[d.activeCarId] !== undefined || d.activeCarId
+             ? d.activeCarId : state.cars[0].id);
+      if(!activeCar()) useCar(state.cars[0].id);
+    } else {
+      /* ข้อมูลรูปแบบเก่า (คันเดียว ไม่มี cars) — ย้ายเข้ากล่องของรถคันแรกให้อัตโนมัติ */
+      const car = {
+        id: newId("car"),
+        brand: "BYD", model: "Seal 5 DM-i Premium",
+        drivetrain: "phev",
+        tank: state.settings.tank || 45,
+        battery: state.settings.battery || 18.3,
+        createdAt: Date.now()
+      };
+      state.cars = [car];
+      state.byCar = { [car.id]: {
+        records: Array.isArray(d.records) ? d.records : [],
+        charges: Array.isArray(d.charges) ? d.charges : [],
+        carries: Array.isArray(d.carries) ? d.carries : []
+      }};
+      useCar(car.id);
     }
   }catch(e){ console.warn("load failed", e); }
 }
 function save(){
-  try{ localStorage.setItem(KEY, JSON.stringify(state)); }
-  catch(e){ toast("บันทึกลงเครื่องไม่สำเร็จ — กรุณาสำรองข้อมูลเป็นไฟล์"); }
+  /* ให้ byCar ตรงกับ view เสมอก่อนเขียนลงเครื่อง */
+  if(state.activeCarId){
+    const b = bucket(state.activeCarId);
+    b.records = state.records; b.charges = state.charges; b.carries = state.carries;
+  }
+  try{
+    localStorage.setItem(KEY, JSON.stringify({
+      cars: state.cars, activeCarId: state.activeCarId, byCar: state.byCar,
+      settings: state.settings,
+      /* เก็บรูปแบบเก่าไว้ด้วย เผื่อผู้ใช้ย้อนกลับไปเวอร์ชันก่อนหน้า */
+      records: state.records, charges: state.charges, carries: state.carries
+    }));
+  }catch(e){ toast("บันทึกลงเครื่องไม่สำเร็จ — กรุณาสำรองข้อมูลเป็นไฟล์"); }
+  cloudQueue();
 }
 
 /* =========================================================
@@ -2099,7 +2281,7 @@ function delRecord(id){
   const r = state.records.find(x=>x.id===id); if(!r) return;
   if(!confirm("ลบรายการวันที่ "+thDate(r.date)+" ?")) return;
   releaseCarries(id);
-  state.records = state.records.filter(x=>x.id!==id);
+  dropFrom(state.records, x=>x.id===id);
   save(); renderHistory(); renderHome(); toast("ลบแล้ว");
 }
 
@@ -2364,7 +2546,7 @@ function cDelRecord(id){
   const c = state.charges.find(x=>x.id===id); if(!c) return;
   if(!confirm("ลบการชาร์จวันที่ "+thDate(c.date)+" ?")) return;
   releaseCarries(id);
-  state.charges = state.charges.filter(x=>x.id!==id);
+  dropFrom(state.charges, x=>x.id===id);
   save(); renderHistory(); renderHome(); toast("ลบแล้ว");
 }
 /* backfill TRIP B */
@@ -3687,7 +3869,7 @@ $("#impFile").onchange = e=>{
         chs.forEach(c=>{ if(!cids.has(c.id)) state.charges.push(c); });
         const yids = new Set(state.carries.map(y=>y.id));
         cys.forEach(y=>{ if(!yids.has(y.id)) state.carries.push(y); });
-      } else { state.records = recs; state.charges = chs; state.carries = cys; }
+      } else { fillFrom(state.records, recs); fillFrom(state.charges, chs); fillFrom(state.carries, cys); }
       if(d.settings) state.settings = Object.assign({}, DEFAULTS, d.settings);
       save(); syncSettingsUI(); renderHome(); renderHistory();
       toast("กู้คืนแล้ว — น้ำมัน "+state.records.length+" · ไฟฟ้า "+state.charges.length+" รายการ");
@@ -3715,7 +3897,7 @@ $("#mCancel").onclick = closeReset;
 $("#resetModal").onclick = e =>{ if(e.target.id==="resetModal") closeReset(); };
 $("#mConfirm").onclick = ()=>{
   const n = state.records.length + state.charges.length;
-  state.records = []; state.charges = []; state.carries = []; setNowTrips({});
+  fillFrom(state.records, []); fillFrom(state.charges, []); fillFrom(state.carries, []); setNowTrips({});
   $("#nowA").value=""; $("#nowB").value=""; save(); closeReset();
   renderHome(); renderHistory(); if($("#view-stats").classList.contains("active")) renderStats();
   toast("ลบข้อมูลทั้งหมด "+n+" รายการแล้ว");
@@ -3924,7 +4106,7 @@ function renderCarry(){
 function delCarry(id){
   const c = state.carries.find(x=>x.id===id); if(!c) return;
   if(!confirm("ลบยอดทด "+fmt(c.km,1)+" กม. ("+(c.mode==="fuel" ? "น้ำมัน" : "ไฟฟ้า")+") ?\n\nระยะทางส่วนนี้จะไม่ถูกนำไปคำนวณ")) return;
-  state.carries = state.carries.filter(x=>x.id!==id);
+  dropFrom(state.carries, x=>x.id===id);
   save(); renderCarry(); updatePreview(); updateCPreview(); toast("ลบยอดทดแล้ว");
 }
 
@@ -3976,12 +4158,426 @@ $("#swSave").onclick = ()=>{
   toast("จดไว้แล้ว "+fmt(t,1)+" กม. — รีเซ็ต TRIP "+(swMode==="fuel" ? "A" : "B")+" ที่รถได้เลย");
 };
 
+
+/* =========================================================
+   11. บัญชีผู้ใช้ (Google) + ซิงค์ขึ้น Firestore
+   ---------------------------------------------------------
+   หลักคิด: แอปต้องใช้งานได้เต็มที่แม้ Firebase โหลดไม่ขึ้น
+   หรือไม่ได้ล็อกอิน — ส่วนคลาวด์เป็น "ของเสริม" ที่ค่อยต่อเข้ามา
+   ทีหลังเสมอ ไม่ใช่เงื่อนไขในการเปิดแอป
+   ========================================================= */
+const FB_CONFIG = {
+  apiKey: "AIzaSyAarHHU4zX_3VXVdi1B2S83xVHQKA1KpzE",
+  authDomain: "fuel-log-engine.firebaseapp.com",
+  projectId: "fuel-log-engine",
+  storageBucket: "fuel-log-engine.firebasestorage.app",
+  messagingSenderId: "429119507770",
+  appId: "1:429119507770:web:2d97e18f0edd1e8d899403"
+};
+const FB_VER = "10.12.5";
+
+let FB = null;              /* รวมฟังก์ชันของ Firebase ที่ใช้ */
+let fbUser = null;          /* ผู้ใช้ที่ล็อกอินอยู่ */
+let cloudState = "off";     /* off | loading | ready | signedin | error */
+let cloudErr = "";
+let unsubs = [];            /* ตัวยกเลิก onSnapshot */
+let applyingSnap = false;   /* กันไม่ให้ snapshot ที่รับมา วนกลับไปเขียนขึ้นคลาวด์ */
+let pushTimer = null;
+let pushed = { fills:{}, charges:{}, carries:{}, cars:{} };  /* id -> JSON ที่ส่งขึ้นไปแล้ว */
+
+/* ---------- โหลด SDK แบบไม่บล็อกแอป ---------- */
+async function initCloud(){
+  if(cloudState !== "off") return;
+  cloudState = "loading"; renderAccount();
+  try{
+    const base = "https://www.gstatic.com/firebasejs/" + FB_VER + "/";
+    const [a, au, fs] = await Promise.all([
+      import(base + "firebase-app.js"),
+      import(base + "firebase-auth.js"),
+      import(base + "firebase-firestore.js")
+    ]);
+    const app = a.initializeApp(FB_CONFIG);
+    let db;
+    try{
+      db = fs.initializeFirestore(app, {
+        localCache: fs.persistentLocalCache({ tabManager: fs.persistentMultipleTabManager() })
+      });
+    }catch(e){ db = fs.getFirestore(app); }   /* เบราว์เซอร์เก่าที่เก็บ cache ไม่ได้ */
+
+    FB = {
+      app, db, auth: au.getAuth(app),
+      GoogleAuthProvider: au.GoogleAuthProvider,
+      signInWithPopup: au.signInWithPopup,
+      signInWithRedirect: au.signInWithRedirect,
+      getRedirectResult: au.getRedirectResult,
+      signOut: au.signOut,
+      onAuthStateChanged: au.onAuthStateChanged,
+      doc: fs.doc, collection: fs.collection, getDoc: fs.getDoc, getDocs: fs.getDocs,
+      setDoc: fs.setDoc, deleteDoc: fs.deleteDoc, onSnapshot: fs.onSnapshot,
+      writeBatch: fs.writeBatch
+    };
+
+    try{ await FB.getRedirectResult(FB.auth); }catch(e){}
+
+    FB.onAuthStateChanged(FB.auth, u => {
+      fbUser = u || null;
+      if(u){ cloudState = "signedin"; onSignedIn(); }
+      else { cloudState = "ready"; stopSync(); }
+      renderAccount();
+    });
+    if(cloudState === "loading") cloudState = "ready";
+  }catch(e){
+    cloudState = "error";
+    cloudErr = (e && e.message) ? e.message : String(e);
+    console.warn("cloud init failed", e);
+  }
+  renderAccount();
+}
+
+/* ---------- เข้า / ออกจากระบบ ---------- */
+async function signIn(){
+  if(!FB){ toast("ยังเชื่อมต่อระบบบัญชีไม่ได้ — ลองใหม่เมื่อมีเน็ต"); return; }
+  const p = new FB.GoogleAuthProvider();
+  p.setCustomParameters({ prompt: "select_account" });
+  try{
+    await FB.signInWithPopup(FB.auth, p);
+  }catch(e){
+    const c = e && e.code || "";
+    if(c.indexOf("popup") >= 0 || c.indexOf("operation-not-supported") >= 0){
+      try{ await FB.signInWithRedirect(FB.auth, p); return; }catch(e2){}
+    }
+    toast("เข้าสู่ระบบไม่สำเร็จ: " + (e && e.code ? e.code : "ลองใหม่อีกครั้ง"));
+  }
+}
+async function signOutNow(){
+  if(!FB || !fbUser) return;
+  if(!confirm("ออกจากระบบ?\n\nข้อมูลยังอยู่ในเครื่องนี้และอยู่บนบัญชีของคุณ ไม่หายไปไหน")) return;
+  stopSync();
+  try{ await FB.signOut(FB.auth); }catch(e){}
+  toast("ออกจากระบบแล้ว");
+}
+
+/* ---------- ล็อกอินสำเร็จ: ถามเรื่องข้อมูลเดิม แล้วเริ่มซิงค์ ---------- */
+async function onSignedIn(){
+  try{
+    const uid = fbUser.uid;
+    const carsSnap = await FB.getDocs(FB.collection(FB.db, "users", uid, "cars"));
+    const cloudCars = []; carsSnap.forEach(d => cloudCars.push(d.data()));
+    const localCount = countLocal();
+
+    if(!cloudCars.length && localCount > 0){
+      /* บัญชีนี้ยังว่าง แต่เครื่องนี้มีข้อมูลอยู่ — ถามก่อนอัปโหลด */
+      const ok = confirm(
+        "พบข้อมูลเดิมในเครื่องนี้ " + localCount + " รายการ\n\n" +
+        "ต้องการอัปโหลดขึ้นบัญชี " + (fbUser.email || "") + " ไหม?\n\n" +
+        "ข้อมูลในเครื่องจะยังอยู่เหมือนเดิม ไม่ถูกลบ");
+      if(ok){ await migrateUp(); toast("อัปโหลดข้อมูลขึ้นบัญชีแล้ว"); }
+      else { toast("เข้าสู่ระบบแล้ว (ยังไม่ได้อัปโหลดข้อมูลเดิม)"); }
+    } else if(cloudCars.length){
+      /* บัญชีมีข้อมูลอยู่แล้ว — ใช้ของบนบัญชีเป็นหลัก */
+      state.cars = cloudCars.slice();
+      const uDoc = await FB.getDoc(FB.doc(FB.db, "users", uid));
+      const ud = uDoc.exists() ? uDoc.data() : {};
+      if(ud.settings) state.settings = Object.assign({}, DEFAULTS, ud.settings);
+      const want = (ud.activeCarId && state.cars.some(c=>c.id===ud.activeCarId))
+        ? ud.activeCarId : state.cars[0].id;
+      state.cars.forEach(c=>{ if(!state.byCar[c.id]) state.byCar[c.id] = blankBucket(); });
+      useCar(want);
+      state.cars.forEach(c=> pushed.cars[c.id] = JSON.stringify(c));
+      saveLocalOnly();
+    }
+    startSync();
+    if(!state.cars.length) openOnboard();
+    renderAll();
+  }catch(e){
+    console.warn("sign-in sync failed", e);
+    toast("ล็อกอินแล้ว แต่ยังดึงข้อมูลจากคลาวด์ไม่ได้");
+  }
+}
+
+function countLocal(){
+  let n = 0;
+  Object.keys(state.byCar).forEach(k=>{
+    const b = state.byCar[k];
+    n += (b.records||[]).length + (b.charges||[]).length + (b.carries||[]).length;
+  });
+  return n;
+}
+
+/* ---------- ย้ายข้อมูลในเครื่องขึ้นคลาวด์ (ไม่ลบของเดิมในเครื่อง) ---------- */
+async function migrateUp(){
+  const uid = fbUser.uid;
+  const ops = [];
+  state.cars.forEach(c=> ops.push(["users/"+uid+"/cars", c.id, c]));
+  Object.keys(state.byCar).forEach(carId=>{
+    const b = state.byCar[carId], base = "users/"+uid+"/cars/"+carId;
+    (b.records||[]).forEach(r=> ops.push([base+"/fills", r.id, r]));
+    (b.charges||[]).forEach(r=> ops.push([base+"/charges", r.id, r]));
+    (b.carries||[]).forEach(r=> ops.push([base+"/carries", r.id, r]));
+  });
+  await commitOps(ops);
+  await FB.setDoc(FB.doc(FB.db, "users", uid), {
+    activeCarId: state.activeCarId, settings: state.settings,
+    email: fbUser.email || null, name: fbUser.displayName || null, updatedAt: Date.now()
+  }, { merge: true });
+  /* จำไว้ว่าอะไรถูกส่งขึ้นไปแล้ว จะได้ไม่ส่งซ้ำ */
+  state.cars.forEach(c=> pushed.cars[c.id] = JSON.stringify(c));
+  markPushed();
+}
+
+/* สร้าง reference จาก path แบบข้อความ ให้รองรับความลึกเท่าไหร่ก็ได้ */
+function docRef(path, id){
+  const segs = path.split("/").filter(Boolean).concat([id]);
+  return FB.doc.apply(null, [FB.db].concat(segs));
+}
+/* เขียนทีละก้อน ก้อนละไม่เกิน 400 รายการ (Firestore จำกัด 500 ต่อ batch) */
+async function commitOps(ops){
+  for(let i=0;i<ops.length;i+=400){
+    const b = FB.writeBatch(FB.db);
+    ops.slice(i, i+400).forEach(o=> b.set(docRef(o[0], o[1]), o[2]));
+    await b.commit();
+  }
+}
+
+function markPushed(){
+  const b = bucket(state.activeCarId) || blankBucket();
+  pushed.fills = {}; pushed.charges = {}; pushed.carries = {};
+  (state.records||[]).forEach(r=> pushed.fills[r.id] = JSON.stringify(r));
+  (state.charges||[]).forEach(r=> pushed.charges[r.id] = JSON.stringify(r));
+  (state.carries||[]).forEach(r=> pushed.carries[r.id] = JSON.stringify(r));
+}
+
+/* ---------- ฟังการเปลี่ยนแปลงจากคลาวด์ ---------- */
+function startSync(){
+  stopSync();
+  if(!FB || !fbUser || !state.activeCarId) return;
+  const uid = fbUser.uid, carId = state.activeCarId;
+  const listen = (name, arr) => {
+    const ref = FB.collection(FB.db, "users", uid, "cars", carId, name);
+    unsubs.push(FB.onSnapshot(ref, snap => {
+      const items = []; snap.forEach(d=> items.push(d.data()));
+      applyingSnap = true;
+      fillFrom(arr, items);
+      applyingSnap = false;
+      markPushed();
+      saveLocalOnly();
+      renderAll();
+    }, err => console.warn("snapshot", name, err)));
+  };
+  listen("fills", state.records);
+  listen("charges", state.charges);
+  listen("carries", state.carries);
+}
+function stopSync(){ unsubs.forEach(u=>{ try{ u(); }catch(e){} }); unsubs = []; }
+
+/* ---------- ส่งการเปลี่ยนแปลงขึ้นคลาวด์ (หน่วง 1.2 วินาที รวบให้ครั้งเดียว) ---------- */
+function cloudQueue(){
+  if(applyingSnap || !FB || !fbUser || !state.activeCarId) return;
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(pushDirty, 1200);
+}
+async function pushDirty(){
+  if(!FB || !fbUser || !state.activeCarId) return;
+  const uid = fbUser.uid, carId = state.activeCarId;
+  const base = "users/"+uid+"/cars/"+carId;
+  const ops = [], dels = [];
+  const diff = (name, path, arr) => {
+    const seen = {};
+    (arr||[]).forEach(o=>{
+      if(!o || !o.id) return;
+      seen[o.id] = 1;
+      const j = JSON.stringify(o);
+      if(pushed[name][o.id] !== j){ ops.push([path, o.id, o]); pushed[name][o.id] = j; }
+    });
+    Object.keys(pushed[name]).forEach(id=>{
+      if(!seen[id]){ dels.push([path, id]); delete pushed[name][id]; }
+    });
+  };
+  diff("fills",   base+"/fills",   state.records);
+  diff("charges", base+"/charges", state.charges);
+  diff("carries", base+"/carries", state.carries);
+  state.cars.forEach(c=>{
+    const j = JSON.stringify(c);
+    if(pushed.cars[c.id] !== j){ ops.push(["users/"+uid+"/cars", c.id, c]); pushed.cars[c.id] = j; }
+  });
+  try{
+    if(ops.length) await commitOps(ops);
+    for(const d of dels) await FB.deleteDoc(docRef(d[0], d[1]));
+    await FB.setDoc(FB.doc(FB.db, "users", uid), {
+      activeCarId: state.activeCarId, settings: state.settings, updatedAt: Date.now()
+    }, { merge: true });
+  }catch(e){ console.warn("push failed", e); }
+}
+
+/* เขียนลงเครื่องอย่างเดียว ไม่ยิงขึ้นคลาวด์ (ใช้ตอนรับข้อมูลจากคลาวด์มา) */
+function saveLocalOnly(){
+  const was = applyingSnap; applyingSnap = true;
+  save();
+  applyingSnap = was;
+}
+
+/* ---------- ลบข้อมูลทั้งหมดออกจากคลาวด์ (PDPA) ---------- */
+async function wipeCloud(){
+  if(!FB || !fbUser) return;
+  if(!confirm("ลบข้อมูลทั้งหมดออกจากบัญชี " + (fbUser.email||"") + " ?\n\nข้อมูลบนคลาวด์จะหายถาวร\nข้อมูลในเครื่องนี้ยังอยู่")) return;
+  const uid = fbUser.uid;
+  try{
+    stopSync();
+    const cars = await FB.getDocs(FB.collection(FB.db, "users", uid, "cars"));
+    for(const c of cars.docs){
+      for(const sub of ["fills","charges","carries"]){
+        const s = await FB.getDocs(FB.collection(FB.db, "users", uid, "cars", c.id, sub));
+        for(const d of s.docs) await FB.deleteDoc(d.ref);
+      }
+      await FB.deleteDoc(c.ref);
+    }
+    await FB.deleteDoc(FB.doc(FB.db, "users", uid));
+    pushed = { fills:{}, charges:{}, carries:{}, cars:{} };
+    toast("ลบข้อมูลออกจากคลาวด์แล้ว");
+    await FB.signOut(FB.auth);
+  }catch(e){ toast("ลบไม่สำเร็จ: " + (e && e.code ? e.code : "ลองใหม่")); }
+}
+
+function renderAll(){
+  renderHome(); renderHistory();
+  if($("#view-stats").classList.contains("active")) renderStats();
+  syncCarUI();
+}
+
+/* =========================================================
+   12. หน้าจอบัญชี / เลือกรถ / แบบสอบถามรถคันแรก
+   ========================================================= */
+function renderAccount(){
+  const box = $("#accountBox"); if(!box) return;
+  const esc = s => (s||"").replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  if(cloudState === "signedin" && fbUser){
+    box.innerHTML =
+      '<div class="acct"><div class="who">'+
+        '<span class="av">'+esc((fbUser.displayName||fbUser.email||"?").slice(0,1).toUpperCase())+'</span>'+
+        '<span class="nm"><b>'+esc(fbUser.displayName||"เข้าสู่ระบบแล้ว")+'</b>'+
+        '<i>'+esc(fbUser.email||"")+'</i></span></div>'+
+        '<p class="hint" style="margin:10px 0 12px">ข้อมูลซิงค์ขึ้นบัญชีนี้อัตโนมัติ เปลี่ยนเครื่องแล้วล็อกอินก็เจอครบ</p>'+
+        '<button class="btn small ghost" id="btnSignOut">ออกจากระบบ</button>'+
+        '<div style="height:8px"></div>'+
+        '<button class="btn small danger" id="btnWipeCloud">ลบข้อมูลทั้งหมดออกจากคลาวด์</button>'+
+      '</div>';
+    $("#btnSignOut").onclick = signOutNow;
+    $("#btnWipeCloud").onclick = wipeCloud;
+  } else if(cloudState === "error"){
+    box.innerHTML = '<div class="alert warn"><span>⚠️</span><span>ยังเชื่อมต่อระบบบัญชีไม่ได้ — ใช้แอปแบบเก็บข้อมูลในเครื่องได้ตามปกติ ลองใหม่เมื่อมีเน็ต</span></div>'+
+      '<button class="btn small ghost" id="btnRetryCloud">ลองเชื่อมต่ออีกครั้ง</button>';
+    $("#btnRetryCloud").onclick = ()=>{ cloudState="off"; initCloud(); };
+  } else if(cloudState === "loading"){
+    box.innerHTML = '<p class="hint" style="margin:0">กำลังเชื่อมต่อ…</p>';
+  } else {
+    box.innerHTML =
+      '<p class="hint" style="margin:0 0 12px">ล็อกอินเพื่อสำรองข้อมูลขึ้นบัญชี Google ของคุณ — เปลี่ยนเครื่องแล้วข้อมูลตามไปด้วย ไม่ล็อกอินก็ใช้แอปได้ปกติ</p>'+
+      '<button class="btn gbtn" id="btnSignIn">เข้าสู่ระบบด้วย Google</button>';
+    $("#btnSignIn").onclick = signIn;
+  }
+}
+
+/* ---------- รายการรถ + สลับคัน ---------- */
+function renderCars(){
+  const box = $("#carsBox"); if(!box) return;
+  const esc = s => (s||"").replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const DT = { fuel:"น้ำมันอย่างเดียว", phev:"ปลั๊กอินไฮบริด", ev:"ไฟฟ้าล้วน" };
+  box.innerHTML = state.cars.map(c=>{
+    const on = c.id === state.activeCarId;
+    const n = (state.byCar[c.id] ? (state.byCar[c.id].records.length + state.byCar[c.id].charges.length) : 0);
+    return '<button class="carrow'+(on?" on":"")+'" data-car="'+c.id+'">'+
+      '<span class="ci"><b>'+esc(carLabel(c))+'</b><i>'+DT[c.drivetrain||"phev"]+' · '+n+' รายการ</i></span>'+
+      (on?'<span class="tick">✓</span>':'')+'</button>';
+  }).join("") + '<button class="btn small ghost" id="btnAddCar" style="margin-top:10px">＋ เพิ่มรถอีกคัน</button>';
+  $$("#carsBox .carrow").forEach(b=> b.onclick = ()=> switchCar(b.dataset.car));
+  $("#btnAddCar").onclick = ()=> openOnboard(true);
+}
+function switchCar(id){
+  if(id === state.activeCarId) return;
+  useCar(id); saveLocalOnly();
+  if(fbUser) startSync();
+  markPushed();
+  renderAll(); syncSettingsUI(); renderCars();
+  toast("สลับไปที่ " + carLabel(activeCar()));
+}
+
+/* ---------- แบบสอบถามรถคันแรก ---------- */
+let onboardExtra = false;
+function openOnboard(extra){
+  onboardExtra = !!extra;
+  $("#obTitle").textContent = extra ? "เพิ่มรถอีกคัน" : "รถของคุณคันไหน";
+  $("#obBrand").value = ""; $("#obModel").value = "";
+  $("#obTank").value = ""; $("#obBatt").value = "";
+  obSetDrive("phev");
+  $("#obCancel").hidden = !extra;
+  $("#onboardModal").hidden = false;
+  setTimeout(()=>$("#obBrand").focus(), 150);
+}
+let obDrive = "phev";
+function obSetDrive(d){
+  obDrive = d;
+  $$("#obDrive button").forEach(b=> b.setAttribute("aria-pressed", String(b.dataset.d === d)));
+  $("#obFuelField").hidden = (d === "ev");
+  $("#obBattField").hidden = (d === "fuel");
+  $("#obHint").textContent = d === "fuel" ? "แอปจะซ่อนส่วนของไฟฟ้าให้ทั้งหมด"
+    : d === "ev" ? "แอปจะซ่อนส่วนของน้ำมันให้ทั้งหมด"
+    : "แอปจะแยกคิดต้นทุนน้ำมันกับไฟฟ้าให้คนละส่วน";
+}
+function saveOnboard(){
+  const brand = $("#obBrand").value.trim();
+  const model = $("#obModel").value.trim();
+  const tank  = num($("#obTank").value);
+  const batt  = num($("#obBatt").value);
+  if(!brand && !model){ toast("กรุณากรอกยี่ห้อหรือรุ่นรถ"); shake($("#obBrand")); $("#obBrand").focus(); return; }
+  if(obDrive !== "ev" && !(tank > 0)){ toast("กรุณากรอกขนาดถังน้ำมัน"); shake($("#obTank")); $("#obTank").focus(); return; }
+  const car = {
+    id: newId("car"), brand, model, drivetrain: obDrive,
+    tank: obDrive === "ev" ? 0 : tank,
+    battery: obDrive === "fuel" ? 0 : (batt > 0 ? batt : 0),
+    createdAt: Date.now()
+  };
+  state.cars.push(car);
+  state.byCar[car.id] = blankBucket();
+  useCar(car.id);
+  markPushed();
+  save();
+  $("#onboardModal").hidden = true;
+  syncSettingsUI(); renderCars(); renderAll();
+  toast(onboardExtra ? "เพิ่มรถแล้ว" : "เริ่มใช้งานได้เลย");
+}
+
+/* ---------- ซ่อน/แสดงส่วนไฟฟ้าหรือน้ำมันตามชนิดรถ ---------- */
+function syncCarUI(){
+  const ev = hasEV(), fu = hasFuel();
+  document.body.classList.toggle("no-ev", !ev);
+  document.body.classList.toggle("no-fuel", !fu);
+  const c = activeCar();
+  if(c){
+    const d = $("#dashCar"); if(d) d.textContent = carLabel(c);
+    const t = $("#hdSub");
+    if(t && $("#view-home").classList.contains("active")) t.textContent = carLabel(c);
+  }
+  if(!ev && $("#addSeg")){
+    const b = $('#addSeg button[data-kind="fuel"]');
+    if(b && b.getAttribute("aria-pressed") !== "true") b.click();
+  }
+  if(!fu && $("#addSeg")){
+    const b = $('#addSeg button[data-kind="elec"]');
+    if(b && b.getAttribute("aria-pressed") !== "true") b.click();
+  }
+}
+
 /* =========================================================
    10. BOOT
    ========================================================= */
 /* Safari บน iPhone จะไม่ทำงานกับ :active ถ้าไม่มีตัวรับ touch อยู่เลย
    ตัวเปล่านี้ทำให้ปุ่ม "ยุบตอนกด" ทำงานบน iPhone ด้วย */
 document.addEventListener("touchstart", function(){}, { passive: true });
+
+$$("#obDrive button").forEach(b=> b.onclick = ()=> obSetDrive(b.dataset.d));
+$("#obSave").onclick = saveOnboard;
+$("#obCancel").onclick = ()=>{ $("#onboardModal").hidden = true; };
+
 load();
 applyTheme(localStorage.getItem(KEY+".theme") || (window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
 resetForm();
@@ -3991,7 +4587,14 @@ syncSettingsUI();
   if(n.a>=0) $("#nowA").value = n.a;
   if(n.b>=0) $("#nowB").value = n.b;
 })();
+renderCars();
+renderAccount();
+syncCarUI();
 renderHome();
+/* ถ้ายังไม่เคยตั้งค่ารถเลย ให้ถามก่อนใช้งาน */
+if(!state.cars.length) setTimeout(()=> openOnboard(false), 400);
+/* ต่อระบบบัญชีทีหลัง ไม่ให้ถ่วงการเปิดแอป */
+setTimeout(initCloud, 900);
 /* รถวิ่งเข้าจอครั้งเดียวตอนเปิดแอป และวางขีดใต้แท็บให้ตรงปุ่มแรก */
 requestAnimationFrame(()=>{
   const car = document.querySelector(".carart");
