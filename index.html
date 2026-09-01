@@ -4185,7 +4185,23 @@ let applyingSnap = false;   /* กันไม่ให้ snapshot ที่ร
 let pushTimer = null;
 let pushed = { fills:{}, charges:{}, carries:{}, cars:{} };  /* id -> JSON ที่คลาวด์มีอยู่ */
 let syncOn = false;         /* ผู้ใช้อนุญาตให้ซิงค์คันนี้แล้วหรือยัง */
+let busyMsg = "";           /* v33: ข้อความสถานะระหว่างกำลังตรวจ/อัปโหลด */
 function clearPushed(){ pushed.fills={}; pushed.charges={}; pushed.carries={}; }
+
+/* v33: ยืนยันว่าเซิร์ฟเวอร์รับข้อมูลแล้วจริง ๆ
+   เพราะเปิด offline persistence ไว้ batch.commit() จะสำเร็จตั้งแต่เขียนลง cache
+   ในเครื่อง ยังไม่ได้แปลว่าขึ้นคลาวด์ — ถ้าไม่เช็ก toast จะโกหกผู้ใช้เวลาเน็ตหลุด
+   คืนค่า true = เซิร์ฟเวอร์รับแล้ว · false = ยังค้างอยู่ · null = ตรวจไม่ได้ */
+async function confirmSynced(ms){
+  if(!FB || typeof FB.waitForPendingWrites !== "function") return null;
+  try{
+    await Promise.race([
+      FB.waitForPendingWrites(FB.db),
+      new Promise((_, rej)=> setTimeout(()=> rej(new Error("timeout")), ms || 7000))
+    ]);
+    return true;
+  }catch(e){ return false; }
+}
 
 /* ---------- โหลด SDK แบบไม่บล็อกแอป ---------- */
 async function initCloud(){
@@ -4216,7 +4232,8 @@ async function initCloud(){
       onAuthStateChanged: au.onAuthStateChanged,
       doc: fs.doc, collection: fs.collection, getDoc: fs.getDoc, getDocs: fs.getDocs,
       setDoc: fs.setDoc, deleteDoc: fs.deleteDoc, onSnapshot: fs.onSnapshot,
-      writeBatch: fs.writeBatch
+      writeBatch: fs.writeBatch,
+      waitForPendingWrites: fs.waitForPendingWrites
     };
 
     try{ await FB.getRedirectResult(FB.auth); }catch(e){}
@@ -4261,6 +4278,10 @@ async function signOutNow(){
 
 /* ---------- ล็อกอินสำเร็จ: ถามเรื่องข้อมูลเดิม แล้วเริ่มซิงค์ ---------- */
 async function onSignedIn(){
+  /* v33: ระหว่างตรวจสอบ ให้การ์ดขึ้นว่า "กำลังตรวจสอบ…" แทนกล่องเหลือง
+     ไม่งั้น syncOn ที่เริ่มเป็น false จะทำให้กล่องเตือนแวบขึ้นมา 1–3 วินาทีทุกครั้ง */
+  busyMsg = "กำลังตรวจสอบข้อมูลบนบัญชี…";
+  renderAccount();
   try{
     const uid = fbUser.uid;
     const carsSnap = await FB.getDocs(FB.collection(FB.db, "users", uid, "cars"));
@@ -4273,7 +4294,15 @@ async function onSignedIn(){
         "พบข้อมูลเดิมในเครื่องนี้ " + localCount + " รายการ\n\n" +
         "ต้องการอัปโหลดขึ้นบัญชี " + (fbUser.email || "") + " ไหม?\n\n" +
         "ข้อมูลในเครื่องจะยังอยู่เหมือนเดิม ไม่ถูกลบ");
-      if(ok){ await migrateUp(); syncOn = true; toast("อัปโหลดข้อมูลขึ้นบัญชีแล้ว"); }
+      if(ok){
+        busyMsg = "กำลังอัปโหลดข้อมูล…"; renderAccount();
+        await migrateUp(); syncOn = true;
+        const landed = await confirmSynced();
+        busyMsg = "";
+        toast(landed === false
+          ? "บันทึกไว้แล้ว — จะอัปโหลดให้อัตโนมัติเมื่อมีเน็ต"
+          : "อัปโหลดข้อมูลขึ้นบัญชีแล้ว");
+      }
       else {
         syncOn = false;
         toast("เข้าสู่ระบบแล้ว — ยังไม่ได้ซิงค์ข้อมูล");
@@ -4298,10 +4327,12 @@ async function onSignedIn(){
     }
     if(syncOn) startSync();
     if(!state.cars.length) openOnboard();
+    busyMsg = "";
     renderAll();
     renderAccount();   /* v32: วาดการ์ดบัญชีใหม่ หลังรู้สถานะ syncOn จริง */
   }catch(e){
     console.warn("sign-in sync failed", e);
+    busyMsg = "";
     toast("ล็อกอินแล้ว แต่ยังดึงข้อมูลจากคลาวด์ไม่ได้");
     renderAccount();   /* v32: อัปเดตการ์ดแม้ดึงคลาวด์ไม่สำเร็จ */
   }
@@ -4461,6 +4492,9 @@ function renderAll(){
   renderHome(); renderHistory();
   if($("#view-stats").classList.contains("active")) renderStats();
   syncCarUI();
+  /* v33: การ์ดบัญชีขึ้นกับ syncOn ด้วย จึงต้องวาดใหม่ทุกครั้งที่สถานะเปลี่ยน
+     ไม่งั้นถ้ามี flow อื่นที่แก้ syncOn ในอนาคต จะเจอบั๊กการ์ดค้างซ้ำอีก */
+  renderAccount();
 }
 
 /* =========================================================
@@ -4476,9 +4510,11 @@ function renderAccount(){
         '<span class="nm"><b>'+esc(fbUser.displayName||"เข้าสู่ระบบแล้ว")+'</b>'+
         '<i>'+esc(fbUser.email||"")+'</i></span></div>'+
         '<p class="hint" style="margin:10px 0 12px">ข้อมูลซิงค์ขึ้นบัญชีนี้อัตโนมัติ เปลี่ยนเครื่องแล้วล็อกอินก็เจอครบ</p>'+
-        (syncOn ? '' :
-          '<div class="alert warn" style="margin:0 0 12px"><span>⚠️</span><span>ยังไม่ได้ซิงค์ข้อมูลของเครื่องนี้ขึ้นบัญชี</span></div>'+
-          '<button class="btn" id="btnUploadNow" style="margin-bottom:10px">⬆︎ อัปโหลดข้อมูลขึ้นบัญชีตอนนี้</button>')+
+        (busyMsg
+          ? '<div class="alert info" style="margin:0 0 12px"><span>⏳</span><span>'+esc(busyMsg)+'</span></div>'
+          : syncOn ? ''
+          : '<div class="alert warn" style="margin:0 0 12px"><span>⚠️</span><span>ยังไม่ได้ซิงค์ข้อมูลของเครื่องนี้ขึ้นบัญชี</span></div>'+
+            '<button class="btn" id="btnUploadNow" style="margin-bottom:10px">⬆︎ อัปโหลดข้อมูลขึ้นบัญชีตอนนี้</button>')+
         '<button class="btn small ghost" id="btnSignOut">ออกจากระบบ</button>'+
         '<div style="height:8px"></div>'+
         '<button class="btn small danger" id="btnWipeCloud">ลบข้อมูลทั้งหมดออกจากคลาวด์</button>'+
@@ -4487,11 +4523,18 @@ function renderAccount(){
     $("#btnWipeCloud").onclick = wipeCloud;
     const up = $("#btnUploadNow");
     if(up) up.onclick = async ()=>{
-      up.disabled = true; up.textContent = "กำลังอัปโหลด…";
+      busyMsg = "กำลังอัปโหลดข้อมูล…"; renderAccount();
       try{
         await migrateUp(); syncOn = true; startSync();
-        toast("อัปโหลดข้อมูลขึ้นบัญชีแล้ว");
-      }catch(e){ toast("อัปโหลดไม่สำเร็จ ลองใหม่อีกครั้ง"); }
+        const landed = await confirmSynced();
+        busyMsg = "";
+        toast(landed === false
+          ? "บันทึกไว้แล้ว — จะอัปโหลดให้อัตโนมัติเมื่อมีเน็ต"
+          : "อัปโหลดข้อมูลขึ้นบัญชีแล้ว");
+      }catch(e){
+        busyMsg = "";
+        toast("อัปโหลดไม่สำเร็จ ลองใหม่อีกครั้ง");
+      }
       renderAccount();
     };
   } else if(cloudState === "error"){
