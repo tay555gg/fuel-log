@@ -184,6 +184,20 @@ main{padding:16px 16px 24px}
   outline:none;border-color:var(--series-1);background:var(--surface-1);
 }
 .field input.calc{background:var(--accent-soft);border-style:dashed;border-color:var(--series-1)}
+/* iOS Safari ให้ input[type=date] มีความกว้างในตัวเอง ไม่ยอมหดตาม width:100%
+   ช่องวันที่จึงล้นขอบการ์ดบน iPhone (บน Android ไม่เป็น)
+   ปิด appearance เดิมแล้วคุมความกว้าง/การจัดข้อความข้างในเอง */
+.field input[type="date"]{
+  -webkit-appearance:none;appearance:none;
+  display:block;width:100%;max-width:100%;min-width:0;
+  box-sizing:border-box;text-align:left;line-height:1.25;
+}
+.field input[type="date"]::-webkit-date-and-time-value{
+  text-align:left;width:100%;margin:0;
+}
+.field input[type="date"]::-webkit-datetime-edit{padding:0;width:100%}
+.field input[type="date"]::-webkit-datetime-edit-fields-wrapper{padding:0}
+.field input[type="date"]::-webkit-calendar-picker-indicator{margin:0 0 0 auto;padding:0}
 .field textarea{font-size:16px;font-weight:500;min-height:70px;resize:vertical}
 .inline2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .suffix{position:relative}
@@ -928,6 +942,17 @@ body.no-fuel #statKind button[data-kind="fuel"],
 body.no-fuel #lvlFuel,
 body.no-fuel .costcard .costrow:nth-child(3),
 body.no-fuel .carrycard .crow:nth-of-type(1){display:none !important}
+/* รถพลังงานเดียว (น้ำมันล้วน / ไฟฟ้าล้วน) ไม่มีการ "สลับระบบ" จึงไม่ต้องมียอดทดเลย
+   และคำแนะนำที่พูดถึงอีกระบบหนึ่งต้องไม่โผล่ */
+body.no-ev #goSwitch,body.no-fuel #goSwitch,
+body.no-ev #carryCard,body.no-fuel #carryCard,
+body.no-ev #swSeg button[data-mode="ev"],
+body.no-fuel #swSeg button[data-mode="fuel"],
+body.no-ev .ev-only,body.no-fuel .fuel-only,
+body.no-ev .phev-only,body.no-fuel .phev-only{display:none !important}
+body.not-seal5 .seal5-only{display:none !important}
+body.no-ev .costcard .costrow.grand,
+body.no-fuel .costcard .costrow.grand{display:none !important}
 body.no-fuel .btnrow{grid-template-columns:1fr}
 </style>
 </head>
@@ -1058,16 +1083,16 @@ body.no-fuel .btnrow{grid-template-columns:1fr}
     <div class="costrow"><span class="k"><i class="dot fuel"></i>ตอนวิ่งด้วยน้ำมัน</span><b id="cFuel">–</b></div>
     <div class="costrow"><span class="k"><i class="dot elec"></i>ตอนวิ่งด้วยไฟฟ้า</span><b id="cElec">–</b></div>
     <div class="costrow grand"><span class="k">เฉลี่ยทุกกิโลเมตร</span><b id="cAll">–</b></div>
-    <div class="splitbar" id="cSplit"></div>
-    <p class="hint" id="cSplitLbl" style="margin:8px 0 0;text-align:center"></p>
+    <div class="splitbar phev-only" id="cSplit"></div>
+    <p class="hint phev-only" id="cSplitLbl" style="margin:8px 0 0;text-align:center"></p>
     <div id="coverWarn"></div>
   </div>
 
   <div class="tiles">
-    <div class="tile"><div class="t">เฉลี่ย กม./ลิตร</div><div class="v fuel" id="hAvg">–<small>กม./ล.</small></div></div>
-    <div class="tile"><div class="t">เฉลี่ย กม./kWh</div><div class="v elec" id="eAvg">–<small>กม./kWh</small></div></div>
-    <div class="tile"><div class="t">ค่าน้ำมันเดือนนี้</div><div class="v" id="hMonth">–<small>บาท</small></div></div>
-    <div class="tile"><div class="t">ค่าไฟเดือนนี้</div><div class="v" id="eMonth">–<small>บาท</small></div></div>
+    <div class="tile fuel-only"><div class="t">เฉลี่ย กม./ลิตร</div><div class="v fuel" id="hAvg">–<small>กม./ล.</small></div></div>
+    <div class="tile ev-only"><div class="t">เฉลี่ย กม./kWh</div><div class="v elec" id="eAvg">–<small>กม./kWh</small></div></div>
+    <div class="tile fuel-only"><div class="t">ค่าน้ำมันเดือนนี้</div><div class="v" id="hMonth">–<small>บาท</small></div></div>
+    <div class="tile ev-only"><div class="t">ค่าไฟเดือนนี้</div><div class="v" id="eMonth">–<small>บาท</small></div></div>
   </div>
 
   <div class="card carrycard" id="carryCard">
@@ -1097,8 +1122,8 @@ body.no-fuel .btnrow{grid-template-columns:1fr}
       1. เติมน้ำมัน<b>เต็มถัง</b>ทุกครั้ง<br>
       2. ก่อนออกจากปั๊ม จดตัวเลข <b>TRIP A</b> ที่หน้าจอรถ แล้วกดรีเซ็ต TRIP A เป็น 0<br>
       3. เปิดเว็บนี้ กรอก TRIP A + จำนวนลิตร + ราคา แล้วกดบันทึก<br>
-      4. ระบบคำนวณ กม./ลิตร และค่าน้ำมันต่อกิโลเมตรให้ทันที<br><br>
-      <b>สลับระบบกลางคัน?</b> กดปุ่ม <b>🔄 สลับระบบ</b> จดเลข TRIP ไว้ก่อนรีเซ็ต ระบบจะทดไว้ให้ แล้วบวกเข้ากับครั้งถัดไปเอง
+      4. ระบบคำนวณ กม./ลิตร และค่าน้ำมันต่อกิโลเมตรให้ทันที<span class="phev-only"><br><br>
+      <b>สลับระบบกลางคัน?</b> กดปุ่ม <b>🔄 สลับระบบ</b> จดเลข TRIP ไว้ก่อนรีเซ็ต ระบบจะทดไว้ให้ แล้วบวกเข้ากับครั้งถัดไปเอง</span>
     </p>
     <details class="more" style="margin-bottom:0">
       <summary>ทำไมไม่ต้องรู้ว่าเหลือน้ำมันในถังเท่าไหร่?</summary>
@@ -1149,7 +1174,7 @@ body.no-fuel .btnrow{grid-template-columns:1fr}
       <div class="suffix"><input type="number" id="fLiters" inputmode="decimal" step="0.01" min="0" placeholder="เช่น 32.45"><span class="u">ลิตร</span></div>
       <div class="gauge" id="gaugeWrap" style="display:none">
         <div class="bar"><div class="fill" id="gaugeFill" style="width:0%"></div></div>
-        <div class="lbl"><span id="gaugeTxt">0 ลิตร</span><span>ถัง 45 ลิตร</span></div>
+        <div class="lbl"><span id="gaugeTxt">0 ลิตร</span><span id="gaugeCap">ถัง 45 ลิตร</span></div>
       </div>
     </div>
 
@@ -1243,7 +1268,7 @@ body.no-fuel .btnrow{grid-template-columns:1fr}
     </div>
     <div class="gauge" id="socWrap" style="display:none;margin-top:-4px;margin-bottom:16px">
       <div class="bar"><div class="fill" id="socBase" style="width:0%;background:var(--muted);position:absolute;opacity:.45"></div><div class="fill" id="socFill" style="width:0%;background:var(--elec)"></div></div>
-      <div class="lbl"><span id="socTxt"></span><span>แบต 18.3 kWh</span></div>
+      <div class="lbl"><span id="socTxt"></span><span id="socCap">แบต 18.3 kWh</span></div>
     </div>
 
     <div id="homeFields">
@@ -1386,7 +1411,7 @@ body.no-fuel .btnrow{grid-template-columns:1fr}
     <h2>📖 วิธีใช้งาน</h2>
     <p class="hint">อ่านครั้งเดียวก็พอ · แตะหัวข้อเพื่อเปิดอ่าน</p>
 
-    <details class="more howto">
+    <details class="more howto fuel-only">
       <summary><b>⛽ เวลาเติมน้ำมัน</b> — ทำ 6 ขั้น</summary>
       <div class="inner">
         <ol class="howsteps">
@@ -1402,7 +1427,7 @@ body.no-fuel .btnrow{grid-template-columns:1fr}
       </div>
     </details>
 
-    <details class="more howto">
+    <details class="more howto ev-only">
       <summary><b>🔌 เวลาชาร์จไฟ</b> — ทำ 8 ขั้น</summary>
       <div class="inner">
         <ol class="howsteps green">
@@ -1453,11 +1478,11 @@ body.no-fuel .btnrow{grid-template-columns:1fr}
       <summary><b>❓ คำถามที่พบบ่อย</b></summary>
       <div class="inner">
         <p class="hint" style="line-height:1.7;margin:0">
-          <b>ต้องรู้ไหมว่าเหลือน้ำมันกี่ลิตร?</b> ไม่ต้อง เพราะวัดที่จุด “เต็มถัง” ทั้งสองครั้ง<br><br>
-          <b>ทำไมต้องเติมเต็มถังทุกครั้ง?</b> ถ้าเติมไม่เต็มจะไม่รู้ว่าใช้ไปเท่าไหร่จริง ตัวเลขจะเพี้ยนทันที<br><br>
-          <b>ทำไมค่าไฟต่อ กม. กับค่าน้ำมันต่อ กม. บวกกันแล้วไม่เท่าช่องรวม?</b> เพราะเป็นคนละกิโลเมตรกัน TRIP A นับเฉพาะที่วิ่งด้วยน้ำมัน TRIP B นับเฉพาะที่วิ่งด้วยไฟ ช่องรวมคือเงินทั้งหมด ÷ ระยะทั้งหมด ค่าจึงอยู่<b>ระหว่าง</b>สองตัวบน<br><br>
-          <b>ตู้ชาร์จคิดหน่วยเกิน ตู้โกงหรือเปล่า?</b> ไม่โกง พลังงานหายไปกับความร้อนตอนแปลงไฟและระบบระบายความร้อนแบต ปกติเกินราว 12–15%<br><br>
-          <b>ได้ต่ำกว่า 26.3 กม./ล. แปลว่ารถมีปัญหาไหม?</b> ไม่ใช่ 26.3 คือตัวเลขตอนแบตหมด ถ้าชาร์จสม่ำเสมอควรได้สูงกว่ามาก
+          <span class="fuel-only"><b>ต้องรู้ไหมว่าเหลือน้ำมันกี่ลิตร?</b> ไม่ต้อง เพราะวัดที่จุด “เต็มถัง” ทั้งสองครั้ง<br><br>
+          <b>ทำไมต้องเติมเต็มถังทุกครั้ง?</b> ถ้าเติมไม่เต็มจะไม่รู้ว่าใช้ไปเท่าไหร่จริง ตัวเลขจะเพี้ยนทันที<br><br></span>
+          <span class="phev-only"><b>ทำไมค่าไฟต่อ กม. กับค่าน้ำมันต่อ กม. บวกกันแล้วไม่เท่าช่องรวม?</b> เพราะเป็นคนละกิโลเมตรกัน TRIP A นับเฉพาะที่วิ่งด้วยน้ำมัน TRIP B นับเฉพาะที่วิ่งด้วยไฟ ช่องรวมคือเงินทั้งหมด ÷ ระยะทั้งหมด ค่าจึงอยู่<b>ระหว่าง</b>สองตัวบน<br><br></span>
+          <span class="ev-only"><b>ตู้ชาร์จคิดหน่วยเกิน ตู้โกงหรือเปล่า?</b> ไม่โกง พลังงานหายไปกับความร้อนตอนแปลงไฟและระบบระบายความร้อนแบต ปกติเกินราว 12–15%<br><br></span>
+          <span class="seal5-only"><b>ได้ต่ำกว่า 26.3 กม./ล. แปลว่ารถมีปัญหาไหม?</b> ไม่ใช่ 26.3 คือตัวเลขตอนแบตหมด ถ้าชาร์จสม่ำเสมอควรได้สูงกว่ามาก</span>
         </p>
       </div>
     </details>
@@ -1481,13 +1506,13 @@ body.no-fuel .btnrow{grid-template-columns:1fr}
       <label for="sCarName">ชื่อรถ</label>
       <input id="sCarName" style="font-size:16px">
     </div>
-    <div class="field" style="margin-top:12px;margin-bottom:0">
+    <div class="field fuel-only" style="margin-top:12px;margin-bottom:0">
       <label for="sTank">ความจุถังน้ำมัน (ลิตร)</label>
       <div class="suffix"><input type="number" id="sTank" step="0.1" min="1" style="font-size:16px"><span class="u">ลิตร</span></div>
     </div>
   </div>
 
-  <div class="card">
+  <div class="card ev-only" id="elecSettingsCard">
     <h2>ระบบไฟฟ้า</h2>
     <p class="hint">ใช้คำนวณค่าไฟตอนชาร์จที่บ้าน ซึ่งไม่มีมิเตอร์บอกหน่วย</p>
     <div class="field" style="margin-top:12px">
@@ -1533,16 +1558,9 @@ body.no-fuel .btnrow{grid-template-columns:1fr}
     </div>
   </div>
 
-  <div class="card">
-    <h2>ข้อมูลอ้างอิงของรถรุ่นนี้</h2>
-    <div class="kv"><span class="k">ถังน้ำมัน</span><span class="v">45 ลิตร</span></div>
-    <div class="kv"><span class="k">แบตเตอรี่ (Blade)</span><span class="v">18.3 kWh</span></div>
-    <div class="kv"><span class="k">ระยะไฟฟ้าล้วน</span><span class="v">120 กม. (NEDC)</span></div>
-    <div class="kv"><span class="k">เครื่องยนต์</span><span class="v">1.5 ลิตร DM-i</span></div>
-    <div class="kv"><span class="k">โหมดแบตหมด (HEV)</span><span class="v">26.3 กม./ล.</span></div>
-    <div class="kv"><span class="k">เท่ากับ</span><span class="v">3.8 ล./100 กม.</span></div>
-    <div class="kv"><span class="k">ชาร์จ AC สูงสุด</span><span class="v">6.6 kW</span></div>
-    <p class="hint" style="margin:12px 0 0">รถปลั๊กอินไฮบริด ยิ่งชาร์จไฟบ่อย ตัวเลข กม./ลิตร จะยิ่งสูง ค่าที่ได้แต่ละถังจึงแกว่งได้มากเป็นเรื่องปกติ</p>
+  <div class="card" id="carRefCard">
+    <h2>ข้อมูลอ้างอิงของรถคันนี้</h2>
+    <div id="carRefBody"></div>
   </div>
 
   <div class="card">
@@ -1754,8 +1772,11 @@ function useCar(carId){
   state.records = b.records; state.charges = b.charges; state.carries = b.carries;
   const c = activeCar();
   if(c){
-    if(c.tank > 0) state.settings.tank = c.tank;
-    if(c.battery > 0) state.settings.battery = c.battery;
+    /* ตั้งค่าตามคันที่เลือกเสมอ ไม่งั้นรถน้ำมันล้วนจะหยิบขนาดแบตของคันก่อนหน้ามาใช้ */
+    if(c.drivetrain === "ev")        state.settings.tank = 0;
+    else if(c.tank > 0)              state.settings.tank = c.tank;
+    if(c.drivetrain === "fuel")      state.settings.battery = 0;
+    else if(c.battery > 0)           state.settings.battery = c.battery;
     state.settings.car = carLabel(c);
   }
 }
@@ -1766,6 +1787,23 @@ function carLabel(c){
 /* รถคันนี้มีระบบไฟฟ้าไหม — ใช้ซ่อนแท็บ/ปุ่มชาร์จไฟถ้าเป็นรถน้ำมันล้วน */
 function hasEV(){ const c = activeCar(); return !c || c.drivetrain !== "fuel"; }
 function hasFuel(){ const c = activeCar(); return !c || c.drivetrain !== "ev"; }
+/* ตัวเลขอ้างอิง 26.3 กม./ล. (โหมดแบตหมด) เป็นของ BYD Seal 5 DM-i เท่านั้น
+   รถคันอื่นไม่มีตัวเลขนี้ จึงต้องไม่เอาไปเทียบหรือแสดงเป็นคำแนะนำ */
+const SEAL5_HEV_KML = 26.3;
+function isSeal5(){
+  const c = activeCar();
+  if(!c) return true;
+  const t = ((c.brand||"")+" "+(c.model||"")).toLowerCase();
+  return t.indexOf("seal") >= 0 && t.indexOf("5") >= 0 && t.indexOf("dm") >= 0;
+}
+/* โหมดพลังงานที่รถคันนี้ใช้ได้จริง — ใช้คุมทั้งยอดทดและหน้าต่างสลับระบบ */
+function allowedModes(){
+  const a = [];
+  if(hasFuel()) a.push("fuel");
+  if(hasEV()) a.push("ev");
+  return a;
+}
+function canSwitchMode(){ return allowedModes().length > 1; }
 
 /* ลบสมาชิกออกจากอาร์เรย์แบบไม่เปลี่ยน reference (สำคัญ เพราะ state.records ผูกกับ byCar อยู่) */
 function dropFrom(arr, pred){ for(let i=arr.length-1;i>=0;i--) if(pred(arr[i])) arr.splice(i,1); }
@@ -3751,6 +3789,12 @@ function renderStats(){
   const best = m[ks.indexOf(Math.max(...ks))], worst = m[ks.indexOf(Math.min(...ks))];
   const totKm=m.reduce((s,r)=>s+r.trip,0), totL=m.reduce((s,r)=>s+r.liters,0), totB=m.reduce((s,r)=>s+r.total,0);
   const avg = totKm/totL;
+  /* v34: 26.3 กม./ล. คือค่าโหมดแบตหมดของ BYD Seal 5 DM-i โดยเฉพาะ
+     รถน้ำมันล้วนหรือรถรุ่นอื่นไม่มีค่านี้ จึงต้องไม่เอาไปเทียบและไม่ต้องแสดงคำอธิบายเรื่องชาร์จไฟ */
+  const hevBench = (hasEV() && isSeal5())
+    ? '<div class="kv"><span class="k">เทียบโหมดแบตหมด ('+SEAL5_HEV_KML+' กม./ล.)</span><span class="v" style="color:'+(avg>=SEAL5_HEV_KML?"var(--good-text)":"var(--critical)")+'">'+(avg>=SEAL5_HEV_KML?"+":"")+fmt(avg-SEAL5_HEV_KML,2)+' กม./ล.</span></div>'+
+      '<p class="hint" style="margin:10px 0 0;line-height:1.55">'+SEAL5_HEV_KML+' กม./ล. คือตัวเลขตอน<b>แบตหมด</b>แล้ววิ่งด้วยน้ำมันล้วน ถ้าชาร์จไฟสม่ำเสมอควรได้<b>สูงกว่า</b>นี้มาก ถ้าได้ต่ำกว่าแปลว่าช่วงนั้นแทบไม่ได้ชาร์จ</p>'
+    : "";
 
   box.innerHTML =
   '<div class="card"><h2>สรุปภาพรวม</h2><p class="hint">คิดจากการเติม '+m.length+' ครั้งที่มีระยะ TRIP A</p>'+
@@ -3760,8 +3804,7 @@ function renderStats(){
     '<div class="kv"><span class="k">ดีที่สุด</span><span class="v" style="color:var(--good-text)">'+fmt(kml(best),2)+' กม./ล. · '+thDate(best.date)+'</span></div>'+
     '<div class="kv"><span class="k">แย่ที่สุด</span><span class="v" style="color:var(--critical)">'+fmt(kml(worst),2)+' กม./ล. · '+thDate(worst.date)+'</span></div>'+
     '<div class="kv"><span class="k">ระยะทางเฉลี่ยต่อถัง</span><span class="v">'+fmt0(totKm/m.length)+' กม.</span></div>'+
-    '<div class="kv"><span class="k">เทียบโหมดแบตหมด (26.3 กม./ล.)</span><span class="v" style="color:'+(avg>=26.3?"var(--good-text)":"var(--critical)")+'">'+(avg>=26.3?"+":"")+fmt(avg-26.3,2)+' กม./ล.</span></div>'+
-    '<p class="hint" style="margin:10px 0 0;line-height:1.55">26.3 กม./ล. คือตัวเลขตอน<b>แบตหมด</b>แล้ววิ่งด้วยน้ำมันล้วน ถ้าชาร์จไฟสม่ำเสมอควรได้<b>สูงกว่า</b>นี้มาก ถ้าได้ต่ำกว่าแปลว่าช่วงนั้นแทบไม่ได้ชาร์จ</p>'+
+    hevBench+
   '</div>'+
 
   '<div class="card"><h2>แนวโน้มอัตราสิ้นเปลือง</h2><p class="hint">กม./ลิตร ต่อการเติม 1 ครั้ง — ยิ่งสูงยิ่งประหยัด</p>'+
@@ -3903,6 +3946,11 @@ $("#mConfirm").onclick = ()=>{
   toast("ลบข้อมูลทั้งหมด "+n+" รายการแล้ว");
 };
 $("#demoBtn").onclick = ()=>{
+  /* v34: ชุดข้อมูลตัวอย่างจำลองรถปลั๊กอินไฮบริด (มีทั้งเติมน้ำมันและชาร์จไฟ)
+     ถ้าใส่ลงรถน้ำมันล้วนหรือรถไฟฟ้าล้วน จะได้ข้อมูลของระบบที่รถคันนั้นไม่มี */
+  if(!canSwitchMode()){
+    toast("ข้อมูลตัวอย่างมีไว้สำหรับรถปลั๊กอินไฮบริดเท่านั้น"); return;
+  }
   if((state.records.length||state.charges.length) && !confirm("จะเพิ่มข้อมูลตัวอย่างเข้าไปในข้อมูลที่มีอยู่ ต้องการทำต่อ?")) return;
   /* A physically consistent plug-in-hybrid picture: the car is charged about
      twice a week, so electricity covers most short trips and the 45 L tank
@@ -4059,14 +4107,31 @@ $("#useRateBtn").onclick = ()=>{
 ["sBattery","sHomeRate","sKwhPct"].forEach(id=>{
   $("#"+id).addEventListener("change", ()=>{
     const v = num($("#"+id).value);
-    if(id==="sBattery") state.settings.battery = v || 18.3;
+    if(id==="sBattery"){
+      state.settings.battery = v || 18.3;
+      const c = activeCar(); if(c && c.drivetrain !== "fuel") c.battery = state.settings.battery;
+    }
     if(id==="sHomeRate") state.settings.homeRate = v || 4.9;
     if(id==="sKwhPct") state.settings.kwhPct = (v>0 ? v : null);
-    save(); syncSettingsUI(); updateCPreview(); renderHome();
+    save(); syncSettingsUI(); updateCPreview(); renderHome(); renderCarRef();
   });
 });
-$("#sCarName").addEventListener("change", ()=>{ state.settings.car = $("#sCarName").value.trim() || DEFAULTS.car; save(); $("#hdSub").textContent = state.settings.car; });
-$("#sTank").addEventListener("change", ()=>{ state.settings.tank = num($("#sTank").value) || 45; save(); updatePreview(); });
+/* v34: ค่าพวกนี้ต้องเขียนกลับเข้า "คันที่เลือกอยู่" ด้วย
+   ของเดิมเขียนลง state.settings อย่างเดียว พอสลับคันแล้ว useCar() ทับกลับ ชื่อ/ถัง/แบตที่แก้ไว้จึงหายไป */
+$("#sCarName").addEventListener("change", ()=>{
+  const nm = $("#sCarName").value.trim();
+  const c = activeCar();
+  if(c){ c.brand = nm || carLabel(c); c.model = ""; }
+  state.settings.car = nm || DEFAULTS.car;
+  save(); renderCars(); syncCarUI();
+  $("#hdSub").textContent = state.settings.car;
+});
+$("#sTank").addEventListener("change", ()=>{
+  const v = num($("#sTank").value) || 45;
+  state.settings.tank = v;
+  const c = activeCar(); if(c && c.drivetrain !== "ev") c.tank = v;
+  save(); updatePreview(); renderCarRef();
+});
 
 /* =========================================================
    9b. ยอดทด — การ์ดหน้าแรก, กล่องสรุปในฟอร์ม, และหน้าต่างสลับระบบ
@@ -4094,7 +4159,9 @@ function renderCarry(){
   if(!$("#carryFuel")) return;
   $("#carryFuel").textContent = fmt(carrySum("fuel"),1)+" กม.";
   $("#carryElec").textContent = fmt(carrySum("ev"),1)+" กม.";
-  const list = pendingCarries("fuel").concat(pendingCarries("ev"))
+  const modes = allowedModes();
+  const list = (modes.indexOf("fuel")<0 ? [] : pendingCarries("fuel"))
+    .concat(modes.indexOf("ev")<0 ? [] : pendingCarries("ev"))
     .sort((a,b)=> a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
   $("#carryList").innerHTML = list.length
     ? list.map(c=>'<div class="ci"><span>'+(c.mode==="fuel" ? "⛽" : "\uD83D\uDD0C")+' '+
@@ -4127,7 +4194,9 @@ function swPrev(){
     : (cur>0 ? "ตอนนี้ทดไว้ "+fmt(cur,1)+" กม." : "");
 }
 function openSwitch(){
-  swMode = "fuel";
+  /* รถพลังงานเดียวสลับระบบไม่ได้ ปุ่มถูกซ่อนอยู่แล้ว แต่กันไว้อีกชั้นเผื่อถูกเรียกด้วยวิธีอื่น */
+  if(!canSwitchMode()){ toast("รถคันนี้ใช้พลังงานอย่างเดียว จึงไม่มีการสลับระบบ"); return; }
+  swMode = allowedModes()[0];
   $("#swKm").value = "";
   $("#swDate").value = todayISO();
   swSync();
@@ -4135,12 +4204,19 @@ function openSwitch(){
   setTimeout(()=>$("#swKm").focus(), 120);
 }
 $("#goSwitch").onclick = openSwitch;
-$$("#swSeg button").forEach(b=> b.onclick = ()=>{ swMode = b.dataset.mode; swSync(); });
+$$("#swSeg button").forEach(b=> b.onclick = ()=>{
+  if(allowedModes().indexOf(b.dataset.mode) < 0) return;
+  swMode = b.dataset.mode; swSync();
+});
 $("#swKm").addEventListener("input", swPrev);
 $("#swCancel").onclick = ()=>{ $("#switchModal").hidden = true; };
 $("#switchModal").onclick = e =>{ if(e.target.id === "switchModal") $("#switchModal").hidden = true; };
 $("#swSave").onclick = ()=>{
   const t = num($("#swKm").value);
+  /* v34: กันการทดระยะด้วยระบบที่รถคันนี้ไม่มี (เช่น รถน้ำมันล้วนทดระยะไฟฟ้า) */
+  if(allowedModes().indexOf(swMode) < 0){
+    toast("รถคันนี้ไม่มีระบบ" + (swMode==="ev" ? "ไฟฟ้า" : "น้ำมัน")); return;
+  }
   if(!(t>0)){ toast("กรุณากรอกเลข TRIP ที่อ่านได้"); shake($("#swKm")); $("#swKm").focus(); return; }
   if(t > 2000 && !confirm("ระยะ "+fmt(t,1)+" กม. ดูสูงผิดปกติ — ยืนยันหรือไม่?")) return;
   state.carries.push({
@@ -4575,6 +4651,31 @@ function switchCar(id){
   toast("สลับไปที่ " + carLabel(activeCar()));
 }
 
+/* การ์ด "ข้อมูลอ้างอิงของรถคันนี้" — เดิมเป็นสเปก BYD Seal 5 DM-i แบบตายตัว
+   ทำให้รถคันอื่น (โดยเฉพาะรถน้ำมันล้วน) เห็นข้อมูลแบตเตอรี่และคำแนะนำเรื่องชาร์จไฟที่ไม่เกี่ยวกับตัวเอง */
+function renderCarRef(){
+  const box = $("#carRefBody"); if(!box) return;
+  const c = activeCar();
+  const d = c ? (c.drivetrain || "phev") : "phev";
+  const kv = (k,v) => '<div class="kv"><span class="k">'+k+'</span><span class="v">'+v+'</span></div>';
+  let h = "";
+  h += kv("ชนิดพลังงาน", d === "fuel" ? "น้ำมันอย่างเดียว" : d === "ev" ? "ไฟฟ้าล้วน" : "ปลั๊กอินไฮบริด");
+  if(d !== "ev")   h += kv("ถังน้ำมัน", fmt(state.settings.tank || 45, 1).replace(/\.0$/,"") + " ลิตร");
+  if(d !== "fuel") h += kv("แบตเตอรี่", fmt(state.settings.battery || 18.3, 1) + " kWh");
+  if(isSeal5()){
+    h += '<div class="kv"><span class="k">ระยะไฟฟ้าล้วน</span><span class="v">120 กม. (NEDC)</span></div>'+
+         '<div class="kv"><span class="k">เครื่องยนต์</span><span class="v">1.5 ลิตร DM-i</span></div>'+
+         '<div class="kv"><span class="k">โหมดแบตหมด (HEV)</span><span class="v">'+SEAL5_HEV_KML+' กม./ล.</span></div>'+
+         '<div class="kv"><span class="k">เท่ากับ</span><span class="v">3.8 ล./100 กม.</span></div>'+
+         '<div class="kv"><span class="k">ชาร์จ AC สูงสุด</span><span class="v">6.6 kW</span></div>';
+  }
+  h += '<p class="hint" style="margin:12px 0 0">' + (
+        d === "phev" ? "รถปลั๊กอินไฮบริด ยิ่งชาร์จไฟบ่อย ตัวเลข กม./ลิตร จะยิ่งสูง ค่าที่ได้แต่ละถังจึงแกว่งได้มากเป็นเรื่องปกติ"
+      : d === "ev"   ? "รถไฟฟ้าล้วน แอปจะคิดเฉพาะค่าไฟและระยะทางที่วิ่งด้วยไฟฟ้า"
+      : "รถน้ำมันอย่างเดียว แอปซ่อนส่วนของไฟฟ้าไว้ทั้งหมดแล้ว") + '</p>';
+  box.innerHTML = h;
+}
+
 /* ---------- แบบสอบถามรถคันแรก ---------- */
 let onboardExtra = false;
 function openOnboard(extra){
@@ -4626,9 +4727,25 @@ function syncCarUI(){
   const ev = hasEV(), fu = hasFuel();
   document.body.classList.toggle("no-ev", !ev);
   document.body.classList.toggle("no-fuel", !fu);
+  document.body.classList.toggle("not-seal5", !isSeal5());
+  const gc = $("#gaugeCap");
+  if(gc) gc.textContent = "ถัง " + fmt(state.settings.tank || 45, 1).replace(/\.0$/,"") + " ลิตร";
+  const sc = $("#socCap");
+  if(sc) sc.textContent = "แบต " + fmt(state.settings.battery || 18.3, 1) + " kWh";
+  renderCarRef();
   const c = activeCar();
   if(c){
     const d = $("#dashCar"); if(d) d.textContent = carLabel(c);
+    /* v34: ป้ายชนิดพลังงานและบรรทัดรองต้องเป็นของคันที่เลือก ไม่ใช่ข้อความ BYD แบบตายตัว */
+    const dt = c.drivetrain || "phev";
+    const bd = $("#dashBadge");
+    if(bd) bd.textContent = dt === "fuel" ? "น้ำมัน" : dt === "ev" ? "EV" : "PHEV";
+    const ds = $("#dashSub");
+    if(ds) ds.textContent = isSeal5()
+      ? "Super Hybrid · Premium · สีขาว"
+      : (dt === "fuel" ? "เครื่องยนต์น้ำมัน" : dt === "ev" ? "ไฟฟ้าล้วน" : "ปลั๊กอินไฮบริด")
+        + (dt !== "ev" && (state.settings.tank > 0) ? " · ถัง " + fmt(state.settings.tank,1).replace(/\.0$/,"") + " ลิตร" : "")
+        + (dt !== "fuel" && (state.settings.battery > 0) ? " · แบต " + fmt(state.settings.battery,1) + " kWh" : "");
     const t = $("#hdSub");
     if(t && $("#view-home").classList.contains("active")) t.textContent = carLabel(c);
   }
