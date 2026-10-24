@@ -1,14 +1,14 @@
 /* Offline-first service worker.
    The app is one HTML file plus icons, so the whole shell is precached.
    Bump CACHE when index.html changes — that is what makes an update reach the phone. */
-const CACHE = 'fuel-log-v34';
+const CACHE = 'fuel-log-v36';
 const SHELL = [
   './',
   './index.html',
   './manifest.webmanifest',
-  './icon-192.png',
-  './icon-512.png',
-  './apple-touch-icon.png'
+  './icon-192.png?v=34',
+  './icon-512.png?v=34',
+  './apple-touch-icon.png?v=34'
 ];
 
 self.addEventListener('install', e => {
