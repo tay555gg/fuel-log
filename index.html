@@ -1394,9 +1394,10 @@ header.top .brand{width:44px;height:44px;flex:0 0 44px;border-radius:10px}
 .dash .dashbadge{background:rgba(255,255,255,.12);border:0;color:#fff;border-radius:0;
   font-family:var(--serif);font-size:12px;font-weight:700;letter-spacing:.14em;padding:4px 9px}
 .dash .dashcar{font-size:clamp(40px,12.8vw,52px);letter-spacing:-.04em;line-height:.98;margin-top:10px}
-.dash .carart{width:152%;max-width:none;margin:6px -26% 0;filter:drop-shadow(0 18px 24px rgba(0,0,0,.6))}
+/* v38: รถขนาดปกติ เต็มความกว้างพอดี ไม่ล้นขอบจอ และไม่เบลอล้อ (บน iPhone ดูเหมือนรูปเสีย) */
+.dash .carart{width:100%;max-width:100%;margin:18px 0 14px;filter:drop-shadow(0 14px 18px rgba(0,0,0,.55))}
 /* เบลอครึ่งล่างของรถ แบบรูปนักแข่งในภาพตัวอย่าง */
-.carblur{position:relative;z-index:2;height:130px;margin:-122px -20px 0;pointer-events:none;
+.carblur{display:none;position:relative;z-index:2;height:130px;margin:-122px -20px 0;pointer-events:none;
   backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
   -webkit-mask:linear-gradient(to bottom,transparent 0%,#000 50%);mask:linear-gradient(to bottom,transparent 0%,#000 50%)}
 .dash .modes{position:relative;z-index:3;margin:0 0 12px}
