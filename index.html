@@ -460,11 +460,6 @@ button.addtrip.elec{border-color:var(--elec-ink);color:var(--elec-ink)}
 /* column widths for the charge table live in the responsive block at the end of the sheet */
 table.tbl.dense.elecband .estmark{display:block;font-size:9.5px;font-weight:600;color:var(--muted);line-height:1.1;margin-top:1px}
 table.tbl.dense.elecband td.soc{font-size:10.5px;font-weight:700;white-space:nowrap}
-table.tbl.dense.elecband td.soc .gain{display:none}
-@media (max-width:379px){
-  table.tbl.dense.elecband td.soc .full{display:none}
-  table.tbl.dense.elecband td.soc .gain{display:inline}
-}
 table.tbl.dense.elecband td.st .d{font-size:12.5px}
 table.tbl.dense.elecband td.st .s{font-size:10.5px}
 /* step-by-step arithmetic, shown rather than hidden */
@@ -1490,6 +1485,65 @@ header.top .brand{width:44px;height:44px;flex:0 0 44px;border-radius:10px}
 .seg button[aria-pressed="true"]{border-radius:2px}
 .field input,.field select,.field textarea{border-radius:2px}
 
+
+/* =========================================================================
+   v39 · ตารางประวัติแบบสองบรรทัดต่อรายการ (class "two")
+   บรรทัดแรก = วันที่ + สถานที่ เต็มความกว้าง · บรรทัดสอง = ตัวเลขทุกคอลัมน์
+   คอลัมน์แรกไม่ต้องแบ่งที่ให้ชื่อปั๊มอีกแล้ว จึงเพิ่ม บาท/กม. ได้โดยตัวเลขไม่เล็กลง
+   ========================================================================= */
+table.tbl.dense.two,table.tbl.dense.grouped.two,table.tbl.dense.elecband.two{font-size:13px}
+table.tbl.dense.two th:nth-child(n),table.tbl.dense.two td:nth-child(n){width:auto}
+table.tbl.dense.two th:nth-child(1){width:17%}
+table.tbl.dense.two th:nth-child(2){width:15.5%}
+table.tbl.dense.two th:nth-child(3){width:16%}
+table.tbl.dense.two th:nth-child(4){width:18.5%}
+table.tbl.dense.two th:nth-child(5){width:16.5%}
+table.tbl.dense.two th:nth-child(6){width:16.5%}
+table.tbl.dense.elecband.two th:nth-child(1){width:17%}
+table.tbl.dense.elecband.two th:nth-child(2){width:12%}
+table.tbl.dense.elecband.two th:nth-child(3){width:14.5%}
+table.tbl.dense.elecband.two th:nth-child(4){width:13%}
+table.tbl.dense.elecband.two th:nth-child(5){width:14.5%}
+table.tbl.dense.elecband.two th:nth-child(6){width:14%}
+table.tbl.dense.elecband.two th:nth-child(7){width:15%}
+table.tbl.dense.two tr.colhead th{font-size:11px;padding:7px 2px 6px}
+table.tbl.dense.two tr.colhead th:last-child,table.tbl.dense.two td:last-child{padding-right:6px}
+table.tbl.dense.two tr.colhead th:first-child{padding-left:10px;text-align:left}
+table.tbl.dense.two tr.rnum td:first-child,table.tbl.dense.two tr.snum td:first-child{text-align:left}
+/* รายการที่ยังไม่มีเลข TRIP: ปุ่ม "＋ เพิ่มระยะ" อยู่ขวาสุดของบรรทัดหัว ช่องระยะแสดงขีด */
+table.tbl.dense.two tr.rhead td{position:relative}
+table.tbl.dense.two tr.rhead button.addtrip{float:right;width:auto;max-width:none;margin:-2px 0 0 8px;padding:6px 10px;font-size:12px}
+/* บรรทัดหัวของรายการ */
+table.tbl.dense.two tr.rhead td{
+  text-align:left;white-space:normal;overflow:visible;text-overflow:clip;
+  border-bottom:0 !important;padding:10px 6px 0 10px;line-height:1.3;
+}
+table.tbl.dense.two tr.rhead td .d{display:inline;font-size:14px;font-weight:750;white-space:nowrap;margin-right:8px}
+table.tbl.dense.two tr.rhead td .s{display:inline;font-size:12.5px;font-weight:600;color:var(--text-secondary);
+  white-space:normal;overflow:visible;overflow-wrap:anywhere}
+/* บรรทัดตัวเลข */
+table.tbl.dense.two tr.rnum td{padding-top:3px;padding-bottom:10px;font-variant-numeric:tabular-nums}
+table.tbl.dense.two tr.rnum.hasnote td{border-bottom:0 !important;padding-bottom:4px}
+table.tbl.dense.two tr.noterow td{padding:0 6px 9px 10px}
+/* % แบต แสดงเป็น +39 (เพิ่มขึ้นกี่ %) ตัวเท่ากับตัวเลขช่องอื่น */
+table.tbl.dense.elecband.two td.soc{font-size:inherit;font-weight:700}
+table.tbl.dense.elecband.two .estmark{font-size:10px}
+/* แถวรวมของเดือน: ป้ายอยู่บรรทัดบน ตัวเลขอยู่บรรทัดล่าง */
+table.tbl.dense.two tr.msum.slab td{
+  text-align:left;border-radius:0 !important;padding:8px 6px 0 10px;font-size:12px;
+}
+table.tbl.dense.two tr.msum.snum td{border-top:0;padding-top:2px;padding-bottom:9px;font-size:.92em}
+table.tbl.dense.two tr.msum.snum td:first-child{color:inherit;font-size:.92em}
+/* ตารางไฟฟ้ามี 7 คอลัมน์ ยอดรวมหลายปีเป็นเลขยาว จึงใช้ตัวเล็กกว่าอีกขั้น */
+table.tbl.dense.elecband.two tr.msum.snum td,table.tbl.dense.elecband.two tr.msum.snum td:first-child,table.tbl.dense.elecband.two tfoot tr.snum td{font-size:.88em}
+/* แถวรวมท้ายตาราง */
+table.tbl.dense.two tfoot tr.slab td{text-align:left;font-weight:800;padding:10px 6px 0 14px;font-size:12.5px}
+table.tbl.dense.two tfoot tr.snum td{border-top:0;padding-top:2px;font-size:.92em}
+table.tbl.dense.two tfoot tr.snum td:first-child{padding-left:14px}
+@media (max-width:339px){
+  table.tbl.dense.two,table.tbl.dense.grouped.two,table.tbl.dense.elecband.two{font-size:12px}
+  table.tbl.dense.two tr.colhead th{font-size:10px}
+}
 </style>
 </head>
 <body>
@@ -3444,13 +3498,32 @@ $$("#histSeg button").forEach(b=> b.onclick = ()=>{
 
 /* v36: หัวคอลัมน์ของตารางประวัติ — ใช้ทั้งเป็นแถวกำหนดความกว้าง (ซ่อนไว้)
    และเป็นหัวตารางซ้ำใต้แถบเดือนทุกเดือน เลื่อนลงไปเดือนไหนก็ยังรู้ว่าเลขไหนคืออะไร */
-const FUEL_COLS = ["วันที่ / ปั๊ม","ระยะ<br>(กม.)","ลิตร","ราคา/<br>ลิตร","ยอดเงิน<br>(บาท)","กม./<br>ลิตร"];
-const ELEC_COLS = ["วันที่ /<br>ที่ชาร์จ","ระยะ<br>(กม.)","% แบต","kWh","ราคา/<br>หน่วย","ค่าไฟ<br>(บาท)","กม./<br>kWh"];
+/* v39: ตารางประวัติมีแต่คอลัมน์ตัวเลข — วันที่กับสถานที่ย้ายไปอยู่บรรทัดหัวของแต่ละรายการ */
+const FUEL_COLS = ["ระยะ<br>(กม.)","ลิตร","ราคา/<br>ลิตร","ยอดเงิน<br>(บาท)","กม./<br>ลิตร","บาท/<br>กม."];
+const ELEC_COLS = ["ระยะ<br>(กม.)","% แบต","kWh","ราคา/<br>หน่วย","ค่าไฟ<br>(บาท)","บาท/<br>กม.","กม./<br>kWh"];
 function sizerHead(cols){
-  return '<thead class="sizer"><tr>'+cols.map((c,i)=>'<th'+(i===0?' style="text-align:left"':'')+'>'+c+'</th>').join("")+'</tr></thead>';
+  return '<thead class="sizer"><tr>'+cols.map(c=>'<th>'+c+'</th>').join("")+'</tr></thead>';
 }
 function colHeadRow(cols){
-  return '<tr class="colhead">'+cols.map((c,i)=>'<th scope="col"'+(i===0?' style="text-align:left"':'')+'>'+c+'</th>').join("")+'</tr>';
+  return '<tr class="colhead">'+cols.map(c=>'<th scope="col">'+c+'</th>').join("")+'</tr>';
+}
+/* v39: บาท/กม. ของการเติมหรือชาร์จหนึ่งครั้ง = เงินที่จ่ายครั้งนั้น ÷ ระยะ TRIP ของครั้งนั้น */
+function bahtKm(x){ return (x && x.trip > 0 && x.total >= 0) ? x.total / x.trip : null; }
+/* v39: หนึ่งรายการ = บรรทัดหัว (วันที่ + สถานที่ เต็มความกว้าง) แล้วตามด้วยบรรทัดตัวเลข
+   ตารางจึงเหลือแต่คอลัมน์ตัวเลข ใส่ บาท/กม. เพิ่มได้โดยตัวเลขไม่ต้องเล็กลง */
+function histRow(n, cls, head, nums, note){
+  const c = cls ? ' '+cls : '';
+  return '<tr class="rhead'+c+'"><td colspan="'+n+'" class="st">'+head+'</td></tr>'+
+    '<tr class="rnum'+c+(note?' hasnote':'')+'">'+nums+'</tr>'+
+    (note?'<tr class="noterow'+c+'"><td colspan="'+n+'">📝 '+note+'</td></tr>':'');
+}
+/* ยอดรวมลิตร/kWh: ทศนิยม 1 ตำแหน่ง แต่พอเกินพันให้ปัดเป็นจำนวนเต็ม เลขจะได้ไม่ยาวเกินช่อง */
+function fmtSum(v){ return v >= 1000 ? fmt0(v) : fmt(v,1); }
+/* แถวรวม: ป้ายอยู่บรรทัดบน ตัวเลขอยู่บรรทัดล่าง (trCls = "msum" สำหรับรวมรายเดือน, "" สำหรับท้ายตาราง) */
+function histSum(n, trCls, label, nums){
+  const c = trCls ? trCls+' ' : '';
+  return '<tr class="'+c+'slab"><td colspan="'+n+'">'+label+'</td></tr>'+
+    '<tr class="'+c+'snum">'+nums+'</tr>';
 }
 /* ราคาต่อหน่วยของการชาร์จหนึ่งครั้ง — ใช้อัตราที่บันทึกไว้ ถ้าไม่มีค่อยคิดจากยอดเงิน ÷ หน่วย */
 function unitPrice(c){
@@ -3489,9 +3562,10 @@ function renderHistory(){
     const esc = s => (s||"").replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
     tbox.innerHTML = '<div class="card" style="padding:14px"><h2>ประวัติการเติมทั้งหมด</h2>'+
       '<p class="hint">เรียงจากครั้งล่าสุดขึ้นก่อน</p>'+
-      '<table class="tbl dense grouped warm">'+
+      '<table class="tbl dense grouped warm two">'+
       sizerHead(FUEL_COLS)+'<tbody>'+
       (()=>{
+        const N = FUEL_COLS.length;
         const by = {};
         rs.forEach(r=>{ const k=(r.date||"").slice(0,7); (by[k] || (by[k]=[])).push(r); });
         return Object.keys(by).sort().reverse().map(ym=>{
@@ -3499,44 +3573,48 @@ function renderHistory(){
           const gm = g.filter(r=>r.trip>0 && r.liters>0);
           const km = gm.reduce((s,r)=>s+r.trip,0);
           const litM = gm.reduce((s,r)=>s+r.liters,0);
+          const bahtM = gm.reduce((s,r)=>s+r.total,0);
           const litAll = g.reduce((s,r)=>s+r.liters,0);
           const baht = g.reduce((s,r)=>s+r.total,0);
-          return '<tr class="mhead"><td colspan="6">'+thMonth(ym)+' · '+g.length+' ครั้ง</td></tr>'+
+          return '<tr class="mhead"><td colspan="'+N+'">'+thMonth(ym)+' · '+g.length+' ครั้ง</td></tr>'+
             colHeadRow(FUEL_COLS)+
             g.map(r=>{
-              const k = kml(r);
-              return '<tr'+(k===null?' class="nomeasure"':'')+'>'+
-                '<td class="st"><span class="d">'+thDateMini(r.date)+'</span>'+
-                  (r.station?'<span class="s">'+esc(r.station)+'</span>':'')+'</td>'+
-                '<td>'+(r.trip>0?fmt(r.trip,0):'<button class="addtrip" data-addtrip="'+r.id+'" title="เติมเลข TRIP A ย้อนหลัง">＋ เพิ่ม</button>')+'</td>'+
+              const k = kml(r), bk = bahtKm(r);
+              return histRow(N, k===null?'nomeasure':'',
+                '<span class="d">'+thDateMini(r.date)+'</span> '+(r.station?'<span class="s">'+esc(r.station)+'</span>':'')+
+                  (!(r.trip>0)?'<button class="addtrip" data-addtrip="'+r.id+'" title="เติมเลข TRIP A ย้อนหลัง">＋ เพิ่มระยะ</button>':''),
+                '<td>'+(r.trip>0?fmt(r.trip,0):'—')+'</td>'+
                 '<td>'+fmt(r.liters,2)+'</td>'+
                 '<td>'+fmt(r.price,2)+'</td>'+
                 '<td style="font-weight:750">'+fmt0(r.total)+'</td>'+
                 '<td style="font-weight:800;color:'+(k===null?'var(--muted)':'var(--series-1)')+'">'+(k===null?"—":fmt(k,2))+'</td>'+
-              '</tr>'+
-              (r.note?'<tr class="noterow'+(k===null?' nomeasure':'')+'"><td colspan="6">📝 '+esc(r.note)+'</td></tr>':'');
+                '<td style="font-weight:800;color:'+(bk===null?'var(--muted)':'var(--series-2)')+'">'+(bk===null?"—":fmt(bk,2))+'</td>',
+                r.note?esc(r.note):'');
             }).join("")+
-            '<tr class="msum">'+
-              '<td style="text-align:left">รวม / เฉลี่ย</td>'+
+            histSum(N, 'msum', 'รวม / เฉลี่ย',
               '<td>'+(km?fmt0(km):"—")+'</td>'+
-              '<td>'+fmt(litAll,1)+'</td>'+
+              '<td>'+fmtSum(litAll)+'</td>'+
               '<td>'+(litAll>0?fmt(baht/litAll,2):"—")+'</td>'+
               '<td>'+fmt0(baht)+'</td>'+
               '<td style="color:var(--series-1)">'+(litM>0?fmt(km/litM,2):"—")+'</td>'+
-            '</tr>'+
-            '<tr class="gap"><td colspan="6"></td></tr>';
+              '<td style="color:var(--series-2)">'+(km>0?fmt(bahtM/km,2):"—")+'</td>')+
+            '<tr class="gap"><td colspan="'+N+'"></td></tr>';
         }).join("");
       })()+
-      '</tbody><tfoot><tr>'+
-        '<td style="text-align:left;font-weight:800">รวม '+rs.length+' ครั้ง</td>'+
-        '<td style="font-weight:800">'+fmt0(m.reduce((s,r)=>s+r.trip,0))+'</td>'+
-        '<td style="font-weight:800">'+fmt(rs.reduce((s,r)=>s+r.liters,0),1)+'</td>'+
-        '<td>—</td>'+
-        '<td style="font-weight:800">'+fmt0(rs.reduce((s,r)=>s+r.total,0))+'</td>'+
-        '<td style="font-weight:800;color:var(--series-1)">'+
-          (m.length? fmt(m.reduce((s,r)=>s+r.trip,0)/m.reduce((s,r)=>s+r.liters,0),2) : "—")+'</td>'+
-      '</tr></tfoot></table>'+
-      (rs.some(r=>kml(r)===null)?'<p class="scrollhint">แถวสีจาง = ครั้งที่ไม่มีเลข TRIP A จึงคำนวณ กม./ลิตร ไม่ได้ — ถ้านึกออกทีหลังว่าวิ่งไปเท่าไหร่ กด <b>＋ เพิ่ม</b> ในช่องระยะเพื่อเติมย้อนหลังได้</p>':'')+
+      '</tbody><tfoot>'+
+      (()=>{
+        const tKm = m.reduce((s,r)=>s+r.trip,0), tLm = m.reduce((s,r)=>s+r.liters,0), tBm = m.reduce((s,r)=>s+r.total,0);
+        const tL = rs.reduce((s,r)=>s+r.liters,0), tB = rs.reduce((s,r)=>s+r.total,0);
+        return histSum(FUEL_COLS.length, '', 'รวม '+rs.length+' ครั้ง',
+          '<td style="font-weight:800">'+fmt0(tKm)+'</td>'+
+          '<td style="font-weight:800">'+fmtSum(tL)+'</td>'+
+          '<td style="font-weight:800">'+(tL>0?fmt(tB/tL,2):"—")+'</td>'+
+          '<td style="font-weight:800">'+fmt0(tB)+'</td>'+
+          '<td style="font-weight:800;color:var(--series-1)">'+(tLm>0?fmt(tKm/tLm,2):"—")+'</td>'+
+          '<td style="font-weight:800;color:var(--series-2)">'+(tKm>0?fmt(tBm/tKm,2):"—")+'</td>');
+      })()+
+      '</tfoot></table>'+
+      (rs.some(r=>kml(r)===null)?'<p class="scrollhint">แถวสีจาง = ครั้งที่ไม่มีเลข TRIP A จึงคำนวณ กม./ลิตร และ บาท/กม. ไม่ได้ — ถ้านึกออกทีหลังว่าวิ่งไปเท่าไหร่ กด <b>＋ เพิ่มระยะ</b> ที่มุมขวาของรายการนั้นเพื่อเติมย้อนหลังได้</p>':'')+
       '<button class="btn small ghost" id="toCards" style="margin-top:12px">✏️ แก้ไข / ลบรายการ</button></div>';
     $("#toCards").onclick = ()=>{ histMode="card"; localStorage.setItem(KEY+".histMode","card"); renderHistory(); };
     tbox.querySelectorAll("[data-addtrip]").forEach(b=> b.onclick = ()=>openAddTrip(b.dataset.addtrip));
@@ -3765,7 +3843,7 @@ function renderHistElec(){
     return;
   }
   const kwhAll = cs.reduce((s,c)=>s+c.kwh,0), bahtAll = cs.reduce((s,c)=>s+c.total,0);
-  const km = cm.reduce((s,c)=>s+c.trip,0), kwhM = cm.reduce((s,c)=>s+c.kwh,0);
+  const km = cm.reduce((s,c)=>s+c.trip,0), kwhM = cm.reduce((s,c)=>s+c.kwh,0), bahtM = cm.reduce((s,c)=>s+c.total,0);
   const f = kwhPerPct(), eff = chargeEff();
   const row=(k,v,hl)=>'<tr><td style="text-align:left;font-weight:650;color:var(--text-secondary)">'+k+'</td>'+
     '<td style="font-weight:'+(hl?800:700)+';'+(hl?'color:var(--elec-ink);font-size:15px':'')+'">'+v+'</td></tr>';
@@ -3800,50 +3878,53 @@ function renderHistElec(){
 
   '<div class="card" style="padding:14px"><h2>ประวัติการชาร์จทั้งหมด</h2>'+
     '<p class="hint">เรียงจากครั้งล่าสุดขึ้นก่อน · แถบสีเขียวคือแต่ละเดือน</p>'+
-    '<table class="tbl dense grouped warm elecband">'+
+    '<table class="tbl dense grouped warm elecband two">'+
     sizerHead(ELEC_COLS)+'<tbody>'+
     (()=>{
+      const N = ELEC_COLS.length;
       const by = {};
       cs.forEach(c=>{ const k=(c.date||"").slice(0,7); (by[k]||(by[k]=[])).push(c); });
       return Object.keys(by).sort().reverse().map(ym=>{
         const g = by[ym], gm = g.filter(c=>c.trip>0 && c.kwh>0);
-        const gkm = gm.reduce((s,c)=>s+c.trip,0), gkwhM = gm.reduce((s,c)=>s+c.kwh,0);
+        const gkm = gm.reduce((s,c)=>s+c.trip,0), gkwhM = gm.reduce((s,c)=>s+c.kwh,0), gbM = gm.reduce((s,c)=>s+c.total,0);
         const gkwh = g.reduce((s,c)=>s+c.kwh,0), gb = g.reduce((s,c)=>s+c.total,0);
-        return '<tr class="mhead"><td colspan="7">'+thMonth(ym)+' · '+g.length+' ครั้ง</td></tr>'+
+        return '<tr class="mhead"><td colspan="'+N+'">'+thMonth(ym)+' · '+g.length+' ครั้ง</td></tr>'+
           colHeadRow(ELEC_COLS)+
           g.map(c=>{
-            const k = kmkwh(c);
-            return '<tr'+(k===null?' class="nomeasure"':'')+'>'+
-              '<td class="st"><span class="d">'+thDayMon(c.date)+'</span>'+
-                '<span class="s">'+(c.place==="home"?"🏠 ที่บ้าน":"⚡ "+ESC(c.station||"ตู้สาธารณะ"))+'</span></td>'+
-              '<td>'+(c.trip>0?fmt0(c.trip):'<button class="addtrip elec" data-addtripb="'+c.id+'">＋ เพิ่ม</button>')+'</td>'+
-              '<td class="soc"><span class="full">'+c.socFrom+'→'+c.socTo+'</span>'+
-                '<span class="gain">+'+(c.socTo-c.socFrom)+'</span></td>'+
+            const k = kmkwh(c), bk = bahtKm(c);
+            return histRow(N, k===null?'nomeasure':'',
+              '<span class="d">'+thDayMon(c.date)+'</span> '+
+                '<span class="s">'+(c.place==="home"?"🏠 ที่บ้าน":"⚡ "+ESC(c.station||"ตู้สาธารณะ"))+'</span>'+
+                (!(c.trip>0)?'<button class="addtrip elec" data-addtripb="'+c.id+'" title="เติมเลข TRIP B ย้อนหลัง">＋ เพิ่มระยะ</button>':''),
+              '<td>'+(c.trip>0?fmt0(c.trip):'—')+'</td>'+
+              '<td class="soc">+'+(c.socTo-c.socFrom)+'</td>'+
               '<td>'+fmt(c.kwh,2)+(c.metered?"":'<span class="estmark">ประมาณ</span>')+'</td>'+
               '<td>'+(unitPrice(c)!==null?fmt(unitPrice(c),2):"—")+'</td>'+
               '<td style="font-weight:750">'+fmt0(c.total)+'</td>'+
-              '<td style="font-weight:800;color:'+(k===null?'var(--muted)':'var(--elec-ink)')+'">'+(k===null?"—":fmt(k,2))+'</td>'+
-            '</tr>'+
-            (c.note?'<tr class="noterow'+(k===null?' nomeasure':'')+'"><td colspan="7">📝 '+ESC(c.note)+'</td></tr>':'');
+              '<td style="font-weight:800;color:'+(bk===null?'var(--muted)':'var(--series-2)')+'">'+(bk===null?"—":fmt(bk,2))+'</td>'+
+              '<td style="font-weight:800;color:'+(k===null?'var(--muted)':'var(--elec-ink)')+'">'+(k===null?"—":fmt(k,2))+'</td>',
+              c.note?ESC(c.note):'');
           }).join("")+
-          '<tr class="msum"><td style="text-align:left">รวม / เฉลี่ย</td>'+
+          histSum(N, 'msum', 'รวม / เฉลี่ย',
             '<td>'+(gkm?fmt0(gkm):"—")+'</td><td>—</td>'+
-            '<td>'+fmt(gkwh,1)+'</td>'+
+            '<td>'+fmtSum(gkwh)+'</td>'+
             '<td>'+(gkwh>0?fmt(gb/gkwh,2):"—")+'</td>'+
             '<td>'+fmt0(gb)+'</td>'+
-            '<td style="color:var(--elec-ink)">'+(gkwhM>0?fmt(gkm/gkwhM,2):"—")+'</td></tr>'+
-          '<tr class="gap"><td colspan="7"></td></tr>';
+            '<td style="color:var(--series-2)">'+(gkm>0?fmt(gbM/gkm,2):"—")+'</td>'+
+            '<td style="color:var(--elec-ink)">'+(gkwhM>0?fmt(gkm/gkwhM,2):"—")+'</td>')+
+          '<tr class="gap"><td colspan="'+N+'"></td></tr>';
       }).join("");
     })()+
-    '</tbody><tfoot><tr>'+
-      '<td style="text-align:left;font-weight:800">รวม '+cs.length+' ครั้ง</td>'+
+    '</tbody><tfoot>'+
+    histSum(ELEC_COLS.length, '', 'รวม '+cs.length+' ครั้ง',
       '<td style="font-weight:800">'+fmt0(km)+'</td><td>—</td>'+
-      '<td style="font-weight:800">'+fmt(kwhAll,1)+'</td>'+
+      '<td style="font-weight:800">'+fmtSum(kwhAll)+'</td>'+
       '<td style="font-weight:800">'+(kwhAll>0?fmt(bahtAll/kwhAll,2):"—")+'</td>'+
       '<td style="font-weight:800">'+fmt0(bahtAll)+'</td>'+
-      '<td style="font-weight:800;color:var(--elec-ink)">'+(kwhM>0?fmt(km/kwhM,2):"—")+'</td>'+
-    '</tr></tfoot></table>'+
-    '<p class="scrollhint">คำว่า <b>ประมาณ</b> ต่อท้ายหน่วยไฟ = ชาร์จที่บ้านซึ่งไม่มีมิเตอร์ ระบบคำนวณให้จาก % แบต · แถวสีจาง = ไม่มีเลข TRIP B</p>'+
+      '<td style="font-weight:800;color:var(--series-2)">'+(km>0?fmt(bahtM/km,2):"—")+'</td>'+
+      '<td style="font-weight:800;color:var(--elec-ink)">'+(kwhM>0?fmt(km/kwhM,2):"—")+'</td>')+
+    '</tfoot></table>'+
+    '<p class="scrollhint">คำว่า <b>ประมาณ</b> ต่อท้ายหน่วยไฟ = ชาร์จที่บ้านซึ่งไม่มีมิเตอร์ ระบบคำนวณให้จาก % แบต · <b>% แบต</b> = ชาร์จเพิ่มขึ้นกี่เปอร์เซ็นต์ · <b>บาท/กม.</b> = ค่าไฟครั้งนั้น ÷ ระยะ TRIP B · แถวสีจาง = ไม่มีเลข TRIP B กด <b>＋ เพิ่มระยะ</b> เพื่อเติมย้อนหลังได้</p>'+
     '<button class="btn small ghost" id="toCardsE" style="margin-top:12px">✏️ แก้ไข / ลบรายการ</button>'+
   '</div>'+
   '<div id="elecCards"></div>';
@@ -3974,33 +4055,12 @@ function renderStatsElec(){
   '<div class="card"><h2>ค่าไฟรายเดือน</h2><p class="hint">รวมค่าไฟที่จ่ายในแต่ละเดือน (บาท)</p>'+
     '<div class="chartwrap" id="cElecMonth"></div></div>'+
 
-  '<div class="card"><h2>ตารางข้อมูลไฟฟ้า</h2><p class="hint">แยกรายเดือน พร้อมรวม/เฉลี่ยของแต่ละเดือน</p>'+
-    '<div class="htable"><table class="tbl grouped" style="font-size:12.5px;min-width:320px">'+
-    '<thead><tr><th style="text-align:left">วันที่</th><th>กม.</th><th>kWh</th><th>กม./kWh</th><th>บาท</th><th>บาท/กม.</th></tr></thead><tbody>'+
-    (()=>{
-      const by = {};
-      cm.forEach(c=>{ const k=c.date.slice(0,7); (by[k]||(by[k]=[])).push(c); });
-      return Object.keys(by).sort().reverse().map(ym=>{
-        const g = by[ym].slice().sort((a,b)=>b.date.localeCompare(a.date));
-        const gk = g.reduce((s,c)=>s+c.trip,0), gw = g.reduce((s,c)=>s+c.kwh,0), gb = g.reduce((s,c)=>s+c.total,0);
-        return '<tr class="mhead"><td colspan="6">'+thMonth(ym)+' · '+g.length+' ครั้ง</td></tr>'+
-          g.map(c=>'<tr><td style="white-space:nowrap">'+thDateMini(c.date)+'</td>'+
-            '<td>'+fmt0(c.trip)+'</td><td>'+fmt(c.kwh,2)+'</td>'+
-            '<td style="color:var(--elec-ink);font-weight:750">'+fmt(kmkwh(c),2)+'</td>'+
-            '<td>'+fmt0(c.total)+'</td>'+
-            '<td style="color:var(--series-2);font-weight:750">'+fmt(c.total/c.trip,2)+'</td></tr>').join("")+
-          '<tr class="msum"><td style="text-align:left">รวม / เฉลี่ย</td>'+
-            '<td>'+fmt0(gk)+'</td><td>'+fmt(gw,1)+'</td>'+
-            '<td style="color:var(--elec-ink)">'+fmt(gk/gw,2)+'</td>'+
-            '<td>'+fmt0(gb)+'</td>'+
-            '<td style="color:var(--series-2)">'+fmt(gb/gk,2)+'</td></tr>';
-      }).join("");
-    })()+
-    '</tbody><tfoot><tr><td style="text-align:left;font-weight:800">รวมทุกเดือน</td>'+
-      '<td style="font-weight:800">'+fmt0(km)+'</td><td style="font-weight:800">'+fmt(kwh,1)+'</td>'+
-      '<td style="font-weight:800;color:var(--elec-ink)">'+fmt(avg,2)+'</td>'+
-      '<td style="font-weight:800">'+fmt0(baht)+'</td>'+
-      '<td style="font-weight:800;color:var(--series-2)">'+fmt(baht/km,2)+'</td></tr></tfoot></table></div></div>';
+  /* v39: ตารางรายครั้งย้ายไปอยู่หน้า "ประวัติ" แล้ว — ตรงนี้เป็นกราฟ บาท/กม. แทน */
+  '<div class="card"><h2>แนวโน้มต้นทุนต่อกิโลเมตร</h2><p class="hint">บาท/กม. ของการชาร์จแต่ละครั้ง (ค่าไฟ ÷ ระยะ TRIP B) — ยิ่งต่ำยิ่งประหยัด</p>'+
+    '<div class="chartwrap" id="cElecCost"></div>'+
+    '<button class="btn small ghost" id="stToHistE" style="margin-top:12px">📋 ดูตารางรายครั้งที่หน้าประวัติ</button></div>';
+  $("#stToHistE").onclick = ()=>{ histKind="elec"; go("history"); };
+
 
   /* running average shown alongside the noisy per-session value */
   let rk=0, rw=0;
@@ -4012,6 +4072,10 @@ function renderStatsElec(){
   const cmo = chargeMonths().slice().reverse();
   drawBar($("#cElecMonth"), cmo.map(r=>({x:thMonthShort(r.ym), xFull:thMonth(r.ym), y:Math.round(r.baht)})),
     {color:"var(--elec)", unit:"บาท", dec:0});
+
+  drawLine($("#cElecCost"), cm.map(c=>({x:thDateShort(c.date), xFull:thDate(c.date), y:c.total/c.trip,
+    sub:fmt0(c.total)+" บาท · "+fmt0(c.trip)+" กม. · "+(c.place==="home"?"ที่บ้าน":(c.station||"ตู้สาธารณะ"))})),
+    {color:"var(--series-2)", unit:"บาท/กม.", zero:false});
 }
 
 
@@ -4382,30 +4446,6 @@ function drawGroupedBar(host, pts, o){
    ========================================================= */
 /* Detail rows grouped by month, each month closed by its own average row.
    `recs` must already be filtered to fills that have a TRIP A. */
-function monthGroups(recs){
-  const by = {};
-  recs.forEach(r=>{ const k=(r.date||"").slice(0,7); (by[k] || (by[k]=[])).push(r); });
-  return Object.keys(by).sort().reverse().map(k=>{
-    const g = by[k].slice().sort((a,b)=>b.date.localeCompare(a.date));
-    const km = g.reduce((s,r)=>s+r.trip,0);
-    const lit = g.reduce((s,r)=>s+r.liters,0);
-    const baht = g.reduce((s,r)=>s+r.total,0);
-    return '<tr class="mhead"><td colspan="6">'+thMonth(k)+' · '+g.length+' ครั้ง</td></tr>'+
-      g.map(r=>'<tr>'+
-        '<td style="white-space:nowrap">'+thDateMini(r.date)+'</td>'+
-        '<td>'+fmt0(r.trip)+'</td><td>'+fmt(r.liters,2)+'</td><td>'+fmt(kml(r),2)+'</td>'+
-        '<td>'+fmt0(r.total)+'</td>'+
-        '<td style="color:var(--series-2);font-weight:750">'+fmt(r.total/r.trip,2)+'</td>'+
-      '</tr>').join("")+
-      '<tr class="msum">'+
-        '<td style="text-align:left">รวม / เฉลี่ย</td>'+
-        '<td>'+fmt0(km)+'</td><td>'+fmt(lit,1)+'</td>'+
-        '<td style="color:var(--series-1)">'+fmt(km/lit,2)+'</td>'+
-        '<td>'+fmt0(baht)+'</td>'+
-        '<td style="color:var(--series-2)">'+fmt(baht/km,2)+'</td>'+
-      '</tr>';
-  }).join("");
-}
 
 /* v37: หัวหน้าสถิติ — ยอดสะสม เส้นแนวโน้มแบบเส้นสนาม และต้นทุนต่อ กม. ตัวใหญ่ */
 /* เส้นโค้งนุ่มแบบ monotone: ผ่านทุกจุดจริง ไม่พุ่งเกินค่าจริงระหว่างจุด (ไม่หลอกตา) */
@@ -4528,17 +4568,13 @@ function renderStats(){
   '<div class="card"><h2>ราคาน้ำมันที่เติม</h2><p class="hint">บาทต่อลิตร ตามวันที่เติมแต่ละครั้ง</p>'+
     '<div class="chartwrap" id="cPrice"></div></div>'+
 
-  '<div class="card"><h2>ตารางข้อมูล</h2><p class="hint">แต่ละครั้งวิ่งได้กี่กิโล จ่ายไปเท่าไหร่ และ<b>ตกกิโลเมตรละกี่บาท</b></p>'+
-    '<div class="htable"><table class="tbl grouped" style="min-width:320px"><thead><tr><th>วันที่</th><th>กม.</th><th>ลิตร</th><th>กม./ล.</th><th>บาท</th><th>บาท/กม.</th></tr></thead><tbody>'+
-    monthGroups(m)+
-    '</tbody><tfoot><tr>'+
-      '<td style="text-align:left;font-weight:800">รวมทุกเดือน</td>'+
-      '<td style="font-weight:800">'+fmt0(totKm)+'</td>'+
-      '<td style="font-weight:800">'+fmt(totL,1)+'</td>'+
-      '<td style="font-weight:800">'+fmt(avg,2)+'</td>'+
-      '<td style="font-weight:800">'+fmt0(totB)+'</td>'+
-      '<td style="font-weight:800;color:var(--series-2)">'+fmt(totB/totKm,2)+'</td>'+
-    '</tr></tfoot></table></div></div>';
+  /* v39: ตารางรายครั้งย้ายไปอยู่หน้า "ประวัติ" ทั้งหมดแล้ว (มี บาท/กม. ครบทุกแถว)
+     หน้านี้เหลือแต่ภาพรวมกับกราฟ — ตรงนี้จึงเป็นกราฟของตัวเลขที่ตารางเดิมเคยบอก */
+  '<div class="card"><h2>แนวโน้มต้นทุนต่อกิโลเมตร</h2><p class="hint">บาท/กม. ของการเติมแต่ละครั้ง (ยอดเงิน ÷ ระยะ TRIP A) — ยิ่งต่ำยิ่งประหยัด</p>'+
+    '<div class="chartwrap" id="cFuelCost"></div>'+
+    '<button class="btn small ghost" id="stToHistF" style="margin-top:12px">📋 ดูตารางรายครั้งที่หน้าประวัติ</button></div>';
+  $("#stToHistF").onclick = ()=>{ histKind="fuel"; histMode="table"; go("history"); };
+
 
   drawLine($("#cKml"), m.map(r=>({x:thDateShort(r.date), xFull:thDate(r.date), y:kml(r), sub:fmt(r.trip,0)+" กม. · "+fmt(r.liters,2)+" ล."})),
     {color:"var(--series-1)", unit:"กม./ล.", zero:false});
@@ -4551,6 +4587,10 @@ function renderStats(){
 
   drawLine($("#cPrice"), m.map(r=>({x:thDateShort(r.date), xFull:thDate(r.date), y:r.price, sub:(r.station||"")})),
     {color:"var(--series-2)", unit:"บาท/ลิตร", zero:false});
+
+  drawLine($("#cFuelCost"), m.map(r=>({x:thDateShort(r.date), xFull:thDate(r.date), y:r.total/r.trip,
+    sub:fmt0(r.total)+" บาท · "+fmt(r.trip,0)+" กม."})),
+    {color:"var(--series-2)", unit:"บาท/กม.", zero:false});
 }
 
 /* =========================================================
